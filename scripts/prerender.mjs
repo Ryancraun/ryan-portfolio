@@ -138,57 +138,81 @@ async function main() {
   }
   const origin = new URL(base).origin;
 
-  const browser = await launchBrowser();
-
+  // BUILD-HANG FIX: `server` (vite's preview server, still listening on a
+  // real port) must close on EVERY exit path, including `launchBrowser()`
+  // itself throwing -- which is exactly what happened on Vercel's first
+  // deploy attempt (see launchBrowser's own comment). The old structure
+  // called `launchBrowser()` before any try block, so that throw skipped
+  // cleanup entirely, left the preview server open forever, and hung the
+  // whole build indefinitely (confirmed live: that deployment sat in
+  // "Building" for 5+ minutes, blocking every later deploy behind it in
+  // Vercel's one-concurrent-build queue, until cancelled by hand). Nesting
+  // try/finally so the outer one guarantees `server.close()` regardless of
+  // what fails inside, and the inner one only touches `browser.close()`
+  // once a browser actually exists.
   try {
-    for (const route of ROUTES) {
-      const page = await browser.newPage();
-      const url = new URL(route.path, base).toString();
-
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await page.waitForSelector(READY_SELECTOR[route.path], { timeout: 20000 });
-      // Let the mount-time effects (document.title / meta description via
-      // src/lib/documentMeta.js) finish running before capturing -- these
-      // run in a useEffect immediately after the selector above appears,
-      // but give one more macrotask turn of headroom rather than racing
-      // it. Scroll-triggered reveals (see revealScrollTriggeredContent's
-      // own comment) get their own, much longer wait below, since a
-      // rAF-driven count-up needs real animation-frame time, not just a
-      // macrotask turn.
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      await revealScrollTriggeredContent(page);
-
-      let html = await page.content();
-      // BUG FOUND DURING VERIFICATION: Vite's dynamic-import runtime injects
-      // <link rel="modulepreload"> tags into <head> with an ABSOLUTE URL
-      // (built from `import.meta.url`, i.e. the origin of THIS local
-      // preview server) whenever a lazy-loaded chunk (React.lazy'd Home /
-      // CopiaCaseStudy, see main.jsx's #6 fix) actually loads during
-      // capture. Left as-is, the captured HTML would permanently point at
-      // `http://127.0.0.1:PORT/assets/...` -- correct nowhere except this
-      // throwaway local server. Strip the preview server's own origin back
-      // out so those hrefs become root-relative (`/assets/...`), which is
-      // correct on any real deploy origin exactly like every other asset
-      // reference in this document already is.
-      html = html.split(origin).join('');
-      const outPath = path.join(projectRoot, 'dist', route.outFile);
-      await mkdir(path.dirname(outPath), { recursive: true });
-      await writeFile(outPath, html, 'utf8');
-
-      const textLength = await page.evaluate(() => document.body.innerText.length);
-      console.log(
-        `[prerender] ${route.path} -> dist/${route.outFile} (${html.length} bytes HTML, ${textLength} chars of visible text)`
-      );
-
-      await page.close();
+    const browser = await launchBrowser();
+    try {
+      await prerenderRoutes(browser, base, origin);
+    } finally {
+      await browser.close();
     }
   } finally {
-    await browser.close();
     await server.close();
+  }
+}
+
+async function prerenderRoutes(browser, base, origin) {
+  for (const route of ROUTES) {
+    const page = await browser.newPage();
+    const url = new URL(route.path, base).toString();
+
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForSelector(READY_SELECTOR[route.path], { timeout: 20000 });
+    // Let the mount-time effects (document.title / meta description via
+    // src/lib/documentMeta.js) finish running before capturing -- these
+    // run in a useEffect immediately after the selector above appears,
+    // but give one more macrotask turn of headroom rather than racing
+    // it. Scroll-triggered reveals (see revealScrollTriggeredContent's
+    // own comment) get their own, much longer wait below, since a
+    // rAF-driven count-up needs real animation-frame time, not just a
+    // macrotask turn.
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await revealScrollTriggeredContent(page);
+
+    let html = await page.content();
+    // BUG FOUND DURING VERIFICATION: Vite's dynamic-import runtime injects
+    // <link rel="modulepreload"> tags into <head> with an ABSOLUTE URL
+    // (built from `import.meta.url`, i.e. the origin of THIS local
+    // preview server) whenever a lazy-loaded chunk (React.lazy'd Home /
+    // CopiaCaseStudy, see main.jsx's #6 fix) actually loads during
+    // capture. Left as-is, the captured HTML would permanently point at
+    // `http://127.0.0.1:PORT/assets/...` -- correct nowhere except this
+    // throwaway local server. Strip the preview server's own origin back
+    // out so those hrefs become root-relative (`/assets/...`), which is
+    // correct on any real deploy origin exactly like every other asset
+    // reference in this document already is.
+    html = html.split(origin).join('');
+    const outPath = path.join(projectRoot, 'dist', route.outFile);
+    await mkdir(path.dirname(outPath), { recursive: true });
+    await writeFile(outPath, html, 'utf8');
+
+    const textLength = await page.evaluate(() => document.body.innerText.length);
+    console.log(
+      `[prerender] ${route.path} -> dist/${route.outFile} (${html.length} bytes HTML, ${textLength} chars of visible text)`
+    );
+
+    await page.close();
   }
 }
 
 main().catch((err) => {
   console.error('[prerender] failed:', err);
-  process.exitCode = 1;
+  // Hard exit, not just `process.exitCode` -- a build script must never
+  // rely on Node's event loop draining naturally to terminate. The
+  // try/finally above already closes the browser/server on every path
+  // it knows about, but this is the backstop against any OTHER lingering
+  // handle (a future change, a library quirk) hanging the build the same
+  // way the missing-cleanup bug above just did in production.
+  process.exit(1);
 });
