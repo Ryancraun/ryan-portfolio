@@ -21,6 +21,35 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// VERCEL BUILD FIX (first deploy attempt failed: "Failed to launch the
+// browser process: Code: 127 / error while loading shared libraries:
+// libnspr4.so: cannot open shared object file"). Plain `puppeteer` bundles
+// a desktop-oriented Chromium build that needs system libraries Vercel's
+// build container doesn't ship -- a well-documented limitation, not
+// something fixable by a puppeteer flag. `@sparticuz/chromium` ships a
+// Chromium build packaged specifically for serverless/CI build containers
+// (Vercel, AWS Lambda) with no missing-library problem, paired with
+// `puppeteer-core` (the same launch/page API, no bundled browser of its
+// own). Only used when `process.env.VERCEL` is set (Vercel sets this
+// automatically in every build and runtime) -- local builds (this
+// project's own dev machine, this session's own verification builds) keep
+// using plain `puppeteer` unchanged, since `@sparticuz/chromium`'s binary
+// is Linux-only and won't run on Windows.
+async function launchBrowser() {
+  if (process.env.VERCEL) {
+    const [{ default: chromium }, { default: puppeteerCore }] = await Promise.all([
+      import('@sparticuz/chromium'),
+      import('puppeteer-core'),
+    ]);
+    return puppeteerCore.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+    });
+  }
+  return puppeteer.launch({ headless: 'new' });
+}
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, '..');
 
@@ -109,7 +138,7 @@ async function main() {
   }
   const origin = new URL(base).origin;
 
-  const browser = await puppeteer.launch({ headless: 'new' });
+  const browser = await launchBrowser();
 
   try {
     for (const route of ROUTES) {
