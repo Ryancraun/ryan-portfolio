@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Ryan Craun | Product Design</title>
+    <meta name="description" content="Ryan Craun, product designer. Selected work in consumer iOS, content platforms, and B2B SaaS / sports analytics, including Copia, a native iOS grocery app launching on the App Store." />
+    <!-- WEB QUALITY AUDIT FIX (high priority #4): default OG/Twitter Card
+         tags -- previously none existed anywhere, so any link share (Slack,
+         iMessage, LinkedIn, etc.) rendered with no title/description/preview
+         at all. These are the site-wide defaults; CopiaCaseStudy.jsx (and
+         Home.jsx) also update the live document.title/meta description
+         client-side per route (see useDocumentMeta in src/lib/documentMeta.js)
+         for when JS does execute -- but the actual crawlable HTML per route
+         comes from the prerender step (see #3 / scripts/prerender.mjs), not
+         from these client-side updates alone. No og:image/twitter:image yet:
+         there's no real site-representative photo asset in this repo to
+         point at honestly (picktheodds.png is a single project screenshot,
+         not a general site image) -- a fabricated/placeholder image URL
+         would be worse than omitting the tag, so twitter:card is "summary"
+         (image optional) rather than "summary_large_image" (image
+         required). og:url is also omitted rather than guessed -- this repo
+         has no confirmed production domain anywhere in it, and a wrong
+         canonical URL is worse than none. Follow-up: set og:image and
+         og:url once a real deploy domain and a site-representative image
+         exist. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Ryan Craun | Product Design" />
+    <meta property="og:title" content="Ryan Craun | Product Design" />
+    <meta property="og:description" content="Product designer. Selected work in consumer iOS, content platforms, and B2B SaaS / sports analytics, including Copia, a native iOS grocery app launching on the App Store." />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Ryan Craun | Product Design" />
+    <meta name="twitter:description" content="Product designer. Selected work in consumer iOS, content platforms, and B2B SaaS / sports analytics, including Copia, a native iOS grocery app launching on the App Store." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- SYSTEM-FONT PASS (Ryan: "ensure that ALL fonts across the entire
+         website are SF Pro"): real SF Pro can't be hosted as a webfont --
+         Apple's own license doesn't permit redistributing it, which is why
+         apple.com itself never loads it from a stylesheet either. The
+         correct web equivalent (and Apple's own technique) is the system
+         font stack below, in index.css's --font-sans -- `-apple-system`
+         resolves to the actual San Francisco family on every Apple browser,
+         falling back to each OS's native equivalent elsewhere. No hosted
+         Google Fonts stylesheet needed any more (previously Geist +
+         Fraunces here), which also drops two external font requests. -->
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

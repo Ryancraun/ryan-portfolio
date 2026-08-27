@@ -1,0 +1,23 @@
+.waves {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Upstream reactbits.dev source ships this rule with an invalid `var()`
+   reference (`var(-0.5rem)` / `var(50%)` -- neither is a custom-property
+   name) that Lightning CSS's minifier rejects outright, failing the whole
+   production build. It's a decorative, invisible cursor dot with no effect
+   on the actual wave lines, so it's removed here rather than left broken --
+   the only edit made to any vendored reactbits file in this project. */
+
+.waves-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

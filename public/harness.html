@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>mobile verification harness</title>
+<style>
+  html,body{ margin:0; background:#333; font-family:sans-serif; }
+  .row{ display:flex; gap:12px; padding:12px; align-items:flex-start; flex-wrap:wrap; }
+  .cell{ background:#000; }
+  .label{ color:#fff; font-size:11px; text-align:center; padding:4px 0; }
+  iframe{ display:block; border:0; }
+  .note{ color:#999; font: 12px sans-serif; padding:0 12px 12px; max-width:900px; }
+</style>
+</head>
+<body>
+<p class="note">
+  Fixed-width iframes at true declared CSS widths (390/430/768/1280) for mobile-first
+  verification, since this environment's window resize floor is ~960px. Each iframe loads
+  the real built app from the same origin. On load, this page spoofs `document.hidden` /
+  `visibilityState` to `false` on itself and every iframe document -- automation tools that
+  drive this page in a background tab group report a genuinely hidden/backgrounded document,
+  which pauses Chrome's rendering pipeline (rAF never fires, CSS transitions stall) for
+  everything on the page, including the live reactbits.dev WebGL backgrounds. This does not
+  happen for a real visitor actively scrolling; the spoof exists only so a screenshot taken
+  through this same class of automation tooling reflects what a real, focused tab renders.
+  COPIA CASE STUDY + ROUTING: pass <code>?path=/work/copia</code> (or any app route) in this
+  page's own URL to verify a route other than <code>/</code> at true mobile widths -- this
+  also exercises the SPA-fallback path (a direct load of a nested route, not just client-side
+  navigation into it), since each iframe below requests that path directly from the server,
+  the same way a real visitor refreshing on that URL would.
+  ATTIO NAV CORRECTION (build-log.md, Addendum 5): also pass <code>?w=1568&amp;h=950</code>
+  (or any w/h) to add a one-off custom-width tier -- this session's own <code>resize_window</code>
+  tool floors at ~958px regardless of the size requested, so a true &gt;1280px desktop check
+  (e.g. the 1568px width the Facilitator used to directly re-inspect Attio.com for this task)
+  has to go through this same fixed-width-iframe technique, not the window itself.
+</p>
+<div class="row" id="row"></div>
+<script>
+  var params = new URLSearchParams(location.search);
+  var path = params.get('path') || '/';
+  var sizes = [
+    { label: '390 x 844', w: 390, h: 844 },
+    { label: '430 x 932', w: 430, h: 932 },
+    { label: '768 x 1024', w: 768, h: 1024 },
+    { label: '1280 x 800', w: 1280, h: 800 },
+  ];
+  var customW = parseInt(params.get('w'), 10);
+  var customH = parseInt(params.get('h'), 10);
+  if (customW > 0 && customH > 0) {
+    sizes.push({ label: customW + ' x ' + customH + ' (custom)', w: customW, h: customH });
+  }
+  var row = document.getElementById('row');
+  sizes.forEach(function (s) {
+    var wrap = document.createElement('div');
+    var label = document.createElement('div');
+    label.className = 'label';
+    label.textContent = s.label + '  (' + path + ')';
+    var cell = document.createElement('div');
+    cell.className = 'cell';
+    var iframe = document.createElement('iframe');
+    iframe.src = path;
+    iframe.style.width = s.w + 'px';
+    iframe.style.height = s.h + 'px';
+    cell.appendChild(iframe);
+    wrap.appendChild(label);
+    wrap.appendChild(cell);
+    row.appendChild(wrap);
+  });
+
+  function spoofVisible(doc) {
+    try {
+      Object.defineProperty(doc, 'hidden', { get: () => false, configurable: true });
+      Object.defineProperty(doc, 'visibilityState', { get: () => 'visible', configurable: true });
+      doc.dispatchEvent(new Event('visibilitychange'));
+    } catch (e) { /* ignore */ }
+  }
+  spoofVisible(document);
+  document.querySelectorAll('iframe').forEach((f) => {
+    f.addEventListener('load', () => {
+      try { spoofVisible(f.contentDocument); } catch (e) { /* ignore */ }
+    });
+  });
+</script>
+</body>
+</html>

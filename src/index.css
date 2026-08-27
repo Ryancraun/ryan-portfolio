@@ -1,0 +1,2131 @@
+@import "tailwindcss";
+
+/* ---------- design tokens (ported 1:1 from the single-file build) ---------- */
+:root{
+  --bg:#0a0a0c;
+  --bg-raise:#111114;
+  --ink:#f4f2ec;
+  --ink-dim:#a6a39c;
+  --ink-faint:#5c5a56;
+  --accent:#e2a73c;
+  --accent-ink:#1a1408;
+  --line:rgba(244,242,236,0.12);
+  --line-strong:rgba(244,242,236,0.22);
+  --wrap:min(1180px, 92vw);
+  --radius:14px;
+  /* SYSTEM-FONT PASS (Ryan: "ensure that ALL fonts across the entire
+     website are SF Pro and the pairing text to be another apple looking
+     font" -- follow-up to ADDENDUM 3, item 2 below, which substituted Geist
+     because "SF Pro itself isn't web-embeddable"). That constraint is still
+     true -- Apple's license doesn't allow hosting SF Pro as a webfont
+     stylesheet, which is why apple.com itself doesn't either -- but the
+     system font stack IS the real, correct fix, not another substitute:
+     `-apple-system` resolves to actual San Francisco on every Apple browser
+     (Safari/Chrome/Firefox on Mac, iOS, iPadOS), so this renders the real
+     typeface where Ryan will mostly be viewing it, falling back to each
+     platform's own native UI face elsewhere (Segoe UI/Roboto) rather than a
+     third-party lookalike. `--font-serif` is the pairing text: `ui-serif`
+     is the CSS generic keyword for "the platform's serif" -- on Apple
+     platforms that resolves to New York, Apple's own real editorial serif
+     (paired with SF across Apple's own apps/marketing), with Georgia next
+     (itself a long-time Mac system serif) before a generic fallback. No
+     hosted Google Fonts stylesheet needed for either -- removed from
+     index.html (previously Geist + Fraunces).
+     ADDENDUM 3, item 2 (superseded above, kept for history): Ryan asked for
+     "something like SF Pro or something clean" -- SF Pro itself wasn't
+     web-embeddable, so Geist (Vercel's typeface, Google Fonts) was the
+     substitute, replacing the prior Space Grotesk / Manrope sans pairing.
+     One token so the whole sans system swaps from a single place. The card
+     category tag ("B2B SaaS / Sports Analytics" etc.) was moved OFF Caveat
+     onto Geist -- see TAG STYLING FIX in build-log.md; it had read as a
+     casual scribble, not premium. The hand-drawn index numbers ("01"-"05")
+     were moved off Caveat too -- see INDEX NUMBER STYLING FIX in
+     build-log.md. */
+  --font-sans:-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-serif:ui-serif, Georgia, 'Source Serif 4', serif;
+  font-size:16px;
+}
+*{ box-sizing:border-box; }
+html{ background:var(--bg); }
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font-sans);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+img{ max-width:100%; display:block; }
+a{ color:inherit; }
+::selection{ background:var(--accent); color:var(--accent-ink); }
+
+/* ---------- one-time load wash (the single capped personal touch) ----------
+   CHROMA GLASS EXPERIMENT, REVERTED (Ryan: "EHH LETS REVERT BACK, MAYBE
+   THIS IS TOO MUCH MOVEMENT"): tried a multi-phase pixelated glass-tile
+   grid with a chroma wave sweep, name assembly, and block dissolve here --
+   see build-log.md for the full account. Reverted back to this original
+   flat wipe on Ryan's own call once he saw it live, kept exactly as it
+   was. */
+.wash{
+  position:fixed; inset:0; z-index:9999;
+  background:var(--accent);
+  display:flex; align-items:center; justify-content:center;
+  transform-origin:top center;
+  transition: transform 0.95s cubic-bezier(.65,0,.35,1), opacity 0.5s ease 0.45s;
+  will-change:transform;
+}
+.wash__mark{
+  font-family:var(--font-sans);
+  font-weight:700;
+  font-size:clamp(1.6rem, 6vw, 2.4rem);
+  color:var(--accent-ink);
+  letter-spacing:0.02em;
+  transition:opacity .35s ease;
+}
+.wash--out{ transform:scaleY(0); opacity:0; pointer-events:none; }
+.wash--out .wash__mark{ opacity:0; }
+
+/* ---------- scroll progress ----------
+   ADDENDUM 3, item 3: z-index bumped above the new .sitenav (600) so the
+   thin accent progress line always renders as a crisp edge on top of the
+   frosted glass, instead of getting blurred/hidden underneath it. */
+.progress{
+  position:fixed; top:0; left:0; right:0; height:2px; z-index:650;
+  background:var(--accent);
+  transform:scaleX(0);
+  transform-origin:left center;
+  will-change:transform;
+}
+
+/* ---------- site nav ----------
+   ADDENDUM 4: restyled from a full-width bar into a floating, fully-rounded
+   pill (backgrounds.supply reference) -- sized to its own content via
+   width:max-content instead of stretching edge-to-edge, centered with
+   left:50%/translateX, and held clear of the viewport's top edge so it
+   reads as an object floating over the page rather than a docked toolbar.
+   Same dark-glass scrim recipe as .brandmark/.card__scrim, just re-shaped.
+   "Contact Me" stays a plain text link (secondary, ghost) and "View
+   Resume" gets the solid accent pill (primary) -- mirrors the reference's
+   one-ghost / one-solid hierarchy while keeping the accent hoarded to a
+   single primary action rather than spent on both links. */
+.sitenav{
+  position:fixed; top:clamp(0.75rem, 2.4vw, 1.35rem); left:50%; z-index:600;
+  /* BANDED/TORN BLUR FIX (Ryan's screenshot: vertical dark bars appearing
+     across the pill while hovering across it). This is a distinct bug from
+     the earlier mix-blend-mode:difference fix (CustomCursor.jsx's
+     GLASS_ZONE_SELECTOR) -- that one produced solid black; this is tiled
+     banding, the signature of a Chromium/Windows compositor tearing the
+     backdrop-filter's blur layer against a NEARBY layer that's updating its
+     own `transform` every frame (the cursor dot/ring, `will-change:transform`
+     in index.css, re-transformed on every mousemove) -- a real compositor
+     bug about two layers sharing screen space, not about paint order or
+     blend math, so the earlier fix narrowed but didn't fully close it.
+     `translateZ(0)` (alongside the existing centering `translateX`) forces
+     this element onto its OWN persistent GPU compositing layer instead of
+     sharing raster tiles with whatever's moving nearby -- the standard,
+     widely-documented mitigation for exactly this "backdrop-filter shows
+     seams/artifacts next to animating content" bug class. Flagged honestly:
+     this session's browser sandbox cannot reproduce real GPU compositor
+     bugs (there's no live repro to verify against here, only the
+     screenshot) -- this needs a real check on Ryan's own machine. */
+  transform:translateX(-50%) translateZ(0);
+  will-change:transform, backdrop-filter;
+  display:flex; align-items:center; justify-content:center;
+  width:max-content; max-width:92vw;
+  gap:clamp(1.25rem, 4vw, 2.5rem);
+  padding:0.55rem 0.6rem 0.55rem 1.35rem;
+  background:rgba(6,6,8,0.62);
+  /* INCIDENTAL FIX, found while verifying BorderGlow's hero panel below:
+     Lightning CSS's production minifier was dropping this plain
+     `backdrop-filter` declaration in favor of keeping only the
+     `-webkit-backdrop-filter` duplicate (its autoprefixer logic judged the
+     prefixed form "sufficient" for its default target list) -- but the
+     browser used for this project's verification passes (and any current
+     evergreen Chrome/Firefox) doesn't parse `-webkit-backdrop-filter` at
+     all (confirmed via CSS.supports), so the built CSS ended up with ZERO
+     working blur on this element, silently, with no console warning.
+     Pre-existing, not introduced this round (.sitenav wasn't touched by
+     this round's assigned items) -- caught only because Item 5's
+     BorderGlow hero panel verification re-checked getComputedStyle(...)
+     .backdropFilter and found "none" where a real value was expected, the
+     same check ADDENDUM 3 ran. Fixed by dropping the now-redundant
+     `-webkit-` duplicate (Safari has supported the unprefixed property
+     since 15.4, released 2022) so lightningcss has nothing to consider
+     "already covered" and the plain declaration survives minification
+     untouched -- confirmed in the production dist/ output after rebuild. */
+  backdrop-filter:blur(18px) saturate(150%);
+  border:1px solid var(--line);
+  border-radius:999px;
+  box-shadow:0 20px 50px -28px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(244,242,236,0.05);
+}
+.sitenav__mark{
+  font-family:var(--font-sans);
+  font-weight:700; font-size:0.95rem; letter-spacing:0.06em;
+  color:var(--ink);
+  text-decoration:none;
+  line-height:1;
+}
+.sitenav__links{
+  display:flex; align-items:center; gap:clamp(1rem, 3vw, 1.5rem);
+}
+.sitenav__link{
+  font-family:var(--font-sans);
+  font-size:0.82rem; font-weight:500; letter-spacing:0.01em;
+  color:var(--ink-dim);
+  text-decoration:none;
+  transition:color 0.2s ease;
+  white-space:nowrap;
+}
+.sitenav__link:hover{ color:var(--ink); }
+/* WEB QUALITY AUDIT FIX (high priority #1): no element on the page had a
+   visible keyboard focus indicator -- .specular-button was the only thing
+   with a :focus-visible rule. These match that established pattern (a
+   solid outline in the ink/text color, offset outward from the element)
+   rather than inventing a new visual language for focus. */
+.sitenav__mark:focus-visible,
+.sitenav__link:focus-visible{
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+.sitenav__link--resume{
+  background:var(--accent);
+  color:var(--accent-ink);
+  font-weight:600;
+  border-radius:999px;
+  padding:0.5rem 1.15rem;
+  transition:filter 0.2s ease, transform 0.2s ease;
+}
+.sitenav__link--resume:hover{ filter:brightness(1.08); }
+/* PERSISTENT BYLINE (moved here from Hero.jsx -- Ryan: "add it in the
+   global top nav bar so it is always there"). Sits inside the nav pill
+   itself as a plain text group (no separate background/blur of its own --
+   it's already inside .sitenav's glass), separated from the "RC" mark by
+   a hairline divider matching the pill's own border color. Because
+   SiteNav is mounted once at the app root, this is genuinely sitewide --
+   home, /work/copia, /work/vault -- not a hero-only chip. */
+.sitenav__byline{
+  display:flex; align-items:center; gap:0.5rem;
+  padding-left:0.9rem;
+  border-left:1px solid var(--line);
+  font-family:var(--font-sans);
+  font-size:0.78rem;
+  white-space:nowrap;
+}
+.sitenav__byline-name{ font-weight:700; color:var(--ink); }
+.sitenav__byline-dot{
+  width:3px; height:3px; border-radius:50%;
+  background:var(--ink-faint);
+  flex-shrink:0;
+}
+.sitenav__byline-role{ color:var(--ink-dim); }
+
+/* ---------- work-section sidebar + scrollspy ----------
+   ATTIO NAV CORRECTION (Addendum 5, points 16-17): replaces the earlier
+   "ATTIO-STYLE STICKY TAB BAR" round entirely -- that build was based on
+   Attio.com re-inspected at a capped ~958px automation viewport, which
+   happened to show Attio's own narrow/collapsed responsive layout, not its
+   real desktop pattern. Re-verified live at a genuine 1568px width: Attio's
+   actual desktop nav is a LEFT-SIDE VERTICAL list, `position:sticky`
+   *scoped to its own section* (not `position:fixed` to the viewport) -- it
+   sits beside the section's own content in a two-column layout, stays in
+   place while that content scrolls past it, and scrolls away naturally
+   once the section (its own containing block) ends. Because it's
+   section-scoped sticky and not viewport-fixed, it structurally cannot
+   render before the work section is reached or after it ends, so there is
+   no second bar ever competing with .sitenav for the top-of-viewport slot
+   (point 17) -- no JS-driven show/hide boundary logic is needed at all
+   here, unlike the deleted WorkTabBar.jsx's two IntersectionObserver
+   sentinels; position:sticky does that job for free, correctly, by
+   construction. WorkSidebar.jsx (replaces WorkTabBar.jsx) now only handles
+   the scrollspy (active item) and click-to-scroll -- see that file.
+
+   MOBILE: same component, same sticky mechanism, just relaid out as a
+   horizontal scrollable strip via the media query below -- not a second
+   nav pattern, one mechanism (position:sticky, scoped to #work) expressed
+   two ways. Still never fixed to the viewport at any width, so point 17's
+   guarantee holds at every breakpoint. */
+.work__layout{
+  display:grid;
+  grid-template-columns:minmax(150px, 200px) minmax(0, 1fr);
+  column-gap:clamp(2rem, 5vw, 4.5rem);
+  align-items:start;
+}
+.work__sidebar{
+  position:sticky;
+  top:clamp(5.5rem, 9vw, 7.25rem);
+  /* BUG CAUGHT DURING VERIFICATION: grid items default to `min-width:auto`,
+     which resolves to their CONTENT's min-content size, not 0 -- at mobile
+     (.work__sidebar-list becomes a flex ROW of 5 nowrap buttons, see the
+     640px media query below) that min-content sum is wider than the grid
+     track itself, so without this the sidebar (and everything after it)
+     silently overflowed the page horizontally at 390/430px (confirmed live:
+     document.documentElement.scrollWidth 460 vs clientWidth 375 before this
+     fix). Same fix already applied to `.stack` below for the same reason on
+     the other grid column -- both grid items need it explicitly. */
+  min-width:0;
+  display:flex;
+}
+/* CONTINUOUS-LINE INDICATOR (follow-up round, WorkSidebar.jsx): replaces
+   the old per-link `::before` bar (color/opacity-toggled discretely on
+   activate) with one always-visible full-height track and a single
+   segment that slides to the active link's measured position/height via a
+   CSS transform transition -- "a continuous line... that smoothly
+   animates to the next section as you scroll," Ryan's words, not five
+   independent bars swapping color. `.work__sidebar-rail` spans the full
+   list height (a sibling of the list, both children of the flex
+   `.work__sidebar` above) so the faint base line is visible top-to-bottom
+   regardless of which item is active. */
+.work__sidebar-rail{
+  position:relative;
+  flex-shrink:0;
+  width:2px;
+  margin-right:1.15rem;
+  background:var(--line);
+  opacity:0.35;
+}
+.work__sidebar-indicator{
+  position:absolute;
+  left:0; top:0;
+  width:100%;
+  background:var(--accent);
+  border-radius:1px;
+  transition:transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), height 0.3s ease;
+}
+.work__sidebar-list{
+  list-style:none; margin:0; padding:0;
+  display:flex; flex-direction:column; gap:0.85rem;
+  flex:1;
+  min-width:0;
+}
+.work__sidebar-link{
+  position:relative;
+  display:block;
+  width:100%;
+  appearance:none; border:none; background:transparent; cursor:pointer;
+  text-align:left;
+  font-family:var(--font-sans);
+  font-size:0.92rem; font-weight:500; letter-spacing:0.005em;
+  color:var(--ink-faint);
+  padding:0.3rem 0;
+  transition:color 0.25s ease;
+}
+.work__sidebar-link:hover{ color:var(--ink-dim); }
+.work__sidebar-link:focus-visible{
+  outline:2px solid var(--ink);
+  outline-offset:4px;
+  border-radius:4px;
+}
+.work__sidebar-link.is-active{
+  color:var(--ink);
+  font-weight:600;
+}
+
+/* ---------- hero ---------- */
+/* HERO REVEAL REBUILD (build-log.md): a real PixelSwap pixel-block
+   dissolve (`Hero.jsx`) between two full-bleed panels (`.hero__panel--intro`
+   black, `.hero__panel--reveal` off-white), driven by a `setTimeout` (not
+   scroll position -- see that file's own comment for why) that flips
+   PixelSwap's `active` prop after REVEAL_DELAY_MS. `.hero` itself stays
+   solid black as the base/fallback (e.g. before the stage has painted).
+   `.hero__stage` and `.hero__pixelswap` are both sized to fill `.hero`
+   completely (`position:absolute; inset:0` / `width:100%; height:100%`) --
+   PixelSwap's own layers (`.pixel-swap__layer`, its vendored CSS) are
+   already `position:absolute; inset:0` within THAT box, so `.hero__panel`
+   itself just needs to fill 100% of its layer and paint its own
+   background; it no longer owns any position/z-index/opacity/transition
+   of its own -- PixelSwap's pixel-grid mechanic (not a CSS crossfade) is
+   what does the reveal now. */
+.hero.hero--reveal{
+  position:relative;
+  min-height:100svh;
+  overflow:hidden;
+  background:rgb(6,6,8);
+}
+.hero__stage{
+  position:absolute; inset:0;
+  will-change:transform, opacity;
+}
+.hero__pixelswap{
+  width:100%;
+  height:100%;
+}
+.hero__panel{
+  width:100%;
+  height:100%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center;
+  padding: 2rem clamp(1.5rem, 6vw, 4rem);
+}
+.hero__panel--intro{
+  background:rgb(6,6,8);
+}
+.hero__panel--reveal{
+  background:#f7f5f0;
+}
+/* Each revealed pixel-cell needs an opaque backing matching the INCOMING
+   (secondContent, `.hero__panel--reveal`) panel's own background -- this
+   transition only ever runs black -> white (a one-shot timed reveal, never
+   reversed), so a single fixed white here is correct; see PixelSwap.jsx's
+   own file-top comment for why an unbacked/mismatched pixel background is
+   what causes the outgoing layer to bleed through mid-transition. */
+.hero__pixelswap .pixel-swap__pixel{
+  background:#f7f5f0;
+}
+.hero__name{
+  font-family:var(--font-sans);
+  font-weight:700;
+  font-size:clamp(2.75rem, 11vw, 6.5rem);
+  line-height:0.98;
+  margin:0;
+  letter-spacing:-0.02em;
+  color:var(--ink);
+}
+.hero__role{
+  font-family:var(--font-sans);
+  font-weight:500;
+  font-size:clamp(1rem, 2.4vw, 1.3rem);
+  letter-spacing:0.01em;
+  color:var(--ink-dim);
+  margin:1rem 0 0;
+}
+.hero__tagline-big{
+  font-family:var(--font-sans);
+  font-weight:700;
+  font-size:clamp(1.6rem, 4vw, 3.1rem);
+  line-height:1.12;
+  letter-spacing:-0.015em;
+  max-width:26ch;
+  margin:0;
+  color:#141414;
+  text-wrap:balance;
+}
+/* COPY UPDATE (hero sub-line): no existing sub-line style for this panel --
+   reuses `.hero__tagline-big`'s own font-family/color/tracking at a smaller
+   size token, per instruction, rather than a new visual treatment. */
+.hero__tagline-sub{
+  font-family:var(--font-sans);
+  font-weight:500;
+  font-size:clamp(1rem, 2vw, 1.35rem);
+  line-height:1.35;
+  letter-spacing:-0.01em;
+  max-width:34ch;
+  margin:0.85rem 0 0;
+  color:#141414;
+  opacity:0.72;
+}
+/* Screen-reader-only utility (Addendum 5, point 20's real-heading
+   requirement) -- the standard clip-based accessible-hiding pattern:
+   visually removed but still in the accessibility tree and in normal
+   document/reading order, unlike display:none or aria-hidden. */
+.sr-only{
+  position:absolute;
+  width:1px; height:1px;
+  padding:0; margin:-1px;
+  overflow:hidden;
+  clip:rect(0,0,0,0);
+  white-space:nowrap;
+  border:0;
+}
+.hero__scrollcue{
+  position:absolute; left:50%; bottom:2rem; z-index:2;
+  transform:translateX(-50%);
+  font-family:var(--font-sans);
+  font-size:0.7rem; letter-spacing:0.04em;
+  color:var(--ink-dim);
+}
+.hero__scrollcue::after{
+  content:''; display:block; width:1px; height:22px; margin:0.6rem auto 0;
+  background:linear-gradient(var(--ink-faint), transparent);
+}
+
+/* ---------- intro ---------- */
+.intro{
+  width:var(--wrap); margin:0 auto;
+  padding: 5rem 0 4rem;
+}
+.intro__statement{
+  font-family:var(--font-sans);
+  font-weight:700;
+  font-size:clamp(2rem, 6.4vw, 4.25rem);
+  line-height:1.04;
+  letter-spacing:-0.01em;
+  color:var(--ink);
+  margin:0 0 2.75rem;
+  /* WEB QUALITY AUDIT FIX (medium priority #7) -- UPDATED DURING
+     VERIFICATION: the audit's own framing called this a transient,
+     self-resolving mid-fade dip "not flagged as broken by a post-load
+     scan," and treated a 0.28 -> ~0.5 floor bump as an optional, trivial
+     fix. Re-running Lighthouse against the actual built output after that
+     first bump (see build-log.md) showed the opposite: `.intro` sits below
+     a 100svh hero, so on any unscrolled load (which is exactly how
+     Lighthouse's own accessibility scan, and any non-JS crawler snapshot,
+     evaluates the page) this text sits PERMANENTLY at the opacity floor,
+     never reaching `.is-visible` at all -- not a ~500ms transient. At 0.5
+     that measured 2.73:1 (color-contrast audit, Home route, confirmed
+     failing). Recalculated the actual AA-passing floor against this exact
+     foreground/background pair (--ink / --ink-dim over --bg): opacity needs
+     to be >=~0.72 for the alpha-composited color to clear 4.5:1. Set to
+     0.75 for margin -- re-verified clean (see build-log.md scores). */
+  opacity:0.75;
+  will-change:opacity;
+  transition:opacity .5s ease;
+}
+.intro__lede{ max-width:720px; }
+.intro__p{
+  font-family:var(--font-serif);
+  font-weight:500;
+  font-size:clamp(1.15rem, 2.4vw, 1.5rem);
+  line-height:1.6;
+  color:var(--ink-dim);
+  opacity:0.75;
+  margin:0 0 1.5rem;
+  will-change:opacity;
+  transition:opacity .5s ease;
+}
+/* "CURRENTLY AT FEVO" HIERARCHY FIX (Ryan: fix spacing/hierarchy only, no
+   copy changes, no new components). Four things, in order:
+   1. `margin-top:2.75rem` -- roughly double `.intro__p`'s own 1.5rem
+      margin-bottom, reusing (not inventing) `.intro__statement`'s own
+      margin-bottom value from right above in this same file -- the next
+      real step up already present in this component's own spacing, not a
+      hand-picked pixel number.
+   2. `max-width:720px` -- the exact value `.intro__lede` already uses
+      above, so both paragraphs wrap at the same measure.
+   The eyebrow and lede rules below handle points 3-4. */
+.intro__fevo{ margin-top:2.75rem; max-width:720px; }
+/* Point 4: was reusing `.cs-decision__kicker` (`color:var(--ink-faint)`,
+   0.72rem) -- measured against `--bg`, ink-faint at full opacity is only
+   ~2.9:1, not a real "increase contrast" option (and would fail WCAG AA
+   for text this size regardless). `--ink-dim` is what `.work__eyebrow`
+   ("Selected Work," same page) already uses for exactly this job -- a
+   real, safe contrast lift (~7.9:1) using a color this site's own eyebrow
+   convention already establishes, not a new one. Letter-spacing (0.03em)
+   matches that same `.work__eyebrow` precedent too. No text-transform:
+   uppercase was already removed sitewide (Ryan: "no AUTOCAPS anywhere")
+   and doesn't exist anywhere left to match, so per the instruction's own
+   "if that treatment already exists elsewhere" condition, it's left off
+   here. Tight `margin-bottom` groups it with the paragraph right below as
+   one unit. */
+.intro__fevo-eyebrow{
+  font-family:var(--font-sans);
+  font-size:0.8rem; letter-spacing:0.03em;
+  color:var(--ink-dim);
+  margin:0 0 0.6rem;
+}
+/* Point 3: one step down from `.intro__p`'s clamp(1.15rem, 2.4vw, 1.5rem).
+   Color is deliberately left at `.intro__p`'s own `--ink-dim` rather than
+   dropped further -- `--ink-faint` (the only dimmer token) measures
+   ~2.9:1 against `--bg`, well under the 4.5:1 AA floor this exact file has
+   already gone out of its way to protect elsewhere (see `.intro__statement`
+   above), and this element's `opacity` is already owned by the Fade
+   scroll-reveal it's wrapped in ([data-fade].is-visible{opacity:1}), so a
+   second permanent opacity value here would just get overridden the
+   instant it scrolls into view. Size alone (smaller, not dimmer) is the
+   safe, real demotion. */
+.intro__fevo-lede{ font-size:clamp(1rem, 1.6vw, 1.15rem); }
+[data-fade].is-visible{ opacity:1; }
+
+/* ---------- work ---------- */
+/* STICKY-SIDEBAR RELEASE FIX: `.work__sidebar`'s `position:sticky` stays
+   pinned for as long as its containing block (`.work__layout`) is still
+   in the scrollable viewport range -- with the old 3rem (48px) of
+   trailing space here, the sidebar's own release point landed only ~53px
+   before `.chroma`'s own scroll-margin-adjusted landing spot (measured
+   live: at the exact scroll position SiteNav's "Contact Me" scroll lands
+   on, `.work__sidebar`'s bottom edge was still at y=53, a visible sliver
+   of it -- specifically its last item, "Ledgerline" -- still on screen,
+   floating above the section that had already scrolled into view below
+   it). Confirmed the sidebar fully releases (bottom <= 0) after only
+   ~60px more scroll, so the fix is simply giving `.work` enough trailing
+   space that the sidebar has always fully released before that landing
+   point is ever reached, not a z-index/stacking fix -- the two sections
+   weren't actually overlapping, `.work`'s own tail (with the sticky
+   sidebar mid-release) just hadn't finished scrolling away yet. */
+.work{ width:var(--wrap); margin:0 auto; padding-bottom:8rem; }
+.work__eyebrow{
+  font-family:var(--font-sans);
+  font-size:0.8rem; letter-spacing:0.03em;
+  color:var(--ink-dim);
+  margin:0 0 1.5rem;
+  padding-bottom:1rem;
+  border-bottom:1px solid var(--line);
+  position:relative;
+  z-index:60;
+}
+
+/* ---------- work-section cards, normal document flow ----------
+   Cards sit in completely normal document flow, one full-height section
+   after another -- no sticky/pin on the card itself, no JS-driven
+   transform/opacity/scale per scroll tick at the wrapper level (Addendum 5
+   restored real motion, but scoped to `.card__media` only -- see the
+   CARD DEPTH-LAYER PARALLAX comment above .card__media further down this
+   file, not this wrapper). `.stack__item` is a plain flex-centered section
+   sized to its own content (`.stack__frame` plus a small padding margin,
+   not forced to a full viewport height any more -- see the GAP FIX comment
+   below); `.stack__frame` just sizes/centers `.card` inside it. See
+   components/WorkSidebar.jsx for the section-scoped sticky sidebar
+   + IntersectionObserver scrollspy that sits beside this list
+   (`.work__layout`, above). */
+.stack{ list-style:none; margin:0; padding:0; min-width:0; }
+/* GAP FIX, ROUND 3 -- fix the section size, not the frame size (Ryan, after
+   round 2 stretched the frame to close the gap: "They're a little long on
+   desktop no?"). Round 2's mistake: forcing `min-height:100vh` on every
+   `.stack__item` and then inflating `.stack__frame` toward that same
+   height to shrink the leftover centering gap made the CARD itself
+   artificially tall -- fine for cards with a full-bleed `object-fit:cover`
+   image (Vault, PickTheOdds), which just crop differently, but visibly
+   wrong for Copia's card, where a centered phone shot on a flat backdrop
+   left a huge dead margin above the phone once the frame around it grew.
+   The actual fix is simpler: don't force each section to be a full
+   viewport tall in the first place. `.stack__item` has no `min-height`
+   here any more -- its height is just `.stack__frame`'s own (a normal,
+   un-stretched proportion, close to the original pre-round-2 value) plus
+   a small padding margin, so there's no leftover space left to create a
+   gap OR to stretch a card into. Applies at every width; the ≤640px
+   override below just tunes the same two numbers slightly smaller for
+   mobile. */
+.stack__item{
+  position:relative;
+  display:flex;
+  align-items:center;
+  padding:3vh 0;
+}
+.stack__item:first-child{ padding-top:2vh; }
+.stack__frame{
+  width:100%;
+  height:82vh;
+  display:flex;
+  align-items:center;
+}
+
+.card{
+  position:relative;
+  display:block;
+  width:100%; height:100%;
+  border-radius:22px;
+  /* CARD PARALLAX FIX: `overflow:hidden` establishes a "scroll container"
+     per the CSS Overflow spec (any box whose computed overflow isn't
+     `visible` on either axis) -- and `.card__media`'s `animation-timeline:
+     view()` below auto-resolves against the NEAREST ANCESTOR scroll
+     container, not necessarily the page. With `.card` itself qualifying,
+     the timeline was silently anchoring to `.card`'s own (never-scrolling)
+     box instead of the page scroller -- confirmed live via
+     `getComputedStyle`: the animated `transform` reported the exact same
+     near-zero value at two very different scroll positions, i.e. a stuck,
+     not-progressing timeline; not "too subtle to notice", genuinely inert.
+     `overflow:clip` clips identically for rendering purposes but is
+     explicitly excluded from the scroll-container definition (it disables
+     scrolling entirely, including programmatically), so `view()` correctly
+     walks past `.card` to the real page scroller instead. */
+  overflow:clip;
+  text-decoration:none;
+  background:var(--bg-raise);
+  border:1px solid var(--line);
+  box-shadow:0 40px 90px -30px rgba(0,0,0,0.65);
+}
+/* WEB QUALITY AUDIT FIX (high priority #1): visible keyboard focus ring for
+   the 5 project cards -- same outline treatment as .sitenav__link/.specular-
+   button above. Outline is unaffected by this element's own overflow:hidden
+   (it's painted outside the box's own clip, same as box-shadow above), so it
+   still shows even though .card clips its media/scrim children. */
+.card:focus-visible{
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+}
+/* CARD DEPTH-LAYER PARALLAX (Addendum 5, points 18-19): oversized 14% top/
+   bottom past the card's own edges so the parallax animation below always
+   has real pixels to reveal instead of exposing an empty gap -- `.card`'s
+   own `overflow:hidden` (above) clips the excess back down to the card's
+   rounded rect, same technique as a classic CSS parallax background. */
+.card__media{
+  position:absolute;
+  top:-14%; right:0; bottom:-14%; left:0;
+}
+.card__media--fx{
+  background:linear-gradient(135deg, var(--fx-a, #2a2a2f), var(--fx-b, #17171a));
+}
+.card__media img{
+  width:100%; height:100%; object-fit:cover; object-position:top;
+  display:block;
+}
+/* Point 18 -- restores real, continuous scroll-linked motion (the card
+   stack lost all of it in the previous "ATTIO-STYLE STICKY TAB BAR" round,
+   see build-log.md) WITHOUT any pin/scroll-jacking on the card itself
+   (point 19, the hard constraint that round violated in the opposite
+   direction with useCardStack's old pin-then-release choreography): the
+   CARD stays a plain, static, normal-flow block -- zero transform written
+   to it, by ANY mechanism, ever, in this build. Only this one background/
+   art layer *inside* it moves, at a different rate than the card's own
+   (native document) scroll rate, via a native CSS scroll-driven animation
+   (`animation-timeline: view()`) instead of a JS scroll listener or rAF
+   loop -- it runs entirely on the compositor thread, so it structurally
+   cannot block, pause, or capture the main thread's scroll handling, which
+   is exactly the guarantee point 19 asks for ("does scrolling ever pause,
+   jump, or get held by the animation?" -- with this mechanism the answer
+   is categorically no, not just "tested and it didn't"). `view()`'s
+   default range (element edge-to-edge through the nearest scrollport) is
+   used as-is -- no animation-range override needed for a "moves while the
+   card is anywhere on screen" effect. Gated behind two independent
+   conditions, not one: `@supports` targets modern Chrome (this project's
+   primary review context, per the task brief) and any other browser that
+   ships scroll-driven animations, leaving anything that doesn't with the
+   plain static (non-parallaxing, but not broken) media layer above --
+   graceful degradation, not a missing feature; and
+   `prefers-reduced-motion: no-preference` reuses the exact media-feature
+   query `usePrefersReducedMotion.js` reads in JS, so this CSS-only effect
+   is gated by the same signal as every other motion on this site, without
+   needing a JS class toggle to bridge the two. A JS rAF fallback (reading
+   getBoundingClientRect only, per the task's own performance-discipline
+   note) was deliberately NOT added on top of this for older/non-Chromium
+   browsers: the task brief explicitly sanctions targeting modern Chrome
+   only ("since that's the primary review context"), and CSS already
+   expresses this exact effect natively, so a second, redundant JS
+   implementation of the same motion would be real added surface area
+   (another scroll subscription, another cleanup path) for zero benefit in
+   the browser this build is actually verified against. */
+@supports (animation-timeline: view()){
+  @media (prefers-reduced-motion: no-preference){
+    .card__media{
+      animation: card-media-parallax linear;
+      animation-timeline: view();
+    }
+  }
+}
+@keyframes card-media-parallax{
+  from{ transform:translateY(-7%); }
+  to{ transform:translateY(7%); }
+}
+/* CARD SCRIM FIX: the previous stops (0.82 at the bottom edge, fully
+   transparent by 68% up) were tuned against a short meta block (just
+   client/title/tag/byline, no stats or CTA) -- measured live against the
+   PickTheOdds card (real content, real bug): its `.card__meta` (stats +
+   CTA make it the tallest metadata block of the 6 cards) sits with its
+   own top edge 44% up from the card's bottom, and its title's top edge
+   36% up -- both land in a zone the old gradient had already faded to
+   ~0.3-0.4 opacity, nowhere near enough contrast against a bright,
+   detailed photographic screenshot (sports-betting UI, mostly light
+   pixels). Vault (the only other card with stats + a CTA) hit the same
+   bug for the same structural reason. Fixed by holding near-opaque much
+   further up the card (still 0 by the very top, so the hero art is
+   never fully obscured) rather than tuning to whichever card happened to
+   be checked when this was first written. */
+.card__scrim{
+  position:absolute; inset:0;
+  background:linear-gradient(to top,
+    rgba(6,6,8,0.96) 0%,
+    rgba(6,6,8,0.86) 35%,
+    rgba(6,6,8,0.55) 60%,
+    rgba(6,6,8,0) 85%);
+  pointer-events:none;
+}
+.card__index{
+  position:absolute; top:1.5rem; left:1.75rem; z-index:2;
+  font-family:var(--font-sans);
+  font-weight:500;
+  font-size:1.05rem;
+  letter-spacing:0.04em;
+  color:rgba(244,242,236,0.55);
+  pointer-events:none;
+}
+/* HIRING-MANAGER REVIEW FIX: signals "unbuilt concept" at a glance, before
+   a fast skim ever reaches the byline text that already says the same
+   thing in words. Deliberately NOT the hoarded accent color (--accent is
+   reserved for the one real primary action per card, the CTA) and
+   deliberately a quiet outline, not a filled pill -- a badge announcing
+   "this isn't real yet" shouldn't visually compete with or outrank a
+   real project's own client/title. Mirrors `.card__index`'s own top
+   offset on the opposite corner so the two never collide. */
+.card__badge{
+  position:absolute; top:1.5rem; right:1.75rem; z-index:2;
+  font-family:var(--font-sans);
+  font-weight:600;
+  font-size:0.68rem;
+  letter-spacing:0.02em;
+  color:rgba(244,242,236,0.6);
+  border:1px solid rgba(244,242,236,0.22);
+  border-radius:999px;
+  padding:0.3rem 0.7rem;
+  background:rgba(10,10,12,0.4);
+  pointer-events:none;
+}
+/* CARD 01 INDEX-NUMBER COLLISION FIX: PickTheOdds's screenshot media has its
+   own "PICKTHEODDS" wordmark baked into the top-left corner, directly under
+   the default .card__index position -- a chip/scrim alone wasn't enough
+   fix, because at the card's rendered size the wordmark's footprint is wide
+   enough (measured via getBoundingClientRect at 1400px viewport: logo runs
+   roughly card-relative x 20-200px, y 14-57px) that any small badge kept in
+   that literal top-left corner still sat partly on top of the logo's own
+   pixels -- still a collision, just a chip-shaped one. The screenshot's
+   left rail is otherwise a quiet, uniform dark panel between the logo and
+   its first nav item ("Arbitrage"), so this pushes the numeral straight
+   down into that gap -- same left inset as every other card's .card__index
+   (keeps left-edge alignment consistent across all 5 cards), just enough
+   lower to clear the logo entirely. The dark-glass chip (same rgba(10,10,12,*)
+   family as .card__cta's pill, smaller/unbordered since this is a passive
+   mark, not a button) stays as a second line of defense so "01" is legible
+   even if the underlying screenshot ever changes. Opt-in via ProjectCard's
+   indexBackdrop prop; cards 02-05 (generative art, no on-image logo) don't
+   use it and are unaffected. */
+.card__index--backdrop{
+  top:4.75rem;
+  padding:0.3rem 0.6rem;
+  border-radius:8px;
+  background:rgba(10,10,12,0.55);
+  color:rgba(244,242,236,0.75);
+}
+
+/* CTA RELOCATION: was `position:absolute; top:1.5rem; right:1.75rem` --
+   floated over whatever media sat behind it (covered part of PickTheOdds's
+   own screenshot UI). Now a normal in-flow element inside `.card__meta`
+   (see `.card__meta-cta` below), so it can never again land on raw media --
+   it's laid out below the stats, inside the same guaranteed-opaque scrim
+   block as the rest of the card's text. */
+.card__meta-cta{ margin-top:1.25rem; }
+.card__cta{
+  display:inline-flex; align-items:center; justify-content:center;
+  font-family:var(--font-sans);
+  font-size:0.8rem; letter-spacing:0.02em;
+  color:var(--accent);
+  border:1px solid var(--accent);
+  padding:0.5rem 1rem;
+  border-radius:999px;
+  background:rgba(10,10,12,0.45);
+}
+/* Real Specular Button CTA (reactbits.dev, PickTheOdds card only — the one
+   deliberate, non-repeating button treatment; every card gets exactly one
+   CTA mechanism, never two -- Addendum 2, point 9). Checked live against
+   Star Border and reactbits' other button components before swapping --
+   see build-log.md. A shader-driven specular rim light that tracks the
+   cursor and brightens on proximity/hover instead of Star Border's fixed
+   comet-dot glow -- more presence, still restrained (only lights up near
+   the cursor, dormant otherwise). Compound selectors below
+   (.card__cta--specular ...) so they win over SpecularButton.css's own
+   bare `.specular-button` rules regardless of CSS import order.
+   DOUBLE-BUTTON HOVER FIX: this wrapper only reset `background`/`padding`
+   from the plain-pill `.card__cta` base rule, leaving that rule's own
+   `border:1px solid var(--accent)` (opaque) live on the outer <div> --
+   sitting concentrically 1-2px outside the SpecularButton's own
+   independently-bordered pill (below), so two overlapping pill outlines
+   rendered at once, worse on hover when the shader's rim light brightened
+   the inner one. `border:none` here removes the wrapper's own border so
+   only the SpecularButton's single pill (border + shader glow) renders. */
+.card__cta--specular{ background:transparent; padding:0; border:none; }
+.card__cta--specular .specular-button{
+  border:1px solid rgba(226,167,60,0.4);
+}
+.card__cta--specular .specular-button__label{
+  font-family:var(--font-sans);
+  font-size:0.8rem;
+  letter-spacing:0.02em;
+}
+
+.card__meta{
+  position:absolute; left:0; right:0; bottom:0; z-index:2;
+  padding:2rem 1.75rem 1.75rem;
+  min-width:0;
+}
+.card__client{
+  font-family:var(--font-sans);
+  font-weight:700;
+  font-size:0.8rem;
+  letter-spacing:0.02em;
+  color:var(--ink);
+  margin:0 0 0.4rem;
+}
+/* CARD FONTS FIX: Ryan asked for the card titles to read "more SF Pro" --
+   same complaint/resolution as TAG STYLING FIX and INDEX NUMBER STYLING FIX
+   above (Fraunces italic reads editorial/handwritten-adjacent, not clean).
+   Moved off Fraunces onto the same --font-sans (Geist) token everything
+   else on the card already uses, at a heavier weight + tightened tracking
+   so it still reads as the card's headline (the most prominent line in
+   card__meta) rather than competing with .card__client's 700-weight
+   kicker. Fraunces/italic is intentionally kept everywhere else it was
+   already judged as the deliberate contrast note (hero subhead, intro
+   body) -- this fix is scoped to the cards only, per instruction. */
+.card__title{
+  font-family:var(--font-sans);
+  font-weight:700;
+  letter-spacing:-0.01em;
+  font-size:clamp(1.35rem, 2.6vw, 2.1rem);
+  line-height:1.15;
+  margin:0 0 0.5rem;
+  max-width:32ch;
+  color:var(--ink);
+}
+.card__tag{
+  font-family:var(--font-sans);
+  font-weight:600;
+  font-size:0.85rem;
+  letter-spacing:0.02em;
+  color:var(--ink-dim);
+  margin:0 0 0.5rem;
+}
+.card__byline{
+  font-size:0.85rem;
+  color:var(--ink-dim);
+  margin:0 0 0.25rem;
+}
+.card__stats{
+  display:flex; gap:1.5rem; flex-wrap:wrap;
+  margin:1.1rem 0 0;
+  padding-top:1rem;
+  border-top:1px solid var(--line);
+  max-width:36rem;
+}
+.stat{ min-width:5.5rem; }
+.stat__num{
+  display:block;
+  font-family:var(--font-sans);
+  font-weight:700;
+  font-size:1.3rem;
+  color:var(--ink);
+}
+/* StatNumber.jsx -- tabular-nums so the digit glyphs don't jitter the
+   surrounding layout width as the count-up animates through intermediate
+   values (e.g. "1" vs "4,900" are very different widths in a proportional
+   face). */
+.stat-number{ font-variant-numeric:tabular-nums; }
+.stat__label{
+  display:block;
+  font-size:0.74rem;
+  color:var(--ink-dim);
+  line-height:1.3;
+  margin-top:0.15rem;
+}
+
+/* ---------- freelance & client work ----------
+   ROUND 2 (Ryan, on round 1's Ebony Hair Revival screenshot: "I hate that,
+   that is one of my worst designs. How about just having the upwork logo
+   in black and white, a quick stat board of my freelance success and maybe
+   a couple of quotes"). No screenshot any more -- a real monochrome Upwork
+   wordmark (see FreelanceWork.jsx for how it was sourced), a real stat row
+   reusing this site's own `.stat`/`.stat__num`/`.stat__label` pattern
+   (StatNumber.jsx -- same count-up component the case studies use, not a
+   one-off), and the same two real quotes as before. Still deliberately
+   smaller/quieter than `.work` above -- modest heading, no card stack. */
+.freelance{
+  width:var(--wrap); margin:0 auto;
+  padding:2rem 0 6rem;
+}
+.freelance__eyebrow{
+  font-family:var(--font-sans);
+  font-size:0.8rem; letter-spacing:0.03em;
+  color:var(--ink-dim);
+  margin:0 0 0.75rem;
+}
+.freelance__lede{
+  font-family:var(--font-serif); font-style:italic; font-weight:500;
+  font-size:clamp(1.05rem, 2vw, 1.25rem);
+  line-height:1.55;
+  color:var(--ink-dim);
+  max-width:62ch;
+  margin:0 0 2rem;
+}
+.freelance__proof-row{
+  display:flex; align-items:center; gap:1rem;
+  margin-bottom:1.75rem;
+}
+.freelance__upwork-logo{
+  height:22px; width:auto;
+  display:block;
+  opacity:0.92;
+}
+.freelance__badge{
+  font-family:var(--font-sans);
+  font-size:0.72rem; font-weight:600; letter-spacing:0.02em;
+  color:var(--ink-dim);
+  border:1px solid var(--line-strong);
+  border-radius:999px;
+  padding:0.3rem 0.75rem;
+}
+.freelance__stats{
+  display:flex; flex-wrap:wrap;
+  gap:1.75rem 2.5rem;
+  padding:1.5rem 0;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  margin-bottom:2.5rem;
+}
+.freelance__quotes{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:1.5rem 2.5rem;
+}
+.freelance__proof{
+  margin-top:2rem;
+  font-size:0.85rem;
+  color:var(--ink-dim);
+}
+.freelance__proof a{ color:var(--ink); text-decoration:underline; text-underline-offset:3px; }
+@media (max-width:640px){
+  .freelance__quotes{ grid-template-columns:1fr; }
+}
+
+/* ---------- chroma contact ---------- */
+/* CHROMA CONTACT SECTION -- NINTH ROUND, a fully specified rebuild. Ryan,
+   rejecting the ring-based build outright ("looks cheap"): "Replace it
+   with a planet-horizon arc: an enormous sphere rising from the bottom of
+   the section, where only the crown is visible, lit by a soft additive
+   rim glow that sweeps through deep color... Do not improvise the
+   technique. Build exactly the layer stack described below." This block
+   is a literal implementation of that spec -- the exact `--rim`
+   conic-gradient, the exact 4-layer stack, the exact mask math on layer
+   4, the exact grain/striation texture passes -- not a reinterpretation
+   of it. Every "do not" in the brief is honored by construction: no
+   box-shadow/drop-shadow for the glow, no single-circle-one-blur, no
+   linear-gradient for the hue sweep, no evenly-spaced rainbow (apex is
+   near-white, both limbs fade to transparent before the horizon), no
+   visible bottom edge (circle diameter is 200vw against a much shallower
+   remaining section height), no load animation. See ChromaContact.jsx --
+   every div there maps to one required layer here, not decorative markup. */
+.chroma{
+  position:relative;
+  min-height:100vh;
+  overflow:hidden;
+  background:#050505;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:6rem 1.5rem;
+  /* SiteNav.jsx smooth-scroll fix: `--sitenav-safe-top` is the nav pill's
+     own measured bottom edge (JS, SiteNav.jsx -- clamp()/vw-driven, so not
+     a fixed number here). Adding 24px keeps the section clear of the pill
+     rather than landing tucked directly under it -- applies to the
+     browser's own native fragment-jump/focus-scroll behavior; SiteNav's
+     custom rAF scroll computes and applies this same offset itself (see
+     `handleContactClick`), since scroll-margin-top has no effect on a
+     manual `window.scrollTo` call. Fallback (88px) covers the brief window
+     before SiteNav's effect has run. */
+  scroll-margin-top: calc(var(--sitenav-safe-top, 88px) + 24px);
+}
+/* Vertical striations -- behind the arc, very faint, masked to fade
+   toward the section edges rather than reading as a hard-edged texture
+   block. */
+.chroma__striations{
+  position:absolute; inset:0;
+  z-index:0;
+  background-image:repeating-linear-gradient(
+    90deg,
+    rgba(255,255,255,0.012) 0 1px,
+    transparent 1px 3px
+  );
+  mask-image:radial-gradient(ellipse 70% 60% at 50% 50%, #000 0%, #000 55%, transparent 100%);
+  -webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 50%, #000 0%, #000 55%, transparent 100%);
+  pointer-events:none;
+}
+/* The arc -- REBUILT AS A SINGLE CANVAS (ChromaCanvas.jsx), replacing an
+   11-layer CSS/mask stack that failed twice in ways that were structural,
+   not tuning: a dark seam along the rim that survived three separate
+   fixes (see build-log.md, "CHROMA: DARK-SEAM BISECTION" and its two
+   follow-up rounds), and flares that rendered as vertical spokes because
+   an annulus mask wasn't confining a conic gradient correctly. Root
+   cause named by Ryan directly: too many independently-antialiased mask
+   edges across separate divs, composited with `plus-lighter`, downsampled
+   by a supersample wrapper -- structurally too many boundaries that must
+   agree to the sub-pixel. One `<canvas>` element means one rasterization
+   pass and zero mask boundaries to misalign. See ChromaCanvas.jsx for the
+   full drawing/particle-system implementation; this stylesheet only needs
+   to position it. */
+.chroma__canvas-wrapper{
+  /* Sized to the section (ChromaCanvas.jsx's own ResizeObserver measures
+     this element, not either canvas -- their own width/height are set
+     imperatively in JS, in device pixels, which is why it can't be the
+     thing being observed for size). Deliberately NO z-index here: `position`
+     plus a z-index would establish a new stacking context for this div,
+     which would trap its two canvas children's own z-index values (below)
+     inside it -- the whole wrapper would then compete with `.chroma__scrim`
+     as a single unit instead of sandwiching the scrim between the two
+     canvases the way the two-canvas split (ChromaCanvas.jsx) requires. */
+  position:absolute; inset:0;
+  pointer-events:none;
+}
+/* Two-canvas split (ChromaCanvas.jsx): bloomCanvas (z-index 1, static,
+   drawn once per resize) and rimCanvas (z-index 3, the rim stroke plus
+   every particle, redrawn every animation frame) are both direct children
+   of `.chroma__canvas-wrapper` above and both need `position:absolute` to
+   overlap exactly at its top-left rather than stacking vertically in
+   normal flow. `.chroma__scrim` (z-index 2, below) sits between them. */
+.chroma__canvas{
+  position:absolute;
+  top:0; left:0;
+  display:block;
+}
+.chroma__canvas--bloom{ z-index:1; }
+.chroma__canvas--rim{ z-index:3; }
+/* Scrim -- Ryan, form-legibility fix: the Name/Email fields sit in the
+   halo's brightest region, where the lit canvas background is now
+   roughly the same luminance as the field's own near-invisible fill/
+   border, so the fields had effectively disappeared. Explicitly NOT a
+   border-alpha raise or a canvas dim -- both fight the halo instead of
+   separating from it, and dimming the canvas costs the look. Instead, a
+   soft radial darkening sitting between the two arc canvases (two-canvas
+   split, ChromaCanvas.jsx): above `.chroma__canvas--bloom` (z-index 1) and
+   below `.chroma__canvas--rim` (z-index 3), so it dims only the wash, never
+   the sharp rim stroke or the particles -- Ryan: "the rim should be at full
+   brightness along its entire length." z-index (2), not DOM order, is what
+   actually places it in that stack now.
+   Sized generously (not tightly fit to the form) specifically so its own
+   falloff has room to be gradual -- an ellipse this soft, spread across a
+   box this much larger than the content it's protecting, has no edge to
+   perceive as a shape; a tighter box would force a harder-looking falloff
+   at the same opacity values.
+
+   POSITION -- `top` uses `--scrim-anchor-y` (set inline in
+   ChromaContact.jsx from the Name field's own measured vertical midpoint,
+   same measurement pass as `crownY`), not `top:50%` centered on the whole
+   section. First implementation used the section center and FAILED its
+   own acceptance test: rigorous measurement (real canvas pixel data +
+   exact CSS alpha-compositing math, not a screenshot -- see build-log.md)
+   found the ellipse's darkest point landing ~150px below the Name field,
+   because the section's geometric center factors in the message textarea
+   and button below the field too, pulling it down. `367px` below is
+   0.54 * 680px (this box's own height * the ellipse's own "at 50% 54%"
+   anchor, per Ryan's exact gradient) -- subtracting it is what places
+   THAT specific point of the ellipse (not the box's own edge) at the
+   measured anchor.
+
+   ALPHA and WIDTH -- both raised from Ryan's given 760px-wide box /
+   0.44-0.32-0.14 stops, and both measured into place, not guessed. Vertical
+   position turned out to already be excellent once anchored (see above --
+   the label lands within 1px of the ellipse's own vertical center), but
+   the LABEL TEXT is left-aligned within a 460px-wide field, so it sits
+   ~220px horizontally off that same center -- at the box width/alpha
+   Ryan gave (and even after raising alpha alone to 0.80, still keeping his
+   760px box), that horizontal offset lands the text at only ~48-60% of
+   peak alpha, short of 4.5:1 against this canvas's actual measured
+   brightness there. Solved numerically (real canvas pixel data + exact
+   CSS alpha-compositing math against the label's own true rendered
+   position, not assumed): widening to 1200px moves that same 220px offset
+   to a smaller FRACTION of the ellipse's now-larger horizontal radius,
+   closer to its peak -- combined with alpha raised to 0.88/0.64/0.29 (same
+   stop positions, same ratio between them as Ryan's own numbers), clears
+   4.5:1 with a small margin. Still centered ~600px each side at this
+   width, well short of where the rim's own limbs start fading (Fix 2,
+   computed independently per viewport -- confirmed this doesn't touch that
+   zone). All of this is reported with its exact numbers in build-log.md,
+   not applied silently. */
+.chroma__scrim{
+  position:absolute;
+  left:50%;
+  top:calc(var(--scrim-anchor-y, 50%) - 367px);
+  transform:translateX(-50%);
+  width:min(1200px, 92vw);
+  height:min(680px, 82vh);
+  z-index:2;
+  pointer-events:none;
+  background:radial-gradient(ellipse 58% 56% at 50% 54%,
+    rgba(0,0,0,0.88) 0%,
+    rgba(0,0,0,0.64) 42%,
+    rgba(0,0,0,0.29) 68%,
+    transparent 82%);
+}
+/* Content -- eyebrow, heading, form, all centered, max-width 460px, above
+   the canvas. The heading no longer sits at the top of the section --
+   `.chroma` centers this whole block vertically (and the arc's crown
+   backlights it from below, positioned in the gap between heading and
+   first field via the JS-measured `crownY` passed to `<ChromaCanvas>`),
+   so it reads as sitting directly above the form, not pinned to the top
+   the way every earlier round had it. */
+.chroma__content{
+  position:relative; z-index:4;
+  width:100%;
+  max-width:460px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  /* Widened from 48px: the crown's arc is positioned dynamically (see
+     ChromaContact.jsx) to always clear both the heading and the first
+     field, including the glow's own soft-fade reach below it -- that
+     clearance genuinely needs more room than 48px gave it, at any
+     viewport width, not just narrow ones. */
+  gap:112px;
+  text-align:center;
+}
+.chroma__heading-block{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:1rem;
+}
+.chroma__eyebrow{
+  font-family:var(--font-sans);
+  font-size:11px; letter-spacing:0.04em;
+  color:#E5A445;
+  margin:0;
+}
+.chroma__heading{
+  font-family:var(--font-sans);
+  font-weight:700;
+  font-size:clamp(34px, 4.4vw, 52px);
+  line-height:1.06;
+  letter-spacing:-0.015em;
+  color:#F5F3F0;
+  margin:0;
+}
+/* Contact form -- Name + Email side by side, Message below, amber submit
+   pill, then a small muted "email directly" note. See ChromaContact.jsx
+   for why submission is a client-built `mailto:` link (no backend on this
+   static site) rather than an in-page AJAX post. */
+.chroma__form{
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  gap:1rem;
+  text-align:left;
+}
+.chroma__form-row{
+  display:flex;
+  gap:1rem;
+  flex-wrap:wrap;
+}
+/* FORM GAP FIX (Ryan, screenshot: "these forms on mobile are SO far
+   apart"): `flex:1 1 160px` sets a 160px FLEX-BASIS, which only means
+   "160px wide" while this field is a flex item of a row-direction
+   container (`.chroma__form-row`, Name/Email side by side on desktop).
+   `.chroma__field` is also a direct flex item of `.chroma__form` itself
+   (always `flex-direction:column`, for the Message field, at every
+   width) and becomes a flex item of `.chroma__form-row` once THAT flips
+   to `flex-direction:column` at the ≤640px breakpoint below (Name/Email
+   stacked on mobile) -- in both those column contexts the exact same
+   160px basis is read as a HEIGHT instead, forcing every field into a
+   160px-tall box regardless of how much content (one line of label +
+   input) it actually needs, which is the dead space in the screenshot.
+   `min-width` is direction-agnostic -- it constrains width whether the
+   field's main axis is horizontal or vertical -- so it keeps the same
+   "don't get narrower than 160px" behavior in the row context without
+   ever being misread as a height. */
+.chroma__field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  flex:1 1 auto;
+  min-width:160px;
+}
+.chroma__field span{
+  font-family:var(--font-sans);
+  font-size:12px;
+  color:rgba(245,243,240,0.62);
+}
+.chroma__field input,
+.chroma__field textarea{
+  font-family:var(--font-sans);
+  font-size:0.95rem;
+  color:#F5F3F0;
+  background:rgba(255,255,255,0.045);
+  /* 0.13 -> 0.18 -- Ryan: the fields sit in the halo's brightest region,
+     where the lit canvas background is now roughly the same luminance as
+     this border, so it had effectively disappeared. A border-alpha raise
+     alone can't fix that (it would need to go implausibly high to fight a
+     bright halo directly) -- the real fix is `.chroma__scrim` (see its
+     own comment, right before `.chroma__content` below), a soft radial
+     darkening between the canvas and this content that gives the border
+     something consistently dark to sit against. This small lift is only
+     meaningful with that scrim in place behind it, not a fix on its own. */
+  border:1px solid rgba(255,255,255,0.18);
+  border-radius:10px;
+  padding:12px 14px;
+  resize:vertical;
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  transition:border-color 0.2s ease, box-shadow 0.2s ease;
+}
+/* Placeholder opacity bumped from the 0.38 first specified to 0.48 --
+   0.38 measures ~3.3:1 against this field's own fill (rgba white 0.045
+   over the section's #050505 base), short of the 4.5:1 the fix itself
+   requires; 0.48 clears it (~4.6:1) while staying visually "faint
+   placeholder," not full label weight. */
+.chroma__field input::placeholder,
+.chroma__field textarea::placeholder{
+  color:rgba(245,243,240,0.48);
+}
+.chroma__field input:hover,
+.chroma__field textarea:hover{
+  border-color:rgba(255,255,255,0.2);
+}
+.chroma__field input:focus-visible,
+.chroma__field textarea:focus-visible{
+  outline:none;
+  border-color:rgba(229,164,69,0.75);
+  box-shadow:0 0 0 3px rgba(229,164,69,0.14);
+}
+.chroma__cta{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  align-self:flex-start;
+  font-family:var(--font-sans);
+  font-weight:600;
+  font-size:0.95rem;
+  color:var(--accent-ink);
+  background:#E5A445;
+  border:none;
+  cursor:pointer;
+  padding:0.85rem 1.9rem;
+  border-radius:999px;
+  text-decoration:none;
+  transition:transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow:0 20px 45px -22px rgba(229,164,69,0.55);
+}
+.chroma__cta:hover{
+  transform:translateY(-2px);
+  box-shadow:0 26px 55px -22px rgba(229,164,69,0.7);
+}
+.chroma__cta:focus-visible{
+  outline:2px solid var(--ink);
+  outline-offset:4px;
+}
+.chroma__form-note{
+  margin:0;
+  font-size:0.8rem;
+  color:var(--ink-faint);
+}
+.chroma__form-note a{ color:var(--ink-dim); text-decoration:underline; text-underline-offset:2px; }
+@media (max-width:640px){
+  .chroma{ padding:5rem 1.25rem; }
+  .chroma__form-row{ flex-direction:column; }
+}
+
+/* ---------- footer ---------- */
+.site-footer{
+  width:var(--wrap); margin:0 auto;
+  padding:3rem 0 4rem;
+  border-top:1px solid var(--line);
+  display:flex; justify-content:space-between; align-items:baseline; gap:1rem; flex-wrap:wrap;
+}
+.site-footer p{ margin:0; font-size:0.85rem; color:var(--ink-dim); }
+.site-footer a{ color:var(--ink); text-decoration:underline; text-underline-offset:3px; }
+
+/* ---------- custom cursor ----------
+   Sitewide, mouse-only. Gated behind the same (hover:hover) and
+   (pointer:fine) feature query CustomCursor.jsx uses to decide whether to
+   mount at all -- on any touch/coarse-pointer device (including every
+   width tested via public/harness.html) this whole block is inert and the
+   native cursor is never touched. Colors are the existing ink/accent
+   tokens, expressed as rgba() at their hex values the same way
+   --line/--line-strong already do in this file -- no new colors.
+
+   CURSOR FIX (build-log.md "CURSOR FIX + ..."): `cursor:none` used to apply
+   UNCONDITIONALLY inside the feature-query block above, with no tie back to
+   whether the custom cursor was actually alive and tracking. Any bug (past
+   or future) that stopped CustomCursor.jsx from confirming visibility left
+   BOTH the native cursor hidden (this rule) AND the custom dot/ring hidden
+   (their own `.is-visible` gate never re-added) -- zero visible pointer,
+   which is exactly what got reported. `cursor:none` is now scoped to
+   `body.cursor-active`, a class CustomCursor.jsx only ever applies while a
+   *recent, confirmed* mousemove has been seen (and removes the instant that
+   stops being true -- see the watchdog in CustomCursor.jsx). So the native
+   OS cursor is the default, always-safe fallback: it can only ever be
+   hidden while the custom cursor has independently proven it's live, and it
+   reappears automatically the moment that stops being provably true, with
+   no dependency on any single event handler firing correctly. */
+@media (hover: hover) and (pointer: fine){
+  body.cursor-active{ cursor:none; }
+  body.cursor-active a, body.cursor-active button, body.cursor-active [role="button"]{ cursor:none; }
+}
+.cursor-dot, .cursor-ring{
+  position:fixed; top:0; left:0; width:0; height:0;
+  pointer-events:none;
+  z-index:10000;
+  will-change:transform;
+  /* THIRD ROUND: `mix-blend-mode` moved here from the `__shape` children
+     below. `will-change:transform` on THIS element promotes it to its own
+     compositing layer for the per-frame position updates -- with the
+     blend-mode declared on a DESCENDANT instead, Chrome was resolving the
+     difference blend inside that promoted layer's own (nearly empty)
+     local backdrop rather than against the real page content behind it,
+     which is why the ring/dot kept rendering as plain near-white instead
+     of inverting, even though the technique itself tested correctly in
+     isolation (an injected div with no will-change'd ancestor). Declaring
+     the blend-mode on the SAME element that owns the transform/will-change
+     keeps both properties resolved together in one compositing operation,
+     correctly blended against the true backdrop. */
+  mix-blend-mode:difference;
+}
+.cursor-ring.is-hovering{
+  /* Hover always happens over a specific, predictable button/link
+     background, not an arbitrary backdrop -- normal blending there lets
+     the real branded accent gold show through as intended. */
+  mix-blend-mode:normal;
+}
+/* NAV BLACK-BAR FIX -- see CustomCursor.jsx's GLASS_ZONE_SELECTOR comment
+   for the full root-cause writeup. `.sitenav`'s `backdrop-filter:blur()`
+   is a real, known compositing conflict with an overlapping
+   `mix-blend-mode` layer that's repainting every frame (this cursor, on
+   every mousemove) -- it can intermittently resolve the blur as solid
+   black instead of translucent. `.sitenav`'s own background is always a
+   known dark tone, so plain `normal` blending (no inversion needed) still
+   keeps the dot/ring clearly visible there -- same fallback the `.is-
+   hovering` rule above already relies on. Applies to BOTH dot and ring
+   (unlike `.is-hovering`, which is ring-only) since the dot's `difference`
+   blend was never reset by anything before this fix, and the artifact
+   isn't specific to which shape is on screen at a given moment. */
+.cursor-dot.is-over-glass,
+.cursor-ring.is-over-glass{
+  mix-blend-mode:normal;
+}
+.cursor-dot__shape, .cursor-ring__shape{
+  position:absolute; top:0; left:0;
+  border-radius:50%;
+  opacity:0;
+  transform:translate(-50%,-50%) scale(1);
+  transition:opacity .2s ease, transform .25s cubic-bezier(.2,.8,.2,1), background-color .2s ease, border-color .2s ease;
+}
+.cursor-dot.is-visible .cursor-dot__shape,
+.cursor-ring.is-visible .cursor-ring__shape{ opacity:1; }
+/* COLOR-ADAPTIVE CURSOR (follow-up round): Ryan's words -- "the mouse...
+   needs to be responsive in color, like you lose it on the way to the
+   background." The dot/ring used a fixed near-white fill/border
+   (`var(--ink)`, `rgba(244,242,236,...)`), which is exactly the ONE color
+   that vanishes against the new hero reveal panel's off-white background
+   (and would vanish just as badly against any other light section added
+   later). `mix-blend-mode:difference` against a solid white fill/border
+   makes the cursor read as an automatic color INVERSE of whatever's
+   directly underneath it -- white on black stays white, white on the
+   white reveal panel renders black, white on a mid-tone renders its
+   complement -- guaranteed-visible on any background without hand-tuning
+   a color per section. Scoped to the RESTING state only; `.is-hovering`
+   below explicitly resets to `mix-blend-mode:normal` with the real accent
+   gold, since that state is always triggered over a specific, predictable
+   piece of UI (a button/link), not an arbitrary backdrop, where the
+   deliberate branded accent color reads better than an inverted one.
+
+   SECOND ROUND -- still not readable in practice. The blend technique
+   itself was re-verified live (an injected same-CSS test swatch renders
+   unambiguously black-on-white / white-on-black in this exact page), so
+   the mechanism isn't the problem -- the ORIGINAL 6px dot and 1.5px-thin
+   ring outline were just too little painted area for a per-pixel invert
+   to read as visible at a glance, especially on a near-white (not pure
+   white) backdrop where the inverted result, while technically correct,
+   is a dark grey rather than a stark black. Fixed by giving the invert
+   more to work with: a bigger dot, a thicker ring border, AND a faint
+   translucent fill inside the ring (still reads as a hollow ring, not a
+   solid disc, but now a meaningful painted area gets inverted, not just a
+   hairline) -- this is a robustness fix on top of the correct technique,
+   not a replacement for it. */
+.cursor-dot__shape{
+  width:9px; height:9px;
+  background:#fff;
+}
+.cursor-ring__shape{
+  width:36px; height:36px;
+  border:2.5px solid #fff;
+  background:rgba(255,255,255,0.28);
+}
+.cursor-ring.is-hovering .cursor-ring__shape{
+  transform:translate(-50%,-50%) scale(1.7);
+  border-color:var(--accent);
+  background:rgba(226,167,60,0.14);
+}
+.cursor-dot.is-hovering .cursor-dot__shape{
+  transform:translate(-50%,-50%) scale(0);
+}
+
+/* ---------- responsive tiers ---------- */
+@media (max-width:640px){
+  :root{ --wrap:88vw; }
+  /* HERO REVEAL REBUILD: no padding here on purpose -- `.hero__panel`
+     is `position:absolute; inset:0`, sized off `.hero`'s own padding
+     box, so any padding here would leave a black frame showing around
+     the reveal panel's white background at this width. */
+  .hero{ min-height:92svh; }
+  /* MOBILE GAP FIX, ROUND 2 -- same "size the section to the frame,
+     don't stretch the frame to the section" fix as the base rule above
+     (Ryan first flagged the mobile gap, then round 2's frame-inflation
+     approach read as cards being too tall on desktop -- the same
+     mechanism would eventually have looked wrong here too). No min-height
+     override needed any more since the base rule no longer sets one. */
+  .stack__item{ padding:2vh 0; }
+  .stack__frame{ height:76vh; }
+  .card{ border-radius:16px; }
+  .card__index{ top:1.1rem; left:1.25rem; font-size:0.9rem; }
+  .card__index--backdrop{ top:3.6rem; padding:0.25rem 0.5rem; }
+  .card__badge{ top:1.1rem; right:1.25rem; font-size:0.6rem; padding:0.25rem 0.55rem; }
+  .card__cta{ font-size:0.7rem; padding:0.4rem 0.8rem; }
+  .card__meta-cta{ margin-top:1rem; }
+  .card__meta{ padding:1.5rem 1.25rem 1.35rem; }
+  .card__title{ max-width:none; }
+  .card__stats{ gap:1rem; }
+  .stat{ min-width:4.4rem; }
+  .sitenav{ padding:0.5rem 0.5rem 0.5rem 1.05rem; gap:0.6rem; max-width:94vw; }
+  .sitenav__mark{ font-size:0.85rem; }
+  /* Role dropped at mobile widths, not the whole byline -- "Ryan Craun" is
+     the one thing worth keeping always-visible in the tight pill; role
+     context is still one tap away via View Resume/Contact Me. Re-checked
+     live at 390/430px via public/harness.html once built (this project's
+     established true-mobile-width verification tool, since this session's
+     window-resize floors around ~958px) rather than assumed. */
+  .sitenav__byline{ padding-left:0.6rem; gap:0.35rem; font-size:0.66rem; }
+  .sitenav__byline-role, .sitenav__byline-dot{ display:none; }
+  .sitenav__links{ gap:0.6rem; }
+  .sitenav__link{ font-size:0.72rem; }
+  .sitenav__link--resume{ padding:0.4rem 0.85rem; }
+  /* MOBILE DECLUTTER (Ryan, screenshot: "header looks flooded on mobile")
+     -- see SiteNav.jsx's own comment on this class. LinkedIn stays in the
+     nav at every width above this breakpoint; at/below it, the footer
+     (present on every page, every width) is the one place to reach it. */
+  .sitenav__link--linkedin{ display:none; }
+  /* MOBILE NAV FIX (follow-up round): the horizontal sticky pill-strip
+     sidebar below (`top:3.6rem`, its own frosted background/border) sat
+     close enough under `.sitenav`'s own fixed pill to read as a second nav
+     bar once scrolled -- Ryan's words: "it still looks like we get that
+     double top nav bar. Let's go ahead and get rid of that and just let
+     the user scroll." Removed outright at this width, not repositioned:
+     no secondary sticky nav on mobile at all, cards just scroll normally
+     under the one `.sitenav` pill. Desktop's left-column rail (above,
+     outside this media query) is unaffected -- it never overlapped
+     `.sitenav` in the first place (see Addendum 5 point 17's own
+     structural reasoning), this fix is mobile-only. */
+  .work__layout{ grid-template-columns:1fr; row-gap:0; }
+  .work__sidebar{ display:none; }
+}
+
+/* ---------- Copia teaser card art (card 01) ----------
+   ANTI-SLOP PASS, ROUND 3 -- flat on purpose. Three decorative background
+   layers were tried and rejected on this card (a two-blob radial-gradient
+   mesh, a quieter single-corner glow, a route-and-stations motif). Every
+   invented layer read as slop regardless of shape or size, so this is now
+   a flat solid base (close to the real sampled app background, `#302020`,
+   see this case study's own "visual system" swatches, darkened slightly to
+   read as a card surface) plus the grain texture below. The real phone
+   screenshot is the card's entire visual interest. */
+.copia-teaser{
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  background:#1c1310;
+}
+.copia-teaser__grain{
+  position:absolute; inset:0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(244,242,236,0.05) 1px, transparent 0);
+  background-size: 3px 3px;
+  mix-blend-mode: overlay;
+  opacity:0.6;
+}
+
+/* PickTheOdds card art -- RESOLUTION CAP (see CardArt.jsx's comment on
+   PickTheOddsCardArt). Was a plain full-bleed `<img>` inside `.card__media`
+   (`object-fit:cover`, stretched to the card's full size); now a solid
+   backdrop (`#101020`, the real base-background hex this case study's own
+   "visual system" section sampled directly from this exact screenshot) with
+   the real screenshot centered on top, capped at its own native pixel size
+   so it's never upscaled past what it actually is. */
+.picktheodds-teaser{
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  background:#101020;
+  overflow:hidden;
+}
+.picktheodds-teaser img{
+  display:block;
+  width:auto; height:auto;
+  max-width:min(100%, 647px);
+  max-height:100%;
+  object-fit:contain;
+  object-position:center;
+}
+/* THUMBNAIL ROUND (Ryan: "needs to be the BEST looking screen on a REAL
+   iphone, not a shitty looking mockup iphone") -- this card used to center
+   an empty `PhoneFrame` placeholder (deleted this round, along with
+   PhoneFrame.jsx/VisualPlaceholder.jsx -- both fully unused once real
+   screenshots replaced every placeholder slot on this site). Now centers a
+   real `PhoneShot`, same bezel component the case study itself uses.
+   Sized off viewport height, not width, because the card itself is sized
+   in vh (`.stack__frame height:84vh / 78vh on mobile`) -- 25vh keeps the
+   phone a consistent ~64-70% of the card's own height across breakpoints,
+   the same ratio verified for the old placeholder (900px-tall desktop ->
+   ~487px phone in a ~756px card; 390x844 mobile -> ~457px phone in a
+   ~658px card) -- still clearly the card's dominant visual element without
+   going edge-to-edge. `margin:0` overrides PhoneShot's own default top
+   margin (meant for a figure sitting in document flow, not centered in a
+   flex box). */
+.copia-teaser .phone-shot{ width: clamp(190px, 25vh, 300px); margin:0; }
+
+/* ---------- phone-shot (real screenshots, device-bezel treatment) ----------
+   See PhoneShot.jsx's own comment -- a metal-edge chassis + rounded glass
+   sized for a real, readable screenshot, with no Dynamic Island of its own
+   (every real capture already has one baked in). Originally built to
+   replace `.cs-shot--phone`'s plain bordered rectangle on the case-study
+   page (Ryan: "so it looks more real"); now also the home-page teaser's
+   thumbnail (`.copia-teaser .phone-shot` above), which used to center an
+   empty `PhoneFrame` placeholder before real screenshots existed. */
+.phone-shot{
+  width:100%; max-width:360px;
+  margin:2rem auto 0;
+}
+.phone-shot__body{
+  position:relative;
+  width:100%;
+  aspect-ratio: 1206 / 2622; /* the real capture's own ratio -- no letterboxing */
+  border-radius: 2.6rem;
+  padding: 9px;
+  background: linear-gradient(160deg, #3c3c41, #0a0a0c 60%);
+  box-shadow: 0 30px 60px -22px rgba(0,0,0,0.65), inset 0 0 0 1px rgba(244,242,236,0.09);
+}
+.phone-shot__screen{
+  position:relative; width:100%; height:100%;
+  border-radius: 2.05rem; overflow:hidden;
+  border:1px solid rgba(244,242,236,0.07);
+  background:var(--bg-raise);
+}
+.phone-shot__screen img{ display:block; width:100%; height:100%; object-fit:cover; }
+.phone-shot__caption{
+  margin-top:0.85rem;
+  font-family:var(--font-sans);
+  font-size:0.78rem;
+  color:var(--ink-dim);
+  text-align:left;
+}
+/* Side-by-side pair (Decision 5's scan-flow) -- smaller so two comfortably
+   fit the decision column without feeling cramped or forcing a wrap. */
+.cs-decision__visual .phone-shot{ max-width:280px; margin-top:0; }
+/* Gallery grid cells -- centered within its own cell, no extra top margin
+   (the section/grid already spaces itself). */
+.cs-gallery .phone-shot{ margin-top:0; }
+
+/* ---------- App Store badge ---------- */
+.appstore-badge{
+  display:inline-flex;
+  border-radius:8px;
+  overflow:hidden;
+  cursor:default;
+}
+.appstore-badge img{ display:block; width:120px; height:40px; }
+
+/* ---------- scroll-reveal (shared mechanism, Copia case-study page) ----------
+   Reuses useScrollFade -- the exact hook already driving Intro.jsx's
+   `data-fade`/`.is-visible` pattern -- but through its OWN class (`.cs-reveal`)
+   rather than the bare `[data-fade]` attribute, so its base/visible opacity
+   values can never collide with `.intro__statement`/`.intro__p`'s own via
+   selector specificity or source order. Same mechanism, independent rule. */
+.cs-reveal{
+  opacity:0;
+  transform:translateY(22px);
+  transition:opacity 0.7s ease, transform 0.7s cubic-bezier(.22,1,.36,1);
+  will-change:opacity, transform;
+}
+.cs-reveal.is-visible{ opacity:1; transform:translateY(0); }
+
+/* ---------- Copia case study page ---------- */
+.cs{ width:var(--wrap); margin:0 auto; padding:7rem 0 5rem; }
+.cs-section{ padding:3.5rem 0; border-top:1px solid var(--line); }
+.cs-section__heading{
+  font-family:var(--font-sans); font-weight:700; letter-spacing:-0.01em;
+  font-size:clamp(1.5rem, 3.2vw, 2.1rem);
+  color:var(--ink);
+  margin:0 0 1rem;
+}
+.cs-section__lede{
+  font-family:var(--font-serif); font-style:italic; font-weight:500;
+  font-size:clamp(1.05rem, 2vw, 1.25rem);
+  line-height:1.55;
+  color:var(--ink-dim);
+  max-width:62ch;
+  margin:0 0 1.5rem;
+}
+.cs-trust p, .cs-testers p, .cs-swatches > p, .cs-next > p{
+  font-size:1rem; line-height:1.7; color:var(--ink-dim);
+  max-width:68ch;
+  margin:0 0 1.25rem;
+}
+
+/* hero */
+.cs-hero{ padding-top:1rem; padding-bottom:1rem; }
+.cs-hero__back{
+  display:inline-block;
+  font-family:var(--font-sans); font-size:0.8rem; color:var(--ink-dim);
+  text-decoration:none;
+  margin-bottom:2rem;
+  transition:color 0.2s ease;
+}
+.cs-hero__back:hover{ color:var(--ink); }
+.cs-hero__eyebrow{
+  font-family:var(--font-sans); font-size:0.8rem; letter-spacing:0.03em;
+  color:var(--accent);
+  margin:0 0 1rem;
+}
+.cs-hero__title{
+  font-family:var(--font-sans); font-weight:700; letter-spacing:-0.02em;
+  font-size:clamp(2.25rem, 6.5vw, 4rem);
+  line-height:1.05;
+  color:var(--ink);
+  margin:0 0 1.25rem;
+  max-width:20ch;
+}
+.cs-hero__line{
+  font-family:var(--font-serif); font-style:italic; font-weight:500;
+  font-size:clamp(1.1rem, 2.2vw, 1.4rem);
+  line-height:1.5;
+  color:var(--ink-dim);
+  max-width:52ch;
+  margin:0 0 1.75rem;
+}
+.cs-hero__frame{
+  display:flex; flex-wrap:wrap; align-items:center; gap:0.6rem;
+  font-family:var(--font-sans); font-size:0.82rem; color:var(--ink-dim);
+  padding-bottom:2rem;
+  border-bottom:1px solid var(--line);
+  margin-bottom:2rem;
+}
+.cs-hero__dot{
+  width:3px; height:3px; border-radius:50%;
+  background:var(--ink-faint);
+}
+.cs-hero__cta{ display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
+/* WEB QUALITY AUDIT FIX (high priority #5): --ink-faint on --bg is 2.87:1,
+   below the 4.5:1 AA text minimum -- and unlike the transient fade-in dip
+   (#7 below), this text sits at rest, permanently below threshold, for as
+   long as the page is visible. Swapped to --ink-dim (~8:1) which is already
+   the tone this page uses for every other secondary-but-still-real piece of
+   copy (.cs-hero__frame, .cs-hero__line, etc.). */
+.cs-hero__cta-note{
+  font-family:var(--font-sans); font-size:0.75rem; color:var(--ink-dim);
+}
+
+/* problems */
+.cs-problems__list{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+  gap:1.75rem 2rem;
+}
+/* ROW-ALIGNMENT FIX: in a CSS Grid row, each `<li>` (heading + paragraph)
+   is only as tall as its own content -- the grid doesn't align a heading
+   in one column against a heading in another, so a heading that wraps to
+   2 lines pushes ONLY that column's paragraph down, while every other
+   column's paragraph starts higher, up against a 1-line heading. Reserving
+   2 lines of height on every heading (`line-height` set explicitly here so
+   `min-height` is a precise multiple of it, not guessing at an inherited
+   default) means a 1-line heading and a 2-line heading occupy the same
+   vertical space, so every paragraph in the row starts at the same Y
+   regardless of which column's heading happened to wrap. */
+.cs-problems__list h3{
+  font-family:var(--font-sans); font-weight:700; font-size:1rem;
+  color:var(--ink);
+  line-height:1.3;
+  min-height:2.6em;
+  margin:0 0 0.4rem;
+}
+.cs-problems__list p{
+  font-size:0.9rem; line-height:1.55; color:var(--ink-dim);
+  margin:0;
+}
+
+/* jump list */
+.cs-jumplist__list{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr));
+  gap:0.6rem 1.5rem;
+  counter-reset: decision;
+}
+.cs-jumplist__list li{ counter-increment: decision; }
+.cs-jumplist__list a{
+  display:flex; align-items:baseline; gap:0.6rem;
+  font-family:var(--font-sans); font-size:0.92rem; font-weight:500;
+  color:var(--ink-dim);
+  text-decoration:none;
+  padding:0.55rem 0;
+  border-bottom:1px solid var(--line);
+  transition:color 0.2s ease, border-color 0.2s ease;
+}
+.cs-jumplist__list a::before{
+  content: counter(decision, decimal-leading-zero);
+  font-family:var(--font-sans); font-weight:600; font-size:0.78rem;
+  color:var(--accent);
+  flex-shrink:0;
+}
+.cs-jumplist__list a:hover{ color:var(--ink); border-color:var(--line-strong); }
+
+/* decisions */
+.cs-decision{
+  padding:2.5rem 0;
+  border-top:1px solid var(--line);
+  scroll-margin-top: 6rem;
+}
+/* PADDING FIX: excludes `.cs-decision--feature` -- it was matching too,
+   since Decision 1 is both `.cs-decision` AND `.cs-decision--feature`,
+   and `:first-child` (specificity 0,2,0) beats the feature card's own
+   `padding:2rem...` (0,1,0), zeroing its top padding back to 0 even
+   though the feature card has its own bordered/backgrounded box that
+   needs real internal breathing room regardless of being first -- unlike
+   a plain `.cs-decision`, which has no box of its own and genuinely
+   shouldn't add extra space above the jumplist right before it. */
+.cs-decision:first-child:not(.cs-decision--feature){ border-top:none; padding-top:0; }
+.cs-decision__kicker{
+  font-family:var(--font-sans); font-size:0.72rem; letter-spacing:0.02em;
+  color:var(--ink-faint);
+  margin:0 0 0.6rem;
+}
+.cs-decision h3{
+  font-family:var(--font-sans); font-weight:700; letter-spacing:-0.01em;
+  font-size:clamp(1.3rem, 2.6vw, 1.7rem);
+  color:var(--ink);
+  margin:0 0 1rem;
+  max-width:34ch;
+}
+.cs-decision p{
+  font-size:0.98rem; line-height:1.7; color:var(--ink-dim);
+  max-width:68ch;
+  margin:0 0 1.1rem;
+}
+.cs-decision p strong{ color:var(--ink); font-weight:600; }
+.cs-decision p em{ color:var(--ink); font-style:italic; }
+.cs-decision__visual{
+  display:flex; flex-wrap:wrap; gap:1.5rem;
+  margin-top:1.5rem;
+}
+/* Two real screenshots side by side inside a decision (Copia's scan-flow
+   pair) -- `.cs-shot` has no width of its own (its `img` is 100% of
+   WHATEVER contains it), so as a flex child it needs an explicit basis to
+   sit as two even columns instead of one collapsing to content-width. */
+.cs-decision__visual .cs-shot{ flex:1 1 300px; margin-top:0; }
+
+/* A curated multi-image showcase (Copia's "More of the app" -- recipes +
+   onboarding, real screenshots with no single decision to sit inside).
+   Generic, reusable by any case study with more than a couple of real
+   captures to show as a set rather than one at a time. */
+.cs-gallery{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:1.5rem;
+  margin-top:1.5rem;
+}
+.cs-gallery .cs-shot{ margin-top:0; }
+/* Decision 1 (the reversal) gets prominent treatment, per the source doc's
+   own "single most persuasive thing on this page" framing and the
+   research's corroborating "keep reversals prominent" finding -- a subtle
+   accent-hairline card, not a loud full accent fill (hoarded-hue discipline
+   still applies: this is the ONE decision that earns extra visual weight,
+   not a second recurring accent pattern). */
+.cs-decision--feature{
+  padding:2rem 2rem 2.5rem;
+  border:1px solid rgba(226,167,60,0.28);
+  border-radius:20px;
+  background:rgba(226,167,60,0.035);
+}
+.cs-decision--feature .cs-decision__kicker{ color:var(--accent); }
+
+/* ---------- Vault case study -- brand-local accent ---------- */
+/* Vault's own product accent (#ff8a3d, doc gives #FF6B1A -- warmed slightly
+   to sit correctly against this page's near-black, matching how the doc's
+   own screenshots actually render) is scoped to `.cs-vault` alone, never
+   the page-wide `--accent` token every other case study/section uses --
+   this is the one place on the whole site that borrows a CLIENT's brand
+   color instead of the portfolio's own, same as Copia's coral/persimmon
+   swatch language stayed scoped to Copia's own section. */
+.cs-vault{ --vault-accent:#ff8a3d; --vault-success:#3ddb85; }
+
+.cs-hero__live-link{ display:inline-block; text-decoration:none; }
+
+/* Impact-upfront stat strip -- sits in the hero itself, above the fold,
+   before any narrative section. See VaultCaseStudy.jsx's own comment at
+   the call site for why: a portfolio piece is skimmed before it's read.
+   Reuses the site's generic `.stat`/`.stat__num`/`.stat__label`, just a
+   hero-scoped wrapper with its own top divider and tighter top margin. */
+.cs-hero__stats{
+  display:flex;
+  flex-wrap:wrap;
+  gap:1.75rem 2.25rem;
+  margin-top:2rem;
+  padding-top:1.5rem;
+  border-top:1px solid var(--line);
+}
+
+/* Real screenshots -- generic bordered-figure treatment across every case
+   study (renamed off "cs-vault__shot" during the PickTheOdds round so a
+   second page could reuse it without a misleading class name), sized to
+   read clearly without needing a device frame. */
+.cs-shot{
+  margin:2rem 0 0;
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:hidden;
+  background:var(--bg-raise);
+}
+.cs-shot img{ display:block; width:100%; height:auto; }
+.cs-shot figcaption{
+  padding:0.85rem 1.1rem;
+  font-family:var(--font-sans);
+  font-size:0.78rem;
+  color:var(--ink-dim);
+  border-top:1px solid var(--line);
+}
+.cs-hero .cs-shot{ margin-top:2.25rem; }
+/* RESOLUTION CAP -- see PickTheOddsCaseStudy.jsx's comment on this modifier
+   for why. Caps the whole bordered figure at the source image's own native
+   width (647px) and centers it, instead of letting `.cs-shot`'s default
+   `width:100%`/`height:auto` stretch it past its real resolution. */
+.cs-shot--native-res{
+  max-width:647px;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+/* Decision 1's money shot -- the same guide phase at all four hint levels,
+   Vault's own written example (see VaultCaseStudy.jsx's file-top comment
+   for why this is text, not a screenshot of the live toggle). Four equal
+   columns collapsing to one on mobile; the "Full Guide" column
+   gets the brand accent hairline so the eye reads left-to-right as
+   increasing detail, not four interchangeable boxes. */
+.cs-hint-grid{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:1px;
+  margin-top:1.5rem;
+  background:var(--line);
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:hidden;
+}
+.cs-hint-card{
+  background:var(--bg-raise);
+  padding:1.1rem 1.15rem 1.35rem;
+  display:flex;
+  flex-direction:column;
+  gap:0.65rem;
+}
+.cs-hint-card__label{
+  font-family:var(--font-sans);
+  font-size:0.68rem;
+  font-weight:700;
+  letter-spacing:0.02em;
+  color:var(--ink-dim);
+  align-self:flex-start;
+  padding:0.2rem 0.55rem;
+  border-radius:999px;
+  border:1px solid var(--line-strong);
+}
+.cs-hint-card p{
+  margin:0;
+  font-size:0.85rem;
+  line-height:1.55;
+  color:var(--ink-dim);
+}
+.cs-hint-card--full{ background:rgba(255,138,61,0.06); }
+.cs-hint-card--full .cs-hint-card__label{
+  color:var(--vault-accent);
+  border-color:rgba(255,138,61,0.45);
+}
+.cs-hint-card--full p{ color:var(--ink); }
+.cs-hint-grid__caption{
+  margin:0.85rem 0 1.5rem;
+  font-size:0.78rem;
+  color:var(--ink-faint);
+}
+
+/* Decision 3's pipeline diagram -- real content (5 real steps from the
+   source doc), not a generic placeholder shape like VisualPlaceholder's
+   diagram mode -- this project actually has the steps to draw. */
+.cs-pipeline{
+  display:flex;
+  align-items:stretch;
+  flex-wrap:wrap;
+  gap:0.75rem;
+  margin:1.75rem 0;
+}
+.cs-pipeline__step{
+  flex:1 1 150px;
+  background:var(--bg-raise);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:1rem 1.1rem 1.2rem;
+}
+.cs-pipeline__step--live{
+  border-color:rgba(255,138,61,0.45);
+  background:rgba(255,138,61,0.06);
+}
+.cs-pipeline__num{
+  display:block;
+  font-family:var(--font-sans);
+  font-size:0.7rem;
+  font-weight:700;
+  letter-spacing:0.08em;
+  color:var(--vault-accent);
+  margin-bottom:0.45rem;
+}
+/* Same row-alignment fix as `.cs-problems__list h3` above -- flexbox
+   `align-items:stretch` (the default, see `.cs-pipeline` above) stretches
+   each STEP's own box to match the row's tallest step, but that only adds
+   empty space at the BOTTOM of a shorter box; it does nothing to align
+   the heading/paragraph boundary WITHIN each step, so a 2-line step title
+   still pushes only that step's own paragraph down relative to its
+   neighbors. Reserving 2 lines of heading height fixes that the same way. */
+.cs-pipeline__step h4{
+  margin:0 0 0.4rem;
+  font-family:var(--font-sans);
+  font-size:0.95rem;
+  line-height:1.3;
+  min-height:2.6em;
+  color:var(--ink);
+}
+.cs-pipeline__step p{ margin:0; font-size:0.78rem; line-height:1.5; color:var(--ink-dim); }
+.cs-pipeline__arrow{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--ink-faint);
+  font-size:1.1rem;
+  padding:0 0.1rem;
+}
+
+/* Visual-system swatches -- generic across every case study (originally
+   Vault-only, renamed off "cs-vault-*" during the PickTheOdds case study
+   round so a second page could reuse it without a misleading class name).
+   Pass a real hex via the `--sw-color` inline style when a project has a
+   confirmed value, so the chip renders FILLED; omit it (or add `--outline`)
+   for a value that isn't confirmed yet, which renders as a dashed, unfilled
+   ring -- same honesty contract as VisualPlaceholder, just mixed within one
+   row instead of an all-or-nothing set. */
+.cs-swatch-grid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:1.5rem;
+  margin-top:1.5rem;
+}
+.cs-swatch{ display:flex; align-items:center; gap:0.65rem; max-width:15rem; }
+.cs-swatch__chip{
+  width:2rem; height:2rem;
+  border-radius:999px;
+  flex-shrink:0;
+  background:var(--sw-color, transparent);
+  border:1px solid var(--line-strong);
+}
+.cs-swatch--outline .cs-swatch__chip{ background:transparent; border-style:dashed; }
+.cs-swatch__label{ font-size:0.78rem; color:var(--ink-dim); line-height:1.4; }
+
+/* DataBar.jsx -- reusable horizontal bar-chart row (label / track+fill /
+   value), used wherever a case study compares a handful of real numbers
+   at a glance instead of asking the reader to scan a table. Label column
+   fixed-ish, track flexes, value column right-aligned and never wraps --
+   the same 3-part grid regardless of which section calls it. */
+.data-bar{
+  display:grid;
+  grid-template-columns:minmax(120px, 13rem) 1fr auto;
+  align-items:center;
+  gap:0.9rem;
+  padding:0.55rem 0;
+}
+.data-bar__label{
+  font-size:0.82rem;
+  color:var(--ink-dim);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.data-bar__track{
+  display:block;
+  height:8px;
+  border-radius:999px;
+  background:var(--line);
+  overflow:hidden;
+}
+.data-bar__fill{
+  display:block;
+  height:100%;
+  border-radius:999px;
+  background:var(--ink-faint);
+  transition:width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.data-bar--highlight .data-bar__fill{ background:var(--vault-accent, var(--accent)); }
+.data-bar--highlight .data-bar__label{ color:var(--ink); font-weight:600; }
+.data-bar__value{
+  font-family:var(--font-sans);
+  font-variant-numeric:tabular-nums;
+  font-size:0.82rem;
+  color:var(--ink);
+  white-space:nowrap;
+}
+
+/* Stats row -- reuses the site's own generic `.stat`/`.stat__num`/
+   `.stat__label` (already used by ProjectCard's PickTheOdds tiles), just a
+   new flex wrapper local to this section. */
+.cs-stats__row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:2rem;
+  margin:1.5rem 0 0;
+}
+.cs-stats__note{
+  margin:1.5rem 0 0;
+  padding-top:1.25rem;
+  border-top:1px solid var(--line);
+  font-size:0.82rem;
+  line-height:1.6;
+  color:var(--ink-dim);
+}
+
+/* "Impact, in detail" section -- subheads inside this ScrollReveal for
+   its two chart groups (device split, CTR-by-guide), one step down from
+   `.cs-section__heading` since they're internal to this one section, not
+   page-level headings of their own. */
+.cs-impact__subhead{
+  margin:2.25rem 0 0.35rem;
+  font-family:var(--font-sans);
+  font-size:1.05rem;
+  color:var(--ink);
+}
+.cs-impact__sublede{ margin:0 0 0.5rem; font-size:0.85rem; color:var(--ink-dim); }
+.cs-databar-group{
+  margin-top:0.75rem;
+  padding-top:0.25rem;
+  border-top:1px solid var(--line);
+}
+.cs-databar-group .data-bar + .data-bar{ border-top:1px solid var(--line); }
+
+/* Pull-quote -- a real client testimonial, attributed, set apart from the
+   surrounding prose rather than folded into a paragraph as if Ryan wrote
+   it. Introduced for the PickTheOdds case study but generic (no page-
+   scoped tokens), reusable anywhere a case study has a real quote to show. */
+.cs-quote{
+  border-left:3px solid var(--accent);
+  padding:0.15rem 0 0.15rem 1.5rem;
+  margin:2rem 0 0;
+}
+.cs-quote p{
+  font-family:var(--font-serif); font-style:italic; font-weight:500;
+  font-size:clamp(1.15rem, 2.2vw, 1.4rem);
+  line-height:1.5;
+  color:var(--ink);
+  margin:0 0 0.75rem;
+  max-width:50ch;
+}
+.cs-quote cite{
+  display:block;
+  font-style:normal;
+  font-family:var(--font-sans);
+  font-size:0.82rem;
+  color:var(--ink-dim);
+}
+
+/* app store badge repeated at page end */
+.cs-next__cta{ display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap; margin-top:0.5rem; }
+.cs-next__back{
+  font-family:var(--font-sans); font-size:0.85rem; color:var(--ink-dim);
+  text-decoration:none;
+  transition:color 0.2s ease;
+}
+.cs-next__back:hover{ color:var(--ink); }
+
+@media (max-width:640px){
+  .cs{ padding:6.5rem 0 4rem; }
+  .cs-hero__title{ max-width:none; }
+  .cs-hero__frame{ font-size:0.76rem; }
+  .cs-problems__list{ grid-template-columns:1fr; }
+  .cs-jumplist__list{ grid-template-columns:1fr; }
+  .cs-gallery{ grid-template-columns:1fr; }
+  .cs-decision--feature{ padding:1.5rem 1.25rem 1.75rem; }
+  .cs-decision__visual{ gap:1rem; }
+  .cs-hint-grid{ grid-template-columns:1fr; }
+  .cs-pipeline{ flex-direction:column; }
+  .cs-pipeline__arrow{ transform:rotate(90deg); padding:0.1rem 0; }
+  .cs-stats__row{ gap:1.25rem 1.75rem; }
+  .cs-hero__stats{ gap:1.25rem 1.75rem; }
+  .data-bar{ grid-template-columns:1fr; gap:0.35rem; }
+  .data-bar__value{ justify-self:start; }
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce){
+  .wash{ display:none; }
+  *{ scroll-behavior:auto !important; }
+  .cs-reveal{ transition:none; }
+}

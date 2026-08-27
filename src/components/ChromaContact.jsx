@@ -1,0 +1,174 @@
+import { useEffect, useRef, useState } from 'react';
+import ChromaCanvas from './ChromaCanvas';
+import { supabase } from '@/lib/supabaseClient';
+
+// These margins protect the arc's crown from ever crossing the heading or
+// the first field -- the crown is measured (below), not hand-picked, so
+// it physically cannot overlap either one regardless of screen size.
+const FIELD_CLEARANCE_PX = 20;
+const HEADING_CLEARANCE_PX = 20;
+
+// CHROMA CONTACT SECTION (build-log.md). The arc was originally an 11-div
+// CSS/mask stack, per an earlier fully-specified technical brief -- it
+// failed twice for structural reasons a CSS mask stack can't fix by
+// tuning (a dark seam across three fix attempts; flares that rendered as
+// vertical spokes) and was rebuilt as a single `<canvas>` (see
+// ChromaCanvas.jsx, which now owns essentially all of the arc's own
+// visual logic). This component's remaining job is the section shell,
+// the crown-Y measurement (below, unchanged across every round), and the
+// actual page content -- eyebrow/heading/form.
+export default function ChromaContact() {
+  const [status, setStatus] = useState('idle');
+  const sectionRef = useRef(null);
+  const headingRef = useRef(null);
+  const firstFieldRef = useRef(null);
+  // Was a CSS custom property (`--crown-y`) set imperatively via ref, back
+  // when the arc was CSS. Now the arc is `<ChromaCanvas>`, which computes
+  // its circle geometry in JS, not CSS -- so this needs to be real React
+  // state (a number, CSS px) it can receive as a prop, not just a style
+  // side-effect. The measurement logic itself (find the actual gap between
+  // the heading and the first field, clamp the crown inside it) is
+  // unchanged from every prior round.
+  const [crownY, setCrownY] = useState(null);
+  // Scrim-legibility fix: the scrim's own darkest point needs to land ON
+  // the Name field, not on the section's geometric center -- measured
+  // directly (this field's own vertical midpoint), not derived from
+  // crownY with a guessed offset, since the gap between the crown and the
+  // first field isn't a fixed distance (it depends on heading height,
+  // viewport, the same clamping `updateCrownY` already does). Verified
+  // this actually matters: with the scrim centered on the section instead,
+  // rigorous contrast measurement (real canvas pixels + exact CSS
+  // compositing math, not a screenshot) found the darkest point of the
+  // ellipse landing ~150px below the Name field, nowhere near where it
+  // was needed.
+  const [scrimAnchorY, setScrimAnchorY] = useState(null);
+
+  useEffect(() => {
+    const updateCrownY = () => {
+      const section = sectionRef.current;
+      const heading = headingRef.current;
+      const field = firstFieldRef.current;
+      if (!section || !heading || !field) return;
+      const sectionTop = section.getBoundingClientRect().top;
+      const headingBottom = heading.getBoundingClientRect().bottom - sectionTop;
+      const fieldRect = field.getBoundingClientRect();
+      const fieldTop = fieldRect.top - sectionTop;
+      const minY = headingBottom + HEADING_CLEARANCE_PX;
+      const maxY = fieldTop - FIELD_CLEARANCE_PX;
+      const idealMid = (headingBottom + fieldTop) / 2;
+      const nextCrownY = maxY >= minY ? Math.min(Math.max(idealMid, minY), maxY) : (minY + maxY) / 2;
+      setCrownY(nextCrownY);
+      setScrimAnchorY(fieldTop + fieldRect.height / 2);
+    };
+    updateCrownY();
+    window.addEventListener('resize', updateCrownY);
+    // Re-measure once web fonts finish loading -- the heading's rendered
+    // height (and therefore the gap) can shift after the initial paint.
+    document.fonts?.ready?.then(updateCrownY).catch(() => {});
+    return () => window.removeEventListener('resize', updateCrownY);
+  }, []);
+
+  // REAL SUBMISSION (Ryan: "will probably use supabase for the be[nd]" --
+  // answers the earlier "does this actually submit, or just open my email
+  // app" question). Was a `mailto:` redirect only -- the visitor's own
+  // email client opened with a pre-filled draft they still had to send
+  // themselves, not a real submission, and it silently did nothing if they
+  // had no default mail client configured. Now inserts directly into a
+  // Supabase table (see supabaseClient.js / .env.example / build-log.md for
+  // the table + RLS policy to create). Falls back to the original `mailto:`
+  // behavior when `supabase` is null -- i.e. `.env.local` hasn't been set
+  // up yet, or a deploy target hasn't configured the env vars -- so the
+  // form keeps working through that gap instead of breaking outright.
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const name = form.name.value.trim();
+    const email = form.email.value.trim();
+    const message = form.message.value.trim();
+
+    if (!supabase) {
+      const subject = encodeURIComponent(name ? `Portfolio contact from ${name}` : 'Portfolio contact');
+      const body = encodeURIComponent(`${message}\n\nFrom ${name}${email ? ` (${email})` : ''}`);
+      window.location.href = `mailto:craunryan@gmail.com?subject=${subject}&body=${body}`;
+      setStatus('sent');
+      return;
+    }
+
+    setStatus('sending');
+    const { error } = await supabase.from('contact_submissions').insert({ name, email, message });
+    if (error) {
+      setStatus('error');
+      return;
+    }
+    form.reset();
+    setStatus('sent');
+  };
+
+  return (
+    <section className="chroma" id="chroma-contact" ref={sectionRef}>
+      {/* Behind the arc: very faint vertical striations, masked to fade
+          toward the section edges. */}
+      <div className="chroma__striations" aria-hidden="true" />
+      {/* The arc -- a single canvas (see ChromaCanvas.jsx). Replaces an
+          11-div CSS/mask stack (glow layers, occluder, rim, core,
+          specular, flare) that failed twice for structural reasons: a
+          dark seam that survived three separate fixes, and flares that
+          rendered as vertical spokes because a mask wasn't confining a
+          conic gradient. One rasterization pass, no mask boundaries left
+          to disagree with each other -- see build-log.md and
+          ChromaCanvas.jsx's own top comment for the full account. */}
+      <ChromaCanvas crownY={crownY} />
+      {/* Scrim -- form-legibility fix: sits between ChromaCanvas's two
+          stacked canvases (bloom below, rim+particles above -- see
+          ChromaCanvas.jsx's own top comment for the two-canvas split).
+          Z-INDEX, not DOM order, is what actually sandwiches it there now
+          (both canvases carry their own z-index; this element can render
+          anywhere in this markup and still land in between) -- it can stay
+          here, right after `<ChromaCanvas>`, purely because that reads
+          clearly next to the content it protects. See index.css for why
+          this and not a border-alpha raise or a canvas dim, and for
+          `--scrim-anchor-y` (measured above, not hand-picked). */}
+      <div
+        className="chroma__scrim"
+        aria-hidden="true"
+        style={scrimAnchorY != null ? { '--scrim-anchor-y': `${scrimAnchorY}px` } : undefined}
+      />
+      {/* Content sits above the canvas (and the scrim). */}
+      <div className="chroma__content">
+        <div className="chroma__heading-block">
+          <p className="chroma__eyebrow">Get in touch</p>
+          <h2 id="chroma-heading" className="chroma__heading" ref={headingRef}>
+            Let&rsquo;s build something
+            <br />
+            worth using.
+          </h2>
+        </div>
+        <form className="chroma__form" onSubmit={handleSubmit} aria-labelledby="chroma-heading">
+          <div className="chroma__form-row">
+            <label className="chroma__field" ref={firstFieldRef}>
+              <span>Name</span>
+              <input type="text" name="name" autoComplete="name" required />
+            </label>
+            <label className="chroma__field">
+              <span>Email</span>
+              <input type="email" name="email" autoComplete="email" required />
+            </label>
+          </div>
+          <label className="chroma__field">
+            <span>Message</span>
+            <textarea name="message" rows={4} required />
+          </label>
+          <button type="submit" className="chroma__cta" disabled={status === 'sending'}>
+            {status === 'sending' ? 'Sending…' : 'Send message'}
+          </button>
+          <p className="chroma__form-note" role="status">
+            {status === 'sent' && (supabase ? "Thanks — I'll get back to you soon." : 'Opening your email app with this message filled in…')}
+            {status === 'error' && 'Something went wrong. Please email directly: '}
+            {(status === 'idle' || status === 'sending') && 'Or email directly: '}
+            {status !== 'sent' && <a href="mailto:craunryan@gmail.com">craunryan@gmail.com</a>}
+          </p>
+        </form>
+      </div>
+    </section>
+  );
+}
