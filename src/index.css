@@ -742,6 +742,36 @@ a{ color:inherit; }
     rgba(6,6,8,0) 85%);
   pointer-events:none;
 }
+/* COPIA CARD OVERRIDE (Ryan: "the padding is still not fixed on mobile or
+   on desktop... the actual app has no padding within the mock-up
+   picture" -- this was never a phone-shot bezel/padding bug at all,
+   confirmed by measuring the real render: the phone-shot's own image
+   (copia-home-dark.jpg, already a dark UI) spans 16.9%-83.1% down this
+   card, and the shared `.card__scrim` above -- correctly calibrated for
+   Vault/PickTheOdds's full-bleed screenshots + their own tall stat+CTA
+   metadata blocks (see that rule's own comment) -- already reaches 55%
+   black opacity by 40% down and 86% by 65% down. Stacked on an
+   already-dark image, that crushes almost the entire phone mockup to
+   flat black -- which is exactly why no amount of bezel-ring-contrast
+   tuning (the previous two rounds on this bug) ever fixed it: the bezel
+   was never the problem, the whole image being crushed under a scrim
+   tuned for a differently-shaped card was. Confirmed live, not guessed:
+   `.card__meta` here only starts at 67.5% down (Copia has no stats/CTA
+   row, so its own metadata block is shorter than Vault/PickTheOdds's),
+   so the shared gradient's darkening was never actually needed until
+   well past where it was already at 55%+ opacity. This override keeps
+   the phone's own display zone (16.9%-83.1%) essentially untouched and
+   only starts real darkening around where this card's actual text
+   begins, holding the same overall shape/strength the shared rule uses
+   -- just shifted to fit THIS card's composition instead of one tuned
+   for a different one. */
+#work-copia .card__scrim{
+  background:linear-gradient(to top,
+    rgba(6,6,8,0.96) 0%,
+    rgba(6,6,8,0.86) 10%,
+    rgba(6,6,8,0.55) 25%,
+    rgba(6,6,8,0) 45%);
+}
 .card__index{
   position:absolute; top:1.5rem; left:1.75rem; z-index:2;
   font-family:var(--font-sans);
@@ -1004,7 +1034,17 @@ a{ color:inherit; }
    every div there maps to one required layer here, not decorative markup. */
 .chroma{
   position:relative;
-  min-height:100vh;
+  /* VIEWPORT-UNIT FIX: `100vh` (the old fixed viewport unit) is measured
+     against iOS Safari's toolbar-COLLAPSED height -- taller than what's
+     actually visible whenever the toolbar IS showing, a well-known class
+     of iOS Safari layout bug. `.hero.hero--reveal` (above) already uses
+     `100svh` (the small/always-visible viewport) for exactly this reason
+     -- `.chroma` was inconsistent with its own sibling section. Matched
+     here so this section's real rendered height (which the JS crown/scrim
+     measurement in ChromaContact.jsx reads live via
+     `getBoundingClientRect`) can't be thrown off by Safari's dynamic
+     toolbar changing what "100vh" resolves to mid-session. */
+  min-height:100svh;
   overflow:hidden;
   background:#050505;
   display:flex;
