@@ -123,7 +123,24 @@ const CHROMA_BOOST = 1.25;
 // viewport width rather than needing to be re-tuned per breakpoint.
 const FADE_FULL_FRACTION = 0.78; // full opacity out to this fraction of the half-span
 const FADE_TRANSPARENT_FRACTION = 0.96; // fully transparent by this fraction
-const DITHER_ALPHA = 0.02;
+// BANDING FIX (Ryan, real iPhone: "there's no blurring or smooth fading...
+// you can see all the color bands"). This is a DIFFERENT bug from the
+// crown-position fix a round ago -- that one was about the arc's Y
+// position relative to the Name field; this one is about the bloom's own
+// visible quantization, which the codebase's own "bloom rebuild" history
+// already identifies as the widest/faintest octave (blur:120, alpha:0.16)
+// landing in a low, coarse 8-bit range on a large area -- exactly the
+// low-luminance/large-area combination 8-bit displays band on. A dither
+// already exists specifically as the fix for this (see `buildDitherTile`
+// below), but at 0.02 (2%) it's subtle enough that it may not be doing
+// enough work on a real device's actual screen -- this session's own
+// testing can't perceive banding severity the way a real iPhone's display
+// can, so this is tuned up meaningfully rather than left at a value only
+// ever verified as "not obviously wrong" on a lower-density test render.
+// Not a guess pulled from nowhere: same mechanism this exact codebase
+// already used once to fix a worse version of this same problem (the
+// "third bloom round"), just given more strength.
+const DITHER_ALPHA = 0.05;
 const DITHER_TILE_PX = 64;
 // Fallback path ONLY (see `supportsCanvasFilter`) -- if `ctx.filter` is
 // unavailable, revert to stroking, but 32 passes (up from the original
