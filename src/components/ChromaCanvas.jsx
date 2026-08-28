@@ -85,7 +85,7 @@ const CORE_ALPHA = 0.9;
 const BLOOM_GAIN = 1.0;
 const BLOOM_OCTAVES = [
   // { blurCssPx, strokeWidthCssPx, alpha } -- blur and strokeWidth both
-  // multiplied by dpr at the point of use (see `buildBufferBGaussian`),
+  // multiplied by dpr at the point of use (see `buildBufferBBloom`),
   // never assumed to inherit DPR scaling from a transform. Every octave
   // now strokes its own temp buffer with the SAME boosted-chroma, no-
   // white-core gradient (previously only the 4 wider octaves used this;
@@ -142,19 +142,6 @@ const FADE_TRANSPARENT_FRACTION = 0.96; // fully transparent by this fraction
 // "third bloom round"), just given more strength.
 const DITHER_ALPHA = 0.05;
 const DITHER_TILE_PX = 64;
-// Fallback path ONLY (see `supportsCanvasFilter`) -- if `ctx.filter` is
-// unavailable, revert to stroking, but 32 passes (up from the original
-// 7) with geometric (not linear) width spacing, which at least
-// approximates the correct inverse-power falloff shape even though the
-// fundamental banding problem (opaque strokes, hard edges) isn't fixed by
-// pass count. This path is not expected to actually run in any
-// reasonably current browser -- `ctx.filter` has shipped everywhere
-// since ~2022 -- logged via console so it's visible if it ever does.
-const FALLBACK_BLOOM_PASSES = 32;
-const FALLBACK_MAX_WIDTH_PX = 120;
-const FALLBACK_MIN_WIDTH_PX = 2;
-const FALLBACK_MAX_ALPHA = 0.55;
-const FALLBACK_MIN_ALPHA = 0.02;
 
 const HUE_BUCKET_COUNT = 12;
 const PARTICLE_POOL_SIZE = 600;
@@ -245,22 +232,6 @@ function applyEdgeFade(ctx, cx, cy, cssW, cssH, radius) {
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, cssW, cssH);
   ctx.restore();
-}
-
-// Feature-detect real support, not just presence -- some older engines
-// expose `ctx.filter` as a settable property that silently no-ops. Setting
-// it and reading it back is the cheap, direct way to know whether it
-// actually took.
-function supportsCanvasFilter(ctx) {
-  try {
-    const prev = ctx.filter;
-    ctx.filter = 'blur(1px)';
-    const applied = ctx.filter === 'blur(1px)';
-    ctx.filter = prev;
-    return applied;
-  } catch {
-    return false;
-  }
 }
 
 // Cached once (not per resize -- the texture itself is resolution-
@@ -438,7 +409,7 @@ export default function ChromaCanvas({ crownY, children }) {
     const bufferACtx = bufferA.getContext('2d');
     // One reusable scratch buffer for building each bloom octave (third
     // round) -- cleared and re-stroked at that octave's own width every
-    // iteration of the loop in `buildBufferBGaussian`, rather than a
+    // iteration of the loop in `buildBufferBBloom`, rather than a
     // separate persistent buffer per octave (there's no need to keep more
     // than one around at a time; each is fully consumed by its own
     // `drawImage` into buffer B before the next octave overwrites it).
@@ -446,6 +417,12 @@ export default function ChromaCanvas({ crownY, children }) {
     // build-log entry for this round for why that was checked explicitly.
     const octaveScratch = document.createElement('canvas');
     const octaveScratchCtx = octaveScratch.getContext('2d');
+    // Downscale target for `drawBlurredOctave` (round 7 -- see its own
+    // comment). Resized per-octave (each blur radius wants a different
+    // downscale factor), so this can't be a fixed-size buffer the way
+    // `octaveScratch` is.
+    const blurScratch = document.createElement('canvas');
+    const blurScratchCtx = blurScratch.getContext('2d');
     // Buffer B -- the bloom cache. Built by compositing each octave's own
     // freshly-stroked-and-blurred scratch buffer into it exactly once
     // (third round -- see BLOOM_OCTAVES's own comment for why repeat
@@ -457,10 +434,9 @@ export default function ChromaCanvas({ crownY, children }) {
     // an active transform.
     const bufferB = document.createElement('canvas');
     const bufferBCtx = bufferB.getContext('2d');
-    // Same reasoning as `ctx` above -- set in `buildBufferBGaussian`,
+    // Same reasoning as `ctx` above -- set in `buildBufferBBloom`,
     // after `bufferB.width`/`.height` are (re)assigned there, not here.
     const ditherTile = buildDitherTile();
-    const filterSupported = supportsCanvasFilter(bufferBCtx);
 
     const noise2D = createNoise2D(7);
     const pool = createParticlePool(PARTICLE_POOL_SIZE);
@@ -503,15 +479,65 @@ export default function ChromaCanvas({ crownY, children }) {
       applyEdgeFade(bufferACtx, cx, cy, cssW, cssH, radius);
     }
 
-    // Real path: for each octave, stroke a wide, boosted-chroma, no-core
-    // line into the shared scratch buffer, blur it via `ctx.filter` as
-    // it's composited into buffer B, ONCE, at that octave's own alpha
-    // (times BLOOM_GAIN) -- see BLOOM_OCTAVES's own comment for why a
-    // stroke width proportional to its own blur radius is what keeps this
-    // out of the low, coarsely-quantized 8-bit range a thin line blurred
-    // wide would otherwise land in, and why repeat-compositing (previous
-    // round) made that problem worse rather than fixing it.
-    function buildBufferBGaussian() {
+    // MANUAL BLUR, NOT `ctx.filter` (round 7, build-log.md -- "BLOOM
+    // BANDING, ROUND 7"). Ryan's own real-device screenshot, measured
+    // directly (pixel RGB sampled along verticals through the glow): the
+    // visible "band" edges sat within 1-2px of each octave's own
+    // `strokeWidth / 2`, at every column sampled -- e.g. 13/37/73 CSS px
+    // out from the line vs. the octaves' own half-widths of 12/35/70px.
+    // That match is only possible if the strokes are landing UNBLURRED --
+    // a real Gaussian blur would smear that edge across tens of pixels,
+    // not 3-4. Root cause: iOS Safari accepts and retains the
+    // `ctx.filter = 'blur(Npx)'` STRING (which is all the old
+    // `supportsCanvasFilter` feature-detect actually checked -- a
+    // set-and-read-back property test) but does not apply it during
+    // `drawImage`, so every octave composited as a literal hard-edged
+    // opaque ring. Chrome (this session's only tooling) DOES apply filter
+    // to drawImage, which is exactly why 4 straight rounds of tuning
+    // (dither strength, then dither composite mode) verified clean here
+    // and changed nothing on Ryan's phone -- none of them touched the
+    // actual blur call, and the actual blur call was the thing silently
+    // not running there.
+    //
+    // Fix: stop depending on `ctx.filter` for the bloom at all --
+    // `drawBlurredOctave` below downscales the octave's stroked scratch
+    // buffer to a small canvas, then draws it back up to full size. Both
+    // steps are plain `drawImage` scaling, a universally and reliably
+    // supported operation in every browser (unlike, evidently, filter
+    // during drawImage) -- the browser's own image-scaling interpolation
+    // approximates the same soft, wide falloff a real blur gives, which is
+    // standard practice for real-time bloom/glow rendering (a cheap
+    // downsample-blur-upsample pass), not a novel technique invented for
+    // this fix. One code path now, no feature branch -- exactly what let
+    // this divergence stay invisible in Chrome for 4 rounds. Runs once per
+    // resize, never in the rAF loop, so the extra draw call per octave is
+    // a non-issue.
+    function drawBlurredOctave(destCtx, source, devW, devH, blurDevicePx, alpha) {
+      const k = Math.max(1, Math.round(blurDevicePx / 2.2));
+      const smallW = Math.max(1, Math.round(devW / k));
+      const smallH = Math.max(1, Math.round(devH / k));
+      blurScratch.width = smallW;
+      blurScratch.height = smallH;
+      blurScratchCtx.imageSmoothingEnabled = true;
+      blurScratchCtx.imageSmoothingQuality = 'high';
+      blurScratchCtx.clearRect(0, 0, smallW, smallH);
+      blurScratchCtx.drawImage(source, 0, 0, devW, devH, 0, 0, smallW, smallH);
+      destCtx.imageSmoothingEnabled = true;
+      destCtx.imageSmoothingQuality = 'high';
+      destCtx.globalAlpha = alpha;
+      destCtx.drawImage(blurScratch, 0, 0, smallW, smallH, 0, 0, devW, devH);
+      destCtx.globalAlpha = 1;
+    }
+
+    // For each octave, stroke a wide, boosted-chroma, no-core line into the
+    // shared scratch buffer, blur it via `drawBlurredOctave` as it's
+    // composited into buffer B, ONCE, at that octave's own alpha (times
+    // BLOOM_GAIN) -- see BLOOM_OCTAVES's own comment for why a stroke
+    // width proportional to its own blur radius is what keeps this out of
+    // the low, coarsely-quantized 8-bit range a thin line blurred wide
+    // would otherwise land in, and why repeat-compositing (previous round)
+    // made that problem worse rather than fixing it.
+    function buildBufferBBloom() {
       const { cssW, cssH, dpr, cx, cy, radius } = geom;
       const devW = bufferA.width;
       const devH = bufferA.height;
@@ -560,9 +586,7 @@ export default function ChromaCanvas({ crownY, children }) {
         // separate hard-ish edge.
         applyEdgeFade(octaveScratchCtx, cx, cy, cssW, cssH, radius);
 
-        bufferBCtx.filter = `blur(${blur * dpr}px)`;
-        bufferBCtx.globalAlpha = alpha * BLOOM_GAIN;
-        bufferBCtx.drawImage(octaveScratch, 0, 0);
+        drawBlurredOctave(bufferBCtx, octaveScratch, devW, devH, blur * dpr, alpha * BLOOM_GAIN);
       }
 
       // COMPOSITE-MODE BUG (round 6, found by reading the code, not
@@ -581,7 +605,6 @@ export default function ChromaCanvas({ crownY, children }) {
       // dither pass, so it blends with real (non-directional) alpha
       // compositing instead.
       bufferBCtx.globalCompositeOperation = 'source-over';
-      bufferBCtx.filter = 'none';
       bufferBCtx.globalAlpha = DITHER_ALPHA;
       const pattern = bufferBCtx.createPattern(ditherTile, 'repeat');
       bufferBCtx.fillStyle = pattern;
@@ -589,43 +612,17 @@ export default function ChromaCanvas({ crownY, children }) {
       bufferBCtx.globalAlpha = 1;
     }
 
-    // Fallback ONLY -- see FALLBACK_* constants' own comment. Geometric
-    // (not linear) width spacing at least approximates the correct
-    // inverse-power falloff shape; the banding this was meant to fix is
-    // NOT actually fixed here (opaque strokes still have hard edges), but
-    // this path is not expected to run in practice.
-    function buildBufferBStroke() {
-      const { cssW, cssH, dpr, cx, cy, radius } = geom;
-      bufferB.width = bufferA.width;
-      bufferB.height = bufferA.height;
-      bufferBCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      bufferBCtx.clearRect(0, 0, cssW, cssH);
-      const startRad = gToCanvasRad(RIM_LOWER_DEG);
-      const endRad = gToCanvasRad(RIM_UPPER_DEG);
-      const gradient = buildRimGradient(bufferBCtx, cx, cy);
-      bufferBCtx.lineCap = 'round';
-      bufferBCtx.globalCompositeOperation = 'lighter';
-      const n = FALLBACK_BLOOM_PASSES;
-      const ratio = FALLBACK_MIN_WIDTH_PX / FALLBACK_MAX_WIDTH_PX;
-      for (let i = 0; i < n; i++) {
-        const t = i / (n - 1);
-        const width = FALLBACK_MAX_WIDTH_PX * ratio ** t; // geometric spacing
-        const alpha = FALLBACK_MIN_ALPHA + (FALLBACK_MAX_ALPHA - FALLBACK_MIN_ALPHA) * t;
-        bufferBCtx.beginPath();
-        bufferBCtx.arc(cx, cy, radius, startRad, endRad);
-        bufferBCtx.lineWidth = width;
-        bufferBCtx.strokeStyle = gradient;
-        bufferBCtx.globalAlpha = alpha;
-        bufferBCtx.stroke();
-      }
-      bufferBCtx.globalAlpha = 1;
-      bufferBCtx.globalCompositeOperation = 'source-over';
-    }
-
+    // The stroke-fallback path that used to run here (`buildBufferBStroke`,
+    // gated on `supportsCanvasFilter`) is gone as of round 7 -- that gate
+    // was exactly the bug: it only proved iOS Safari retains the
+    // `ctx.filter` string, not that `drawImage` honors it, so the
+    // "real"/Gaussian path ran there too and silently produced unblurred
+    // rings. `buildBufferBBloom` now uses `drawBlurredOctave`
+    // unconditionally, in every browser -- there is no longer a second
+    // path to fall back to, or to diverge from.
     function rebuildBuffers() {
       buildBufferA();
-      if (filterSupported) buildBufferBGaussian();
-      else buildBufferBStroke();
+      buildBufferBBloom();
       hueBuckets = buildHueBuckets();
       sprites = buildParticleSprites(geom.dpr, hueBuckets);
     }
@@ -671,7 +668,7 @@ export default function ChromaCanvas({ crownY, children }) {
         // at effect setup was silently getting wiped by this exact resize
         // on every single call -- must be re-applied here, after the
         // resize, every time, not once at setup. Same fix applied to
-        // `bufferBCtx` in `buildBufferBGaussian`, which resizes buffer B
+        // `bufferBCtx` in `buildBufferBBloom`, which resizes buffer B
         // the same way.
         canvasCtx.imageSmoothingEnabled = true;
         canvasCtx.imageSmoothingQuality = 'high';
