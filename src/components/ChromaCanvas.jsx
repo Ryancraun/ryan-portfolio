@@ -607,6 +607,12 @@ export default function ChromaCanvas({ crownY, children }) {
       const cssW = Math.max(1, rect.width);
       const cssH = Math.max(1, rect.height);
       const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
+      // ARC-OVER-NAME FIX (build-log.md): ChromaContact.jsx's
+      // `updateCrownY` mirrors this exact circle geometry (radius = the
+      // section's width, cx = its midpoint) to compute how far the arc
+      // drops below the crown at the Name field's x extent -- if the
+      // radius/cx rule here ever changes, that calculation must change
+      // with it (see the FIELD_CLEARANCE_PX comment there).
       const radius = cssW;
       const cy = (crownYRef.current ?? cssH * 0.33) + radius;
       const cx = cssW / 2;

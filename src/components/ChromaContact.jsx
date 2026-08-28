@@ -2,9 +2,28 @@ import { useEffect, useRef, useState } from 'react';
 import ChromaCanvas from './ChromaCanvas';
 import { supabase } from '@/lib/supabaseClient';
 
-// These margins protect the arc's crown from ever crossing the heading or
-// the first field -- the crown is measured (below), not hand-picked, so
-// it physically cannot overlap either one regardless of screen size.
+// These margins protect the ARC (not just its crown -- see below) from
+// ever crossing the heading or the first field -- measured, not
+// hand-picked, so it cannot overlap either one regardless of screen size.
+//
+// ARC-OVER-NAME FIX (build-log.md): FIELD_CLEARANCE_PX used to be
+// enforced at the crown's own x (the section's horizontal center) only.
+// But the arc is a circle of radius = section width (ChromaCanvas.jsx's
+// `measureAndResize`), so it DROPS below the crown by
+// `r - sqrt(r^2 - dx^2)` at horizontal offset dx -- and the Name label
+// sits at the content column's left EDGE, not the center. On desktop
+// (radius ~1900px) that drop across the column is ~14-21px and the
+// crown's own 56px of clearance absorbs it; at phone widths the radius
+// is the phone's own width, the curvature is steep, and the drop at the
+// label's x reaches ~44-59px -- eating essentially ALL of the crown's
+// clearance and putting the full-brightness rim line (plus its bloom
+// halo) visually on top of the Name label. Measured, not theorized:
+// per-column canvas alpha sampling at true mobile widths found the line
+// 6-18px from the label top (worst at ~560px viewport width), exactly
+// matching the drop formula at every width tested. The fix below
+// subtracts that measured drop (evaluated at the field's widest x
+// extent) from `maxY`, so the clearance guarantee holds for the whole
+// arc across the field's width, not just for the crown point.
 const FIELD_CLEARANCE_PX = 20;
 const HEADING_CLEARANCE_PX = 20;
 
@@ -49,12 +68,32 @@ export default function ChromaContact() {
       const heading = headingRef.current;
       const field = firstFieldRef.current;
       if (!section || !heading || !field) return;
-      const sectionTop = section.getBoundingClientRect().top;
+      const sectionRect = section.getBoundingClientRect();
+      const sectionTop = sectionRect.top;
       const headingBottom = heading.getBoundingClientRect().bottom - sectionTop;
       const fieldRect = field.getBoundingClientRect();
       const fieldTop = fieldRect.top - sectionTop;
+      // Arc-curvature drop at the field's widest x extent -- see the
+      // FIELD_CLEARANCE_PX comment above for the full account. The circle
+      // geometry here (radius = section width, center x = section
+      // midpoint) deliberately mirrors ChromaCanvas.jsx's
+      // `measureAndResize` (`radius = cssW; cx = cssW / 2`, where cssW is
+      // the wrapper's width and the wrapper is `inset:0` inside this same
+      // section) -- if that geometry ever changes there, this drop
+      // calculation must change with it, or the clearance guarantee
+      // silently degrades back to crown-only.
+      const radius = sectionRect.width;
+      const fieldLeft = fieldRect.left - sectionRect.left;
+      const fieldRight = fieldRect.right - sectionRect.left;
+      const cx = sectionRect.width / 2;
+      const dxMax = Math.min(radius, Math.max(cx - fieldLeft, fieldRight - cx, 0));
+      const arcDrop = radius > 0 ? radius - Math.sqrt(radius * radius - dxMax * dxMax) : 0;
+      // The heading side needs no drop term: the arc's closest approach to
+      // the heading is at the crown itself (it only falls AWAY from the
+      // heading off-center), so crown-point clearance is already the true
+      // minimum on that side.
       const minY = headingBottom + HEADING_CLEARANCE_PX;
-      const maxY = fieldTop - FIELD_CLEARANCE_PX;
+      const maxY = fieldTop - FIELD_CLEARANCE_PX - arcDrop;
       const idealMid = (headingBottom + fieldTop) / 2;
       const nextCrownY = maxY >= minY ? Math.min(Math.max(idealMid, minY), maxY) : (minY + maxY) / 2;
       setCrownY(nextCrownY);
