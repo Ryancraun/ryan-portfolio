@@ -565,13 +565,28 @@ export default function ChromaCanvas({ crownY, children }) {
         bufferBCtx.drawImage(octaveScratch, 0, 0);
       }
 
+      // COMPOSITE-MODE BUG (round 6, found by reading the code, not
+      // guessed): this reset used to run AFTER the dither fillRect below,
+      // so the dither was painted while `globalCompositeOperation` was
+      // still 'lighter' (set above, for the additive octave stack) --
+      // 'lighter' can only ADD alpha/brightness, never blend a pixel DOWN
+      // toward a neighbor. Real anti-banding dither needs to nudge pixels
+      // randomly both above and below a quantization threshold so a hard
+      // level boundary scatters into speckle instead of a visible edge --
+      // additive-only noise can't do that, it just washes a near-uniform
+      // extra brightness over everything. This is almost certainly why
+      // round 5 (raising DITHER_ALPHA 0.02 -> 0.05) made no visible
+      // difference on a real device: the mechanism was never actually
+      // dithering, just adding flat haze. Moved the reset here, before the
+      // dither pass, so it blends with real (non-directional) alpha
+      // compositing instead.
+      bufferBCtx.globalCompositeOperation = 'source-over';
       bufferBCtx.filter = 'none';
       bufferBCtx.globalAlpha = DITHER_ALPHA;
       const pattern = bufferBCtx.createPattern(ditherTile, 'repeat');
       bufferBCtx.fillStyle = pattern;
       bufferBCtx.fillRect(0, 0, devW, devH);
       bufferBCtx.globalAlpha = 1;
-      bufferBCtx.globalCompositeOperation = 'source-over';
     }
 
     // Fallback ONLY -- see FALLBACK_* constants' own comment. Geometric
