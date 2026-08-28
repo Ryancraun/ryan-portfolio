@@ -54,6 +54,22 @@ body{
   font-family:var(--font-sans);
   -webkit-font-smoothing:antialiased;
   overflow-x:hidden;
+  /* SAFE-AREA FIX (Safari/iOS, Ryan's screenshot: page content bleeding
+     into the status-bar strip above the nav pill). Root cause was that
+     `index.html`'s `viewport-fit=cover` lets normal-flow content render
+     all the way to the true top of the screen, and nothing reserved that
+     strip -- at ANY scroll position, whatever section happened to be
+     scrolled near the top rendered its own text right up to y:0, under
+     the notch/Dynamic Island. Not a `.sitenav` z-index problem: the pill
+     is `position:fixed` and was already always on top of content that
+     WAS there -- the bug is that content could occupy that region at all.
+     `padding-top: env(safe-area-inset-top)` on body is the structural
+     fix: it moves where normal document flow actually STARTS, so no
+     section can ever scroll into that strip, at any scroll position, not
+     just first paint. Resolves to 0px on any browser/device without a
+     safe area (including every non-Safari browser this was verified in),
+     so this is a no-op everywhere else. */
+  padding-top: env(safe-area-inset-top, 0px);
 }
 img{ max-width:100%; display:block; }
 a{ color:inherit; }
@@ -109,7 +125,14 @@ a{ color:inherit; }
    one-ghost / one-solid hierarchy while keeping the accent hoarded to a
    single primary action rather than spent on both links. */
 .sitenav{
-  position:fixed; top:clamp(0.75rem, 2.4vw, 1.35rem); left:50%; z-index:600;
+  /* `position:fixed` ignores body's own padding (safe-area fix above), so
+     the pill needs the same `env(safe-area-inset-top)` term added
+     directly -- otherwise the fixed pill would still sit at its old
+     position (partly under the notch) while normal-flow content now
+     starts visibly lower, a new misalignment the body fix alone would
+     have introduced. Resolves to the exact same value as before on any
+     device without a safe area. */
+  position:fixed; top:calc(clamp(0.75rem, 2.4vw, 1.35rem) + env(safe-area-inset-top, 0px)); left:50%; z-index:600;
   /* BANDED/TORN BLUR FIX (Ryan's screenshot: vertical dark bars appearing
      across the pill while hovering across it). This is a distinct bug from
      the earlier mix-blend-mode:difference fix (CustomCursor.jsx's
@@ -989,6 +1012,17 @@ a{ color:inherit; }
   align-items:center;
   justify-content:center;
   padding:6rem 1.5rem;
+  /* SAFE-AREA FIX (Safari/iOS, Ryan's screenshot: the "Or email directly"
+     note at the bottom of this section clipped by browser chrome). The
+     6rem base bottom padding is a fixed value that doesn't know about the
+     iPhone home-indicator gesture area -- adding `env(safe-area-inset-
+     bottom)` on top of it (not replacing it) gives the note real
+     clearance from that reserved strip specifically, layered onto the
+     existing padding rather than depending on it alone. Longhand
+     `padding-bottom` after the shorthand above wins the cascade for just
+     that side; top/left/right stay whatever the shorthand set. Resolves
+     to the same 6rem as before on any device without a safe area. */
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
   /* SiteNav.jsx smooth-scroll fix: `--sitenav-safe-top` is the nav pill's
      own measured bottom edge (JS, SiteNav.jsx -- clamp()/vw-driven, so not
      a fixed number here). Adding 24px keeps the section clear of the pill
@@ -1032,21 +1066,39 @@ a{ color:inherit; }
   /* Sized to the section (ChromaCanvas.jsx's own ResizeObserver measures
      this element, not either canvas -- their own width/height are set
      imperatively in JS, in device pixels, which is why it can't be the
-     thing being observed for size). Deliberately NO z-index here: `position`
-     plus a z-index would establish a new stacking context for this div,
-     which would trap its two canvas children's own z-index values (below)
-     inside it -- the whole wrapper would then compete with `.chroma__scrim`
-     as a single unit instead of sandwiching the scrim between the two
-     canvases the way the two-canvas split (ChromaCanvas.jsx) requires. */
+     thing being observed for size).
+     SAFARI STACKING FIX, ROUND 2 (build-log.md -- real iPhone screenshot,
+     the rim canvas painting over `.chroma__content`'s Name field). The
+     PREVIOUS version of this comment argued for deliberately omitting a
+     z-index here, reasoning that `position:absolute` + `z-index:auto`
+     lets this wrapper's children (bloom/scrim/rim below) pass their own
+     z-index straight through to compare directly against
+     `.chroma__content`'s z-index in the shared outer context -- correct
+     per spec, and it measured correctly on every engine available to
+     verify it in. But that passthrough is exactly the kind of ambiguous,
+     spec-edge-case behavior Safari's canvas GPU-layer promotion doesn't
+     reliably honor, which is the most likely explanation for content
+     painting over the rim canvas on a real device despite the z-index
+     math never having been wrong. Fixed at the ROOT of the ambiguity
+     instead of tuning around it: `.chroma__scrim` now renders INSIDE this
+     wrapper too (ChromaCanvas.jsx now accepts it as `children`, passed in
+     by ChromaContact.jsx), so all three (bloom/scrim/rim) are genuinely,
+     unambiguously sealed inside ONE real stacking context established
+     right here -- no engine has to decide whether an auto-z-index wrapper
+     is "transparent" to stacking, because it no longer needs to be. Kept
+     comfortably under `.sitenav`'s (600) and `.progress`'s (650) global
+     z-index scale, so this has no effect on anything outside `.chroma`. */
   position:absolute; inset:0;
+  z-index:1;
   pointer-events:none;
 }
-/* Two-canvas split (ChromaCanvas.jsx): bloomCanvas (z-index 1, static,
-   drawn once per resize) and rimCanvas (z-index 3, the rim stroke plus
-   every particle, redrawn every animation frame) are both direct children
-   of `.chroma__canvas-wrapper` above and both need `position:absolute` to
-   overlap exactly at its top-left rather than stacking vertically in
-   normal flow. `.chroma__scrim` (z-index 2, below) sits between them. */
+/* Two-canvas-plus-scrim stack (ChromaCanvas.jsx), all three now genuinely
+   sealed inside `.chroma__canvas-wrapper`'s own stacking context above:
+   bloomCanvas (z-index 1, static, drawn once per resize), `.chroma__scrim`
+   (z-index 2, below), rimCanvas (z-index 3, the rim stroke plus every
+   particle, redrawn every animation frame). The two canvases both need
+   `position:absolute` to overlap exactly at the wrapper's top-left rather
+   than stacking vertically in normal flow. */
 .chroma__canvas{
   position:absolute;
   top:0; left:0;
@@ -1284,6 +1336,10 @@ a{ color:inherit; }
 .chroma__form-note a{ color:var(--ink-dim); text-decoration:underline; text-underline-offset:2px; }
 @media (max-width:640px){
   .chroma{ padding:5rem 1.25rem; }
+  /* Same safe-area addition as the base rule above, mobile's own smaller
+     base value (5rem, not 6rem) -- this is the breakpoint real iPhones
+     actually hit, so it's the one that matters most for this fix. */
+  .chroma{ padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px)); }
   .chroma__form-row{ flex-direction:column; }
 }
 

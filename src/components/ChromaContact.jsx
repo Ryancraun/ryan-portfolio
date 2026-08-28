@@ -117,22 +117,27 @@ export default function ChromaContact() {
           conic gradient. One rasterization pass, no mask boundaries left
           to disagree with each other -- see build-log.md and
           ChromaCanvas.jsx's own top comment for the full account. */}
-      <ChromaCanvas crownY={crownY} />
-      {/* Scrim -- form-legibility fix: sits between ChromaCanvas's two
-          stacked canvases (bloom below, rim+particles above -- see
-          ChromaCanvas.jsx's own top comment for the two-canvas split).
-          Z-INDEX, not DOM order, is what actually sandwiches it there now
-          (both canvases carry their own z-index; this element can render
-          anywhere in this markup and still land in between) -- it can stay
-          here, right after `<ChromaCanvas>`, purely because that reads
-          clearly next to the content it protects. See index.css for why
-          this and not a border-alpha raise or a canvas dim, and for
-          `--scrim-anchor-y` (measured above, not hand-picked). */}
-      <div
-        className="chroma__scrim"
-        aria-hidden="true"
-        style={scrimAnchorY != null ? { '--scrim-anchor-y': `${scrimAnchorY}px` } : undefined}
-      />
+      <ChromaCanvas crownY={crownY}>
+        {/* Scrim -- form-legibility fix: sits between ChromaCanvas's two
+            stacked canvases (bloom below, rim+particles above -- see
+            ChromaCanvas.jsx's own top comment for the two-canvas split).
+            Z-INDEX, not DOM order, is what actually sandwiches it there
+            (all three carry their own z-index; this element can render
+            anywhere in ChromaCanvas.jsx's JSX and still land in between).
+            SAFARI STACKING FIX (build-log.md): passed in as `children`
+            instead of rendered as a sibling here, so it lives INSIDE
+            `.chroma__canvas-wrapper`'s DOM -- that's what lets the wrapper
+            take its own real z-index without breaking this sandwich; see
+            ChromaCanvas.jsx's own comment for the full reasoning. See
+            index.css for why a scrim and not a border-alpha raise or a
+            canvas dim, and for `--scrim-anchor-y` (measured above, not
+            hand-picked). */}
+        <div
+          className="chroma__scrim"
+          aria-hidden="true"
+          style={scrimAnchorY != null ? { '--scrim-anchor-y': `${scrimAnchorY}px` } : undefined}
+        />
+      </ChromaCanvas>
       {/* Content sits above the canvas (and the scrim). */}
       <div className="chroma__content">
         <div className="chroma__heading-block">

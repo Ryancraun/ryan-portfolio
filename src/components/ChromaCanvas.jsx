@@ -366,7 +366,7 @@ function particleAlpha(ageFrac) {
 // recomputed independently for either canvas -- any drift between two
 // separate geometry calculations would show up as a doubled/offset edge,
 // which is exactly the failure mode Ryan flagged as unacceptable.
-export default function ChromaCanvas({ crownY }) {
+export default function ChromaCanvas({ crownY, children }) {
   const bloomCanvasRef = useRef(null);
   const rimCanvasRef = useRef(null);
   const [wrapperRef, inView] = useInView({ rootMargin: '200px 0px' });
@@ -822,10 +822,23 @@ export default function ChromaCanvas({ crownY }) {
 
   return (
     <div ref={wrapperRef} className="chroma__canvas-wrapper" aria-hidden="true">
-      {/* Stacking between these two is z-index, not DOM order -- the
-          scrim (index.css, z-index between these two) can render anywhere
-          in ChromaContact.jsx's own markup and still sandwich correctly. */}
+      {/* SAFARI STACKING FIX (build-log.md): `children` (the scrim, passed
+          in by ChromaContact.jsx) now renders INSIDE this wrapper instead
+          of as a sibling in ChromaContact.jsx's own markup. Stacking
+          between all three is still z-index, not DOM order -- the scrim
+          can render anywhere in this JSX and still sandwich correctly
+          between the two canvases (index.css). The reason for moving it
+          in here at all: this wrapper can now safely take its OWN
+          explicit z-index (index.css), sealing bloom/scrim/rim into one
+          real, unambiguous stacking context instead of relying on
+          `position:absolute` + `z-index:auto` passing its children's
+          z-index through to the wrapper's own parent -- a spec behavior
+          Safari's canvas GPU-layer promotion was suspected of not
+          honoring consistently, which is what let the rim canvas paint
+          over `.chroma__content` on a real iPhone despite the z-index
+          math already being correct on every other engine tested. */}
       <canvas ref={bloomCanvasRef} className="chroma__canvas chroma__canvas--bloom" />
+      {children}
       <canvas ref={rimCanvasRef} className="chroma__canvas chroma__canvas--rim" />
     </div>
   );
