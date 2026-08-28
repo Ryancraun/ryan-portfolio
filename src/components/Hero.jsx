@@ -31,15 +31,14 @@ import { useHeroDrift } from '@/hooks/useHeroDrift';
 // time-driven `active`, not scroll -- that part of the prior fix stands.
 // HERO COPY REWRITE ROUND 2 (Ryan, direct): replaced the philosophy-led
 // tagline from the previous round with a plainer role+company statement
-// plus a location line. Explicit instruction: copy change only, no
-// component restructuring -- PROOF_STATS/PROOF_SOURCE below are untouched.
+// plus a location line.
+//
+// PROOF STATS REMOVED (Ryan, direct, following round): the PickTheOdds
+// stat block below the subline (31% faster to place a bet / 84% more
+// time on site / source line) is gone -- Ryan's own call after seeing it
+// live, not replaced with anything.
 const TAGLINE = 'Full time product designer at FEVO. I design apps, then I build them.';
 const SUBLINE = 'Based in Columbus, OH.';
-const PROOF_STATS = [
-  { num: '31%', label: 'faster to place a bet' },
-  { num: '84%', label: 'more time on site' },
-];
-const PROOF_SOURCE = 'PickTheOdds, B2B sports analytics platform';
 
 // "Shortly after, maybe even with a time delay" -- Ryan's own words. Long
 // enough to actually read "Ryan Craun / Product Designer" first, short
@@ -70,9 +69,6 @@ export default function Hero() {
         <h1>Ryan Craun</h1>
         <p>{TAGLINE}</p>
         <p>{SUBLINE}</p>
-        <p>
-          {PROOF_STATS.map((s) => `${s.num} ${s.label}`).join(', ')}, from {PROOF_SOURCE}.
-        </p>
       </div>
       {/* PixelSwap doesn't spread arbitrary props onto its root node (only
           className/style), so `aria-hidden` has to sit on this wrapper
@@ -129,15 +125,6 @@ export default function Hero() {
             <div className="hero__panel hero__panel--reveal">
               <p className="hero__tagline-big">{TAGLINE}</p>
               <p className="hero__tagline-sub">{SUBLINE}</p>
-              <div className="hero__proof">
-                {PROOF_STATS.map((s) => (
-                  <div className="hero__proof-stat" key={s.label}>
-                    <span className="hero__proof-num">{s.num}</span>
-                    <span className="hero__proof-label">{s.label}</span>
-                  </div>
-                ))}
-                <p className="hero__proof-source">{PROOF_SOURCE}</p>
-              </div>
             </div>
           }
         />

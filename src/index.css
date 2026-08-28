@@ -414,47 +414,6 @@ a{ color:inherit; }
   color:#141414;
   opacity:0.72;
 }
-/* HERO COPY REWRITE: real-stat proof line (build-log.md) -- same layout
-   shape as this site's own generic `.stat`/`.stat__num`/`.stat__label`
-   pattern (ProjectCard's stat tiles, FreelanceWork's stat row), not a new
-   visual language, but with its own literal colors instead of the
-   `--ink`/`--ink-dim` tokens: those are near-white, tuned for the site's
-   dark sections, and would be invisible against this panel's light
-   `#f7f5f0` background -- the same reason `.hero__tagline-big/-sub` above
-   already hardcode `#141414` instead of using `--ink`. */
-.hero__proof{
-  display:flex; flex-wrap:wrap; align-items:baseline; justify-content:center;
-  gap:1.5rem;
-  margin:1.6rem 0 0;
-  padding-top:1.1rem;
-  border-top:1px solid rgba(20,20,20,0.14);
-  max-width:34ch;
-}
-.hero__proof-stat{ min-width:5rem; text-align:left; }
-.hero__proof-num{
-  display:block;
-  font-family:var(--font-sans);
-  font-weight:700;
-  font-size:1.5rem;
-  color:#141414;
-}
-.hero__proof-label{
-  display:block;
-  font-size:0.74rem;
-  color:#141414;
-  opacity:0.6;
-  line-height:1.3;
-  margin-top:0.1rem;
-}
-.hero__proof-source{
-  flex-basis:100%;
-  font-size:0.72rem;
-  letter-spacing:0.02em;
-  color:#141414;
-  opacity:0.5;
-  margin:0.4rem 0 0;
-  text-align:left;
-}
 /* Screen-reader-only utility (Addendum 5, point 20's real-heading
    requirement) -- the standard clip-based accessible-hiding pattern:
    visually removed but still in the accessibility tree and in normal
