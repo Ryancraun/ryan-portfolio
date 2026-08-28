@@ -1182,6 +1182,26 @@ a{ color:inherit; }
    the way every earlier round had it. */
 .chroma__content{
   position:relative; z-index:4;
+  /* SAFARI STACKING FIX, ROUND 3 (build-log.md -- round 2's explicit,
+     unambiguous stacking-context fix on `.chroma__canvas-wrapper` did NOT
+     fix the real iPhone, confirmed live in a private/incognito tab, so
+     the ambiguous-z-index-passthrough theory was wrong). Re-diagnosed:
+     the canvas is a hardware-accelerated element using `ctx.filter` blur
+     every frame (ChromaCanvas.jsx's bloom rendering) -- a well-documented
+     trigger for WebKit promoting a canvas to its OWN GPU compositing
+     layer. When only ONE side of a stacking comparison is on a real GPU
+     layer and the other is a normal painted layer, some WebKit versions
+     don't reliably honor z-index between them at all -- no CSS value on
+     either element fixes that, because the comparison isn't happening at
+     the CSS layer, it's happening at the compositor. `translateZ(0)`
+     forces THIS element onto its own explicit GPU layer too, so both
+     sides of the comparison are real, ordered compositor layers instead
+     of one GPU layer vs. one painted layer -- the exact same mitigation
+     `.sitenav` already uses for this identical bug class (see its own
+     BANDED/TORN BLUR FIX comment), just applied on the other side of a
+     different stacking boundary this time. */
+  transform:translateZ(0);
+  will-change:transform;
   width:100%;
   max-width:460px;
   display:flex;
