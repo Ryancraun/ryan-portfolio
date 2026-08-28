@@ -414,6 +414,47 @@ a{ color:inherit; }
   color:#141414;
   opacity:0.72;
 }
+/* HERO COPY REWRITE: real-stat proof line (build-log.md) -- same layout
+   shape as this site's own generic `.stat`/`.stat__num`/`.stat__label`
+   pattern (ProjectCard's stat tiles, FreelanceWork's stat row), not a new
+   visual language, but with its own literal colors instead of the
+   `--ink`/`--ink-dim` tokens: those are near-white, tuned for the site's
+   dark sections, and would be invisible against this panel's light
+   `#f7f5f0` background -- the same reason `.hero__tagline-big/-sub` above
+   already hardcode `#141414` instead of using `--ink`. */
+.hero__proof{
+  display:flex; flex-wrap:wrap; align-items:baseline; justify-content:center;
+  gap:1.5rem;
+  margin:1.6rem 0 0;
+  padding-top:1.1rem;
+  border-top:1px solid rgba(20,20,20,0.14);
+  max-width:34ch;
+}
+.hero__proof-stat{ min-width:5rem; text-align:left; }
+.hero__proof-num{
+  display:block;
+  font-family:var(--font-sans);
+  font-weight:700;
+  font-size:1.5rem;
+  color:#141414;
+}
+.hero__proof-label{
+  display:block;
+  font-size:0.74rem;
+  color:#141414;
+  opacity:0.6;
+  line-height:1.3;
+  margin-top:0.1rem;
+}
+.hero__proof-source{
+  flex-basis:100%;
+  font-size:0.72rem;
+  letter-spacing:0.02em;
+  color:#141414;
+  opacity:0.5;
+  margin:0.4rem 0 0;
+  text-align:left;
+}
 /* Screen-reader-only utility (Addendum 5, point 20's real-heading
    requirement) -- the standard clip-based accessible-hiding pattern:
    visually removed but still in the accessibility tree and in normal
@@ -1558,13 +1599,28 @@ a{ color:inherit; }
   width:100%;
   aspect-ratio: 1206 / 2622; /* the real capture's own ratio -- no letterboxing */
   border-radius: 2.6rem;
-  padding: 9px;
+  /* BEZEL VISIBILITY FIX (Ryan, checked on a real iPhone: "the actual app
+     has no padding within the mock-up picture... it looks like I put no
+     padding on the design"). Verified this isn't a literal collapse -- the
+     old 9px was confirmed still computing and rendering correctly at every
+     tested width (true 390px viewport, both the homepage teaser and every
+     case-study screenshot instance) -- but 9px is a small fixed value that
+     never scales up, and on a real device's actual physical screen size at
+     high pixel density it can read as barely-there rather than as a
+     deliberate metal-chassis bezel. Bumped to a value that stays a real,
+     legible frame at any width rather than a hairline. */
+  padding: 14px;
   background: linear-gradient(160deg, #3c3c41, #0a0a0c 60%);
   box-shadow: 0 30px 60px -22px rgba(0,0,0,0.65), inset 0 0 0 1px rgba(244,242,236,0.09);
 }
 .phone-shot__screen{
   position:relative; width:100%; height:100%;
-  border-radius: 2.05rem; overflow:hidden;
+  /* Kept roughly concentric with the outer 2.6rem radius now that the
+     bezel padding above is 14px, not the old 9px -- outer radius minus
+     the new padding is ~1.73rem; 1.75rem is the clean rounded value, so
+     the inner corner doesn't look pinched or uneven against the bezel's
+     straight-edge width. */
+  border-radius: 1.75rem; overflow:hidden;
   border:1px solid rgba(244,242,236,0.07);
   background:var(--bg-raise);
 }

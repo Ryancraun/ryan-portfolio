@@ -29,9 +29,17 @@ import { useHeroDrift } from '@/hooks/useHeroDrift';
 // MAX_PIXELS=220 in PixelSwap.jsx auto-scales pixelSize up regardless, so
 // an exact count isn't hand-tuned here). Still `trigger="manual"` +
 // time-driven `active`, not scroll -- that part of the prior fix stands.
-const TAGLINE = "I design software for the moment it's actually used: in the aisle, mid-game, mid-decision.";
-const SUBLINE =
-  'Consumer iOS, content platforms, B2B tools. Different industries, same job: understand the real moment, then get out of its way.';
+// HERO COPY REWRITE ROUND 2 (Ryan, direct): replaced the philosophy-led
+// tagline from the previous round with a plainer role+company statement
+// plus a location line. Explicit instruction: copy change only, no
+// component restructuring -- PROOF_STATS/PROOF_SOURCE below are untouched.
+const TAGLINE = 'Full time product designer at FEVO. I design apps, then I build them.';
+const SUBLINE = 'Based in Columbus, OH.';
+const PROOF_STATS = [
+  { num: '31%', label: 'faster to place a bet' },
+  { num: '84%', label: 'more time on site' },
+];
+const PROOF_SOURCE = 'PickTheOdds, B2B sports analytics platform';
 
 // "Shortly after, maybe even with a time delay" -- Ryan's own words. Long
 // enough to actually read "Ryan Craun / Product Designer" first, short
@@ -62,6 +70,9 @@ export default function Hero() {
         <h1>Ryan Craun</h1>
         <p>{TAGLINE}</p>
         <p>{SUBLINE}</p>
+        <p>
+          {PROOF_STATS.map((s) => `${s.num} ${s.label}`).join(', ')}, from {PROOF_SOURCE}.
+        </p>
       </div>
       {/* PixelSwap doesn't spread arbitrary props onto its root node (only
           className/style), so `aria-hidden` has to sit on this wrapper
@@ -118,6 +129,15 @@ export default function Hero() {
             <div className="hero__panel hero__panel--reveal">
               <p className="hero__tagline-big">{TAGLINE}</p>
               <p className="hero__tagline-sub">{SUBLINE}</p>
+              <div className="hero__proof">
+                {PROOF_STATS.map((s) => (
+                  <div className="hero__proof-stat" key={s.label}>
+                    <span className="hero__proof-num">{s.num}</span>
+                    <span className="hero__proof-label">{s.label}</span>
+                  </div>
+                ))}
+                <p className="hero__proof-source">{PROOF_SOURCE}</p>
+              </div>
             </div>
           }
         />

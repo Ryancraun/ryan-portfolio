@@ -144,7 +144,7 @@ export default function Home() {
             useSpecularCta
             indexBackdrop
             stats={[
-              { num: '252', label: 'guides published, ad-free' },
+              { num: '4,900', label: 'real users, Jan–Aug 2026' },
               { num: '0', label: 'ads, ever (by design)' },
               { num: '134', label: 'upvotes on r/Borderlands4 launch' },
             ]}
