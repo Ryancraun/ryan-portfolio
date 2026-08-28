@@ -1558,19 +1558,28 @@ a{ color:inherit; }
   width:100%;
   aspect-ratio: 1206 / 2622; /* the real capture's own ratio -- no letterboxing */
   border-radius: 2.6rem;
-  /* BEZEL VISIBILITY FIX (Ryan, checked on a real iPhone: "the actual app
-     has no padding within the mock-up picture... it looks like I put no
-     padding on the design"). Verified this isn't a literal collapse -- the
-     old 9px was confirmed still computing and rendering correctly at every
-     tested width (true 390px viewport, both the homepage teaser and every
-     case-study screenshot instance) -- but 9px is a small fixed value that
-     never scales up, and on a real device's actual physical screen size at
-     high pixel density it can read as barely-there rather than as a
-     deliberate metal-chassis bezel. Bumped to a value that stays a real,
-     legible frame at any width rather than a hairline. */
+  /* BEZEL VISIBILITY FIX, ROUND 2 (Ryan, still "no padding" after the
+     round-1 padding bump: "the actual app has no padding within the
+     mock-up picture"). Round 1 diagnosed this as the padding VALUE being
+     too small and raised it 9px->14px -- confirmed still correct (a real
+     14px gap, computed and rendering) on the light case-study background,
+     but that wasn't the actual problem on the homepage teaser card
+     (`.copia-teaser`, CardArt.jsx): its own background computes to
+     `rgb(28,19,16)`, and this gradient's own dark end is `rgb(10,10,12)`
+     -- nearly identical luminance. A zoomed screenshot of the live render
+     confirmed the bezel is genuinely, visibly gone at that boundary, gap
+     or no gap, because the "frame" and what's behind it are almost the
+     same color. This is a CONTRAST bug, not a size bug -- padding alone
+     can never fix a boundary that has no color difference to see. The
+     inset highlight ring below (meant to be exactly this boundary's edge
+     definition, independent of the fill gradient's own tone) was only
+     9% opacity -- too faint to compensate. Raised to a real, clearly
+     legible ring so the bezel edge reads against ANY background, light or
+     dark, not just contexts where the gradient happens to contrast with
+     what's behind it. */
   padding: 14px;
   background: linear-gradient(160deg, #3c3c41, #0a0a0c 60%);
-  box-shadow: 0 30px 60px -22px rgba(0,0,0,0.65), inset 0 0 0 1px rgba(244,242,236,0.09);
+  box-shadow: 0 30px 60px -22px rgba(0,0,0,0.65), inset 0 0 0 1.5px rgba(244,242,236,0.22);
 }
 .phone-shot__screen{
   position:relative; width:100%; height:100%;
