@@ -423,6 +423,14 @@ export default function ChromaCanvas({ crownY, children }) {
     // `octaveScratch` is.
     const blurScratch = document.createElement('canvas');
     const blurScratchCtx = blurScratch.getContext('2d');
+    // Ping-pong mip buffers for `drawBlurredOctave`'s round-8 mip-chain
+    // downscale (see its own comment) -- two reusable buffers, resized to
+    // whatever the current halving step needs, alternated so each step
+    // reads from the one the previous step just wrote.
+    const mipA = document.createElement('canvas');
+    const mipACtx = mipA.getContext('2d');
+    const mipB = document.createElement('canvas');
+    const mipBCtx = mipB.getContext('2d');
     // Buffer B -- the bloom cache. Built by compositing each octave's own
     // freshly-stroked-and-blurred scratch buffer into it exactly once
     // (third round -- see BLOOM_OCTAVES's own comment for why repeat
@@ -512,20 +520,68 @@ export default function ChromaCanvas({ crownY, children }) {
     // this divergence stay invisible in Chrome for 4 rounds. Runs once per
     // resize, never in the rAF loop, so the extra draw call per octave is
     // a non-issue.
+    // MIP-CHAIN DOWNSCALE (round 8, build-log.md -- "BLOOM BANDING, ROUND
+    // 8"). Ryan, after round 7: "getting better, but still not how it
+    // should be... even on mobile view on my desktop (375px) on inspect,
+    // it renders perfectly, but on my ACTUAL phone it still looks like
+    // this." That single fact reframes the remaining gap: it is NOT a
+    // viewport-size issue (Chrome's own mobile emulation, same rendering
+    // engine as desktop Chrome, already looks right at 375px) -- it is
+    // specifically real Safari/WebKit vs. Chrome, on code that no longer
+    // has the round-7 hard-edge bug (confirmed: pixel-sampled his round-7
+    // screenshot and found a genuinely smooth, monotonic falloff, not
+    // plateaus). The remaining suspect is `drawBlurredOctave` itself: the
+    // widest, faintest octave (blur:120) downscales in ONE step at up to a
+    // ~300:1 ratio (device-pixel width / k). Chrome's own `drawImage`
+    // clearly handles a single jump that extreme well -- but there is no
+    // guarantee every engine's `imageSmoothingQuality:'high'` does the
+    // same at that ratio in one step; large single-step image downscaling
+    // quality is a known, general cross-browser inconsistency, independent
+    // of anything specific to this bug.
+    // Fix: downscale in repeated 2x steps (a mip chain) instead of one
+    // huge leap. Every individual step is a modest reduction any engine's
+    // straightforward area-average implementation handles consistently,
+    // regardless of how good or bad it is at an extreme single-step ratio
+    // -- this no longer depends on Safari's large-ratio behavior matching
+    // Chrome's at all.
     function drawBlurredOctave(destCtx, source, devW, devH, blurDevicePx, alpha) {
-      const k = Math.max(1, Math.round(blurDevicePx / 2.2));
-      const smallW = Math.max(1, Math.round(devW / k));
-      const smallH = Math.max(1, Math.round(devH / k));
-      blurScratch.width = smallW;
-      blurScratch.height = smallH;
+      const k = Math.max(1, blurDevicePx / 2.2);
+      const finalW = Math.max(1, Math.round(devW / k));
+      const finalH = Math.max(1, Math.round(devH / k));
+
+      let srcCanvas = source;
+      let srcW = devW;
+      let srcH = devH;
+      let useA = true;
+
+      while (srcW > finalW * 2 && srcH > finalH * 2) {
+        const nextW = Math.max(finalW, Math.round(srcW / 2));
+        const nextH = Math.max(finalH, Math.round(srcH / 2));
+        const mip = useA ? mipA : mipB;
+        const mipCtx = useA ? mipACtx : mipBCtx;
+        mip.width = nextW;
+        mip.height = nextH;
+        mipCtx.imageSmoothingEnabled = true;
+        mipCtx.imageSmoothingQuality = 'high';
+        mipCtx.clearRect(0, 0, nextW, nextH);
+        mipCtx.drawImage(srcCanvas, 0, 0, srcW, srcH, 0, 0, nextW, nextH);
+        srcCanvas = mip;
+        srcW = nextW;
+        srcH = nextH;
+        useA = !useA;
+      }
+
+      blurScratch.width = finalW;
+      blurScratch.height = finalH;
       blurScratchCtx.imageSmoothingEnabled = true;
       blurScratchCtx.imageSmoothingQuality = 'high';
-      blurScratchCtx.clearRect(0, 0, smallW, smallH);
-      blurScratchCtx.drawImage(source, 0, 0, devW, devH, 0, 0, smallW, smallH);
+      blurScratchCtx.clearRect(0, 0, finalW, finalH);
+      blurScratchCtx.drawImage(srcCanvas, 0, 0, srcW, srcH, 0, 0, finalW, finalH);
+
       destCtx.imageSmoothingEnabled = true;
       destCtx.imageSmoothingQuality = 'high';
       destCtx.globalAlpha = alpha;
-      destCtx.drawImage(blurScratch, 0, 0, smallW, smallH, 0, 0, devW, devH);
+      destCtx.drawImage(blurScratch, 0, 0, finalW, finalH, 0, 0, devW, devH);
       destCtx.globalAlpha = 1;
     }
 
