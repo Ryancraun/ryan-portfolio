@@ -874,6 +874,20 @@ export default function ChromaCanvas({ crownY, children }) {
       const cy = (crownYRef.current ?? cssH * 0.33) + radius;
       const cx = cssW / 2;
 
+      // ROUND 10: skip the rebuild when nothing geometric actually
+      // changed. iOS fires `window.resize` on every toolbar
+      // collapse/expand while scrolling -- and the contact section sits at
+      // the bottom of the page, exactly where the toolbar animates -- but
+      // the wrapper's own size (100svh-based) doesn't change with it. A
+      // no-op rebuild used to be merely wasteful; on the fallback path it
+      // is now a full-price JS convolution of all five octaves on the main
+      // thread, on precisely the device (a real iPhone) that runs the
+      // fallback. `cy` folds in crownY, so crownY remeasures still rebuild;
+      // `cx`/`radius` derive from cssW, so these four comparisons cover
+      // the whole geom object. The initial call always passes (geom starts
+      // zeroed).
+      if (cssW === geom.cssW && cssH === geom.cssH && dpr === geom.dpr && cy === geom.cy) return;
+
       geom = { cssW, cssH, dpr, cx, cy, radius };
 
       // Identical sizing applied to both canvases in one loop -- same
