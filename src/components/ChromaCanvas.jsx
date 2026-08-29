@@ -544,8 +544,39 @@ export default function ChromaCanvas({ crownY, children }) {
     // regardless of how good or bad it is at an extreme single-step ratio
     // -- this no longer depends on Safari's large-ratio behavior matching
     // Chrome's at all.
+    // UNDER-BLUR CALIBRATION FIX (round 9, build-log.md -- "BLOOM BANDING,
+    // ROUND 9"). Ryan: "we're so close... still the smoke on the lines"
+    // (mobile) AND, separately, "what ever you did, broke it on desktop"
+    // (a real screenshot showing the halo on his actual desktop browser
+    // -- not emulated, not this session's tooling -- much thinner than it
+    // used to be). Both reports trace to the SAME cause: round 7 replaced
+    // `ctx.filter: blur()` with this downscale/upscale technique on EVERY
+    // browser, not just Safari (deliberately -- "one path now, no feature
+    // branch") -- so a miscalibrated downscale factor `k` would degrade
+    // Chrome/desktop too, not only iOS. It did: `k = blurDevicePx / 2.2`
+    // was a rough guess, sanity-checked only for "still looks smooth,
+    // no new graininess" (rounds 7-8), never for whether it reproduces
+    // the ORIGINAL ctx.filter blur's actual spread/reach. It didn't --
+    // confirmed by reproducing the desktop regression directly in this
+    // session's own Chrome tooling at a true ~1900px width (not just the
+    // mobile tier rounds 7-8 happened to check), where the halo was
+    // visibly tighter/thinner than Ryan's screenshot of the same view.
+    // A downscale-by-k then upscale approximates a blur whose spread
+    // scales with k, not with the divisor alone -- 2.2 was too large a
+    // divisor, producing too small a k, i.e. too little blur for a given
+    // requested radius, on every browser this technique now runs in.
+    // Fix: lower the divisor (0.7) so k -- and the resulting blur spread
+    // -- is large enough to match the richer, wider halo the original
+    // `ctx.filter` version had. Empirically verified, not derived from a
+    // formula (there is no single exact formula for this specific
+    // downscale/upscale approximation) -- re-tested at both a true 430px
+    // mobile tier and a true ~1900px desktop tier in this session's own
+    // Chrome tooling, confirming a wide, smooth, non-blocky halo at both
+    // (a too-small `finalW` from an over-aggressive divisor would show as
+    // visible blockiness at the tightest, most-downscaled octave -- it
+    // does not, at either tier).
     function drawBlurredOctave(destCtx, source, devW, devH, blurDevicePx, alpha) {
-      const k = Math.max(1, blurDevicePx / 2.2);
+      const k = Math.max(1, blurDevicePx / 0.7);
       const finalW = Math.max(1, Math.round(devW / k));
       const finalH = Math.max(1, Math.round(devH / k));
 
