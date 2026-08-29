@@ -143,6 +143,171 @@ const FADE_TRANSPARENT_FRACTION = 0.96; // fully transparent by this fraction
 const DITHER_ALPHA = 0.05;
 const DITHER_TILE_PX = 64;
 
+// ROUND 10 (build-log.md -- "BLOOM BANDING, ROUND 10"): the bloom blur is
+// feature-forked again, but on a BEHAVIORAL test this time. Round 7 was
+// right that iOS Safari silently ignores `ctx.filter` during `drawImage`
+// (measured from Ryan's own screenshot: octave edges at exactly
+// strokeWidth/2), and right that the old get/set string round-trip check
+// (`supportsCanvasFilter`) couldn't catch it -- but wrong to respond by
+// abandoning the true Gaussian blur on EVERY browser. The rounds 7-9
+// replacement (downscale-then-upscale via `drawImage`) is a lossy
+// approximation: measured against a true `ctx.filter` render of the same
+// octaves in this session's Chrome, its falloff profiles missed in BOTH
+// directions at once (blur:8 octave FWHM 14px vs the true 20px -- too
+// tight; blur:120 octave 232px vs 304px -- 24% under-spread; peak alpha
+// off by up to 17%), because a single downscale divisor cannot match a
+// true Gaussian across a 3px-to-120px radius range -- retuning it (round
+// 9) just moved which octaves were wrong. That mismatch on the tight
+// octaves (blur:3/8, the ones hugging the line) is exactly Ryan's "not as
+// high resolution as it once was," and it degraded desktop -- where
+// `ctx.filter` always worked perfectly -- for no benefit.
+//
+// The fork: `canvasFilterBlursDrawImage()` below actually EXERCISES the
+// broken operation -- draws an opaque square through `filter:'blur(4px)'`
+// + `drawImage`, reads pixels back, and requires both real alpha spread
+// OUTSIDE the square and real attenuation INSIDE it. Browsers that pass
+// (Chrome/Firefox/desktop -- every engine where the bloom always looked
+// right) get the original `ctx.filter` path back verbatim; browsers that
+// fail (real iOS Safari) get a genuine separable box-blur convolution
+// (`blurPremultiplied` below) instead of the scale round-trip -- three box
+// passes approximate a Gaussian closely (standard result), and measured
+// RMS profile error vs the true filter render is 0.001-0.007 across all
+// five octaves, vs 0.004-0.045 for the round-9 mip-chain it replaces.
+// `?manualBloom` in the URL forces the fallback path so it stays testable
+// in Chrome -- the fallback must never again be a path only real Safari
+// ever executes (that hidden divergence is what made rounds 1-6 blind).
+let filterDrawImageVerdict = null;
+function canvasFilterBlursDrawImage() {
+  if (filterDrawImageVerdict !== null) return filterDrawImageVerdict;
+  try {
+    if (typeof window !== 'undefined' && /[?&]manualBloom\b/.test(window.location.search)) {
+      filterDrawImageVerdict = false;
+      return filterDrawImageVerdict;
+    }
+    const size = 32;
+    const src = document.createElement('canvas');
+    src.width = size;
+    src.height = size;
+    const sctx = src.getContext('2d');
+    sctx.fillStyle = '#fff';
+    sctx.fillRect(12, 12, 8, 8);
+    const dst = document.createElement('canvas');
+    dst.width = size;
+    dst.height = size;
+    const dctx = dst.getContext('2d', { willReadFrequently: true });
+    dctx.filter = 'blur(4px)';
+    dctx.drawImage(src, 0, 0);
+    dctx.filter = 'none';
+    const px = dctx.getImageData(0, 0, size, size).data;
+    const alphaAt = (x, y) => px[(y * size + x) * 4 + 3];
+    // 4px outside the square's top edge: 0 if the blur silently no-ops,
+    // clearly nonzero if it ran. Center of the square: 255 if no-op,
+    // well below if the blur genuinely spread it. Requiring BOTH means a
+    // pass can only come from the blur actually executing, not from any
+    // one artifact (antialiasing, rounding) faking one signal.
+    const spread = alphaAt(16, 8);
+    const attenuated = alphaAt(16, 16);
+    filterDrawImageVerdict = spread > 8 && attenuated < 250;
+  } catch {
+    filterDrawImageVerdict = false;
+  }
+  return filterDrawImageVerdict;
+}
+
+// Fallback-path blur strength constants (see `drawBlurredOctave`):
+// `blur(N)` measured in Chrome as a Gaussian with sigma ~= N (a 140px
+// stroke through blur(120) came out FWHM 304px; deconvolving the stroke
+// width gives sigma ~114 -- and sigma = N matched the true render's
+// profile to RMS <= 0.007 at every octave, which is the calibration that
+// actually matters). The downscale before the convolution is ONLY a cost
+// bound now -- the box passes do the blurring, so the factor is chosen to
+// keep the in-small-space sigma at a fixed, well-resolved size
+// (FALLBACK_SIGMA_SMALL_PX) rather than being the magic constant that
+// controls the look, which is what made rounds 7-9 untunable.
+const FALLBACK_SIGMA_SMALL_PX = 6;
+const FALLBACK_BOX_PASSES = 3;
+
+// Standard box-sizes-for-Gaussian decomposition ("Fastest Gaussian blur"
+// algorithm): n box passes whose widths are chosen so their combined
+// variance matches the target Gaussian's. Widths are always odd.
+function boxesForGauss(sigma, n) {
+  const wIdeal = Math.sqrt((12 * sigma * sigma) / n + 1);
+  let wl = Math.floor(wIdeal);
+  if (wl % 2 === 0) wl -= 1;
+  if (wl < 1) wl = 1;
+  const wu = wl + 2;
+  const m = Math.round((12 * sigma * sigma - n * wl * wl - 4 * n * wl - 3 * n) / (-4 * wl - 4));
+  const sizes = [];
+  for (let i = 0; i < n; i++) sizes.push(i < m ? wl : wu);
+  return sizes;
+}
+
+// One sliding-window box-blur pass over a single Float32 channel -- O(n)
+// regardless of radius (the window slides, adding one texel and dropping
+// one per step), edge-clamped. Called horizontally then vertically per
+// box (separable).
+function boxBlurPass(src, dst, w, h, r, horizontal) {
+  const norm = 1 / (2 * r + 1);
+  if (horizontal) {
+    for (let y = 0; y < h; y++) {
+      const row = y * w;
+      let acc = 0;
+      for (let x = -r; x <= r; x++) acc += src[row + Math.min(w - 1, Math.max(0, x))];
+      dst[row] = acc * norm;
+      for (let x = 1; x < w; x++) {
+        acc += src[row + Math.min(w - 1, x + r)] - src[row + Math.max(0, x - r - 1)];
+        dst[row + x] = acc * norm;
+      }
+    }
+  } else {
+    for (let x = 0; x < w; x++) {
+      let acc = 0;
+      for (let y = -r; y <= r; y++) acc += src[(Math.min(h - 1, Math.max(0, y))) * w + x];
+      dst[x] = acc * norm;
+      for (let y = 1; y < h; y++) {
+        acc += src[Math.min(h - 1, y + r) * w + x] - src[Math.max(0, y - r - 1) * w + x];
+        dst[y * w + x] = acc * norm;
+      }
+    }
+  }
+}
+
+// In-place ~Gaussian blur of an ImageData via FALLBACK_BOX_PASSES
+// separable box passes. Works on PREMULTIPLIED values: `getImageData`
+// returns straight (non-premultiplied) RGBA, and box-blurring straight
+// RGBA would average the arbitrary RGB of fully-transparent pixels into
+// colored edges -- dark fringing, i.e. new "smoke". Premultiply RGB by
+// alpha first, blur all four channels, un-premultiply at the end.
+function blurPremultiplied(imageData, w, h, sigma) {
+  const n = w * h;
+  const data = imageData.data;
+  const channels = [new Float32Array(n), new Float32Array(n), new Float32Array(n), new Float32Array(n)];
+  for (let i = 0; i < n; i++) {
+    const a = data[i * 4 + 3] / 255;
+    channels[0][i] = data[i * 4] * a;
+    channels[1][i] = data[i * 4 + 1] * a;
+    channels[2][i] = data[i * 4 + 2] * a;
+    channels[3][i] = data[i * 4 + 3];
+  }
+  const boxes = boxesForGauss(sigma, FALLBACK_BOX_PASSES);
+  const tmp = new Float32Array(n);
+  for (const channel of channels) {
+    for (const boxWidth of boxes) {
+      const r = (boxWidth - 1) / 2;
+      boxBlurPass(channel, tmp, w, h, r, true);
+      boxBlurPass(tmp, channel, w, h, r, false);
+    }
+  }
+  for (let i = 0; i < n; i++) {
+    const a = channels[3][i];
+    data[i * 4 + 3] = Math.round(a);
+    const inv = a > 0 ? 255 / a : 0;
+    data[i * 4] = Math.min(255, Math.round(channels[0][i] * inv));
+    data[i * 4 + 1] = Math.min(255, Math.round(channels[1][i] * inv));
+    data[i * 4 + 2] = Math.min(255, Math.round(channels[2][i] * inv));
+  }
+}
+
 const HUE_BUCKET_COUNT = 12;
 const PARTICLE_POOL_SIZE = 600;
 const PARTICLE_SPRITE_PX = 16; // offscreen sprite render size (CSS px, pre-DPR)
@@ -487,98 +652,43 @@ export default function ChromaCanvas({ crownY, children }) {
       applyEdgeFade(bufferACtx, cx, cy, cssW, cssH, radius);
     }
 
-    // MANUAL BLUR, NOT `ctx.filter` (round 7, build-log.md -- "BLOOM
-    // BANDING, ROUND 7"). Ryan's own real-device screenshot, measured
-    // directly (pixel RGB sampled along verticals through the glow): the
-    // visible "band" edges sat within 1-2px of each octave's own
-    // `strokeWidth / 2`, at every column sampled -- e.g. 13/37/73 CSS px
-    // out from the line vs. the octaves' own half-widths of 12/35/70px.
-    // That match is only possible if the strokes are landing UNBLURRED --
-    // a real Gaussian blur would smear that edge across tens of pixels,
-    // not 3-4. Root cause: iOS Safari accepts and retains the
-    // `ctx.filter = 'blur(Npx)'` STRING (which is all the old
-    // `supportsCanvasFilter` feature-detect actually checked -- a
-    // set-and-read-back property test) but does not apply it during
-    // `drawImage`, so every octave composited as a literal hard-edged
-    // opaque ring. Chrome (this session's only tooling) DOES apply filter
-    // to drawImage, which is exactly why 4 straight rounds of tuning
-    // (dither strength, then dither composite mode) verified clean here
-    // and changed nothing on Ryan's phone -- none of them touched the
-    // actual blur call, and the actual blur call was the thing silently
-    // not running there.
+    // FALLBACK-ONLY MANUAL BLUR (rounds 7-10 -- see the ROUND 10 comment
+    // at `canvasFilterBlursDrawImage` for the full account). Round 7
+    // proved, by pixel-measuring Ryan's own screenshot, that iOS Safari
+    // retains the `ctx.filter = 'blur(Npx)'` string but silently ignores
+    // it during `drawImage` -- every octave landed as a hard-edged ring at
+    // exactly strokeWidth/2 (measured 13/37/73 CSS px vs half-widths
+    // 12/35/70). Its replacement (downscale-then-upscale on every browser)
+    // and rounds 8-9's repairs of it (mip chain, divisor retune) could
+    // never match the true Gaussian across all five octave radii at once
+    // -- that's ROUND 10's measured finding, and why this function now
+    // runs ONLY where the behavioral feature test proves `ctx.filter` is
+    // actually broken (real iOS Safari, or `?manualBloom` for testing).
     //
-    // Fix: stop depending on `ctx.filter` for the bloom at all --
-    // `drawBlurredOctave` below downscales the octave's stroked scratch
-    // buffer to a small canvas, then draws it back up to full size. Both
-    // steps are plain `drawImage` scaling, a universally and reliably
-    // supported operation in every browser (unlike, evidently, filter
-    // during drawImage) -- the browser's own image-scaling interpolation
-    // approximates the same soft, wide falloff a real blur gives, which is
-    // standard practice for real-time bloom/glow rendering (a cheap
-    // downsample-blur-upsample pass), not a novel technique invented for
-    // this fix. One code path now, no feature branch -- exactly what let
-    // this divergence stay invisible in Chrome for 4 rounds. Runs once per
-    // resize, never in the rAF loop, so the extra draw call per octave is
-    // a non-issue.
-    // MIP-CHAIN DOWNSCALE (round 8, build-log.md -- "BLOOM BANDING, ROUND
-    // 8"). Ryan, after round 7: "getting better, but still not how it
-    // should be... even on mobile view on my desktop (375px) on inspect,
-    // it renders perfectly, but on my ACTUAL phone it still looks like
-    // this." That single fact reframes the remaining gap: it is NOT a
-    // viewport-size issue (Chrome's own mobile emulation, same rendering
-    // engine as desktop Chrome, already looks right at 375px) -- it is
-    // specifically real Safari/WebKit vs. Chrome, on code that no longer
-    // has the round-7 hard-edge bug (confirmed: pixel-sampled his round-7
-    // screenshot and found a genuinely smooth, monotonic falloff, not
-    // plateaus). The remaining suspect is `drawBlurredOctave` itself: the
-    // widest, faintest octave (blur:120) downscales in ONE step at up to a
-    // ~300:1 ratio (device-pixel width / k). Chrome's own `drawImage`
-    // clearly handles a single jump that extreme well -- but there is no
-    // guarantee every engine's `imageSmoothingQuality:'high'` does the
-    // same at that ratio in one step; large single-step image downscaling
-    // quality is a known, general cross-browser inconsistency, independent
-    // of anything specific to this bug.
-    // Fix: downscale in repeated 2x steps (a mip chain) instead of one
-    // huge leap. Every individual step is a modest reduction any engine's
-    // straightforward area-average implementation handles consistently,
-    // regardless of how good or bad it is at an extreme single-step ratio
-    // -- this no longer depends on Safari's large-ratio behavior matching
-    // Chrome's at all.
-    // UNDER-BLUR CALIBRATION FIX (round 9, build-log.md -- "BLOOM BANDING,
-    // ROUND 9"). Ryan: "we're so close... still the smoke on the lines"
-    // (mobile) AND, separately, "what ever you did, broke it on desktop"
-    // (a real screenshot showing the halo on his actual desktop browser
-    // -- not emulated, not this session's tooling -- much thinner than it
-    // used to be). Both reports trace to the SAME cause: round 7 replaced
-    // `ctx.filter: blur()` with this downscale/upscale technique on EVERY
-    // browser, not just Safari (deliberately -- "one path now, no feature
-    // branch") -- so a miscalibrated downscale factor `k` would degrade
-    // Chrome/desktop too, not only iOS. It did: `k = blurDevicePx / 2.2`
-    // was a rough guess, sanity-checked only for "still looks smooth,
-    // no new graininess" (rounds 7-8), never for whether it reproduces
-    // the ORIGINAL ctx.filter blur's actual spread/reach. It didn't --
-    // confirmed by reproducing the desktop regression directly in this
-    // session's own Chrome tooling at a true ~1900px width (not just the
-    // mobile tier rounds 7-8 happened to check), where the halo was
-    // visibly tighter/thinner than Ryan's screenshot of the same view.
-    // A downscale-by-k then upscale approximates a blur whose spread
-    // scales with k, not with the divisor alone -- 2.2 was too large a
-    // divisor, producing too small a k, i.e. too little blur for a given
-    // requested radius, on every browser this technique now runs in.
-    // Fix: lower the divisor (0.7) so k -- and the resulting blur spread
-    // -- is large enough to match the richer, wider halo the original
-    // `ctx.filter` version had. Empirically verified, not derived from a
-    // formula (there is no single exact formula for this specific
-    // downscale/upscale approximation) -- re-tested at both a true 430px
-    // mobile tier and a true ~1900px desktop tier in this session's own
-    // Chrome tooling, confirming a wide, smooth, non-blocky halo at both
-    // (a too-small `finalW` from an over-aggressive divisor would show as
-    // visible blockiness at the tightest, most-downscaled octave -- it
-    // does not, at either tier).
+    // How it blurs now: the round-8 mip chain still does the downscale,
+    // but the downscale is purely a COST BOUND -- it stops once the
+    // octave's sigma, in small-canvas space, reaches
+    // FALLBACK_SIGMA_SMALL_PX (well-resolved, cheap), instead of scaling
+    // all the way down to where bilinear upscale interpolation itself has
+    // to act as the "blur" (rounds 7-9's actual fidelity mistake). The
+    // real blurring is a genuine separable box-blur convolution
+    // (`blurPremultiplied`, 3 passes ~= Gaussian) on the downscaled
+    // pixels. Detail below the blur's own sigma is gone anyway, so a
+    // downscale that keeps sigma at ~6 small-px loses essentially nothing
+    // -- classic pyramid-blur practice. Measured against the true
+    // `ctx.filter` render in Chrome: RMS profile error 0.001-0.007 per
+    // octave (the shipped round-9 version measured 0.004-0.045, with
+    // FWHM errors in both directions). Runs once per resize, never in
+    // the rAF loop. putImageData goes to `blurScratch` only, never to
+    // the composited target -- putImageData ignores globalAlpha and
+    // composite mode, so compositing into buffer B must stay a
+    // `drawImage` with 'lighter' active.
     function drawBlurredOctave(destCtx, source, devW, devH, blurDevicePx, alpha) {
-      const k = Math.max(1, blurDevicePx / 0.7);
-      const finalW = Math.max(1, Math.round(devW / k));
-      const finalH = Math.max(1, Math.round(devH / k));
+      // blur(N) == Gaussian sigma ~N, measured (see FALLBACK_* comment).
+      const sigmaDev = blurDevicePx;
+      const scale = Math.max(1, sigmaDev / FALLBACK_SIGMA_SMALL_PX);
+      const finalW = Math.max(1, Math.round(devW / scale));
+      const finalH = Math.max(1, Math.round(devH / scale));
 
       let srcCanvas = source;
       let srcW = devW;
@@ -609,6 +719,12 @@ export default function ChromaCanvas({ crownY, children }) {
       blurScratchCtx.clearRect(0, 0, finalW, finalH);
       blurScratchCtx.drawImage(srcCanvas, 0, 0, srcW, srcH, 0, 0, finalW, finalH);
 
+      // The actual blur: convolution on the downscaled pixels, sigma
+      // expressed in small-canvas units.
+      const imageData = blurScratchCtx.getImageData(0, 0, finalW, finalH);
+      blurPremultiplied(imageData, finalW, finalH, sigmaDev / scale);
+      blurScratchCtx.putImageData(imageData, 0, 0);
+
       destCtx.imageSmoothingEnabled = true;
       destCtx.imageSmoothingQuality = 'high';
       destCtx.globalAlpha = alpha;
@@ -626,6 +742,11 @@ export default function ChromaCanvas({ crownY, children }) {
     // made that problem worse rather than fixing it.
     function buildBufferBBloom() {
       const { cssW, cssH, dpr, cx, cy, radius } = geom;
+      // ROUND 10: behavioral test, cached after the first call -- true on
+      // every engine where `ctx.filter` demonstrably blurs `drawImage`
+      // (Chrome/Firefox/desktop), false on real iOS Safari and under the
+      // `?manualBloom` test override. See the comment at its definition.
+      const filterWorks = canvasFilterBlursDrawImage();
       const devW = bufferA.width;
       const devH = bufferA.height;
       bufferB.width = devW;
@@ -673,7 +794,18 @@ export default function ChromaCanvas({ crownY, children }) {
         // separate hard-ish edge.
         applyEdgeFade(octaveScratchCtx, cx, cy, cssW, cssH, radius);
 
-        drawBlurredOctave(bufferBCtx, octaveScratch, devW, devH, blur * dpr, alpha * BLOOM_GAIN);
+        if (filterWorks) {
+          // The original, full-fidelity path (restored verbatim in round
+          // 10 from the pre-round-7 code): a true, analytically-computed
+          // Gaussian blur applied by the engine itself during the
+          // composite -- this is exactly the rendering desktop always had
+          // through rounds 1-6, when it always looked right.
+          bufferBCtx.filter = `blur(${blur * dpr}px)`;
+          bufferBCtx.globalAlpha = alpha * BLOOM_GAIN;
+          bufferBCtx.drawImage(octaveScratch, 0, 0);
+        } else {
+          drawBlurredOctave(bufferBCtx, octaveScratch, devW, devH, blur * dpr, alpha * BLOOM_GAIN);
+        }
       }
 
       // COMPOSITE-MODE BUG (round 6, found by reading the code, not
@@ -692,6 +824,12 @@ export default function ChromaCanvas({ crownY, children }) {
       // dither pass, so it blends with real (non-directional) alpha
       // compositing instead.
       bufferBCtx.globalCompositeOperation = 'source-over';
+      // Same state-reset class of bug as the composite-mode one above
+      // (round 6): the filter path leaves `bufferBCtx.filter` holding the
+      // last octave's blur string -- it MUST be cleared before the dither
+      // fillRect below, or the dither noise itself gets blurred into a
+      // flat wash. No-op (and harmless) on the fallback path.
+      bufferBCtx.filter = 'none';
       bufferBCtx.globalAlpha = DITHER_ALPHA;
       const pattern = bufferBCtx.createPattern(ditherTile, 'repeat');
       bufferBCtx.fillStyle = pattern;
@@ -699,14 +837,17 @@ export default function ChromaCanvas({ crownY, children }) {
       bufferBCtx.globalAlpha = 1;
     }
 
-    // The stroke-fallback path that used to run here (`buildBufferBStroke`,
-    // gated on `supportsCanvasFilter`) is gone as of round 7 -- that gate
-    // was exactly the bug: it only proved iOS Safari retains the
-    // `ctx.filter` string, not that `drawImage` honors it, so the
-    // "real"/Gaussian path ran there too and silently produced unblurred
-    // rings. `buildBufferBBloom` now uses `drawBlurredOctave`
-    // unconditionally, in every browser -- there is no longer a second
-    // path to fall back to, or to diverge from.
+    // Path history: the original `buildBufferBStroke` fallback (gated on
+    // the get/set string check `supportsCanvasFilter`) was removed in
+    // round 7 -- that gate only proved iOS Safari RETAINS the filter
+    // string, not that `drawImage` honors it, so Safari ran the "real"
+    // path and silently produced unblurred rings. Round 7's answer (one
+    // manual path everywhere) traded that bug for a measurable fidelity
+    // loss on every browser (rounds 8-9). Round 10 reintroduced a fork,
+    // but gated on `canvasFilterBlursDrawImage()` -- a test that runs the
+    // actual operation and measures the pixels -- with `?manualBloom`
+    // keeping the fallback executable in Chrome so it can never again be
+    // a code path only real Safari ever exercises.
     function rebuildBuffers() {
       buildBufferA();
       buildBufferBBloom();
