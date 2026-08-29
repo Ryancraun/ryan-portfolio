@@ -828,13 +828,33 @@ export default function ChromaCanvas({ crownY, children }) {
       // (round 6): the filter path leaves `bufferBCtx.filter` holding the
       // last octave's blur string -- it MUST be cleared before the dither
       // fillRect below, or the dither noise itself gets blurred into a
-      // flat wash. No-op (and harmless) on the fallback path.
+      // flat wash. No-op (and harmless) on the fallback path. Unconditional
+      // (cheap, and correctness-neutral either way) even though the dither
+      // pass itself is now conditional below.
       bufferBCtx.filter = 'none';
-      bufferBCtx.globalAlpha = DITHER_ALPHA;
-      const pattern = bufferBCtx.createPattern(ditherTile, 'repeat');
-      bufferBCtx.fillStyle = pattern;
-      bufferBCtx.fillRect(0, 0, devW, devH);
-      bufferBCtx.globalAlpha = 1;
+      // GRAIN, ROUND 11 (build-log.md): Ryan, on desktop after round 10:
+      // "it is very grainy." This dither was built (round 5-6) to mask
+      // 8-bit banding from a BROKEN blur -- and it was always applied as a
+      // flat `fillRect` over the ENTIRE buffer, not masked to the arc's own
+      // shape, which is exactly why it shows as visible noise even in
+      // areas of the canvas nowhere near the glow (Ryan's screenshot: grain
+      // near the top of the section, far from the arc). Round 10 restored
+      // a TRUE, analytically-computed Gaussian blur on `filterWorks`
+      // browsers (desktop/Chrome, verified) -- that path has no
+      // quantization banding left to mask, so the dither there is now pure
+      // unwanted noise with no remaining justification. Skip it entirely
+      // on that path. Left ON for the fallback (manual convolution) path,
+      // unverifiable on real Safari in this environment -- the fallback is
+      // a real blur too (not the old lossy downscale), but keeping a small
+      // defensive dither there costs nothing and only ever helps a path
+      // nobody has directly confirmed on real hardware.
+      if (!filterWorks) {
+        bufferBCtx.globalAlpha = DITHER_ALPHA;
+        const pattern = bufferBCtx.createPattern(ditherTile, 'repeat');
+        bufferBCtx.fillStyle = pattern;
+        bufferBCtx.fillRect(0, 0, devW, devH);
+        bufferBCtx.globalAlpha = 1;
+      }
     }
 
     // Path history: the original `buildBufferBStroke` fallback (gated on
