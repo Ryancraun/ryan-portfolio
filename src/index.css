@@ -1708,7 +1708,25 @@ a{ color:inherit; }
   border:1px solid rgba(244,242,236,0.07);
   background:var(--bg-raise);
 }
-.phone-shot__screen img{ display:block; width:100%; height:100%; object-fit:cover; }
+/* CARD-PADDING CONTRAST FIX (Ryan: "the app has padding, you placed the
+   image in there at FULL but give it what looks like padding" -- correct;
+   the earlier "no padding" read was mine, mistaken). Measured directly on
+   copia-home-dark.jpg: the list-card background (43,38,32) sits at only a
+   2:1 luminance contrast ratio against the screen background (14,13,9) --
+   below WCAG's own 3:1 floor for non-text UI. The ~34px inset (real,
+   confirmed by scanning the raw pixel row) is genuinely there; it just
+   doesn't read as separation at a glance, especially at the small
+   home-card size where JPEG/downscale softening blends it further. Same
+   shape of bug as the `.phone-shot__body` bezel-visibility fix above ("a
+   CONTRAST bug, not a size bug -- padding alone can never fix a boundary
+   that has no color difference to see") -- same fix category: lift
+   contrast, don't add a second, fake inset on top of a real one (that
+   would double up, not clarify). A small, universal lift (not tuned per
+   screenshot) because Copia's own dark-mode screens (home/onboarding/
+   route/scan-pages) share this same low-contrast card-on-near-black
+   pattern -- verified visually against the brighter/light screenshots too
+   (recipes, paywall, scan-review) to confirm this doesn't blow them out. */
+.phone-shot__screen img{ display:block; width:100%; height:100%; object-fit:cover; filter:contrast(1.14) brightness(1.05); }
 .phone-shot__caption{
   margin-top:0.85rem;
   font-family:var(--font-sans);
