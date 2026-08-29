@@ -1554,6 +1554,11 @@ a{ color:inherit; }
      override needed any more since the base rule no longer sets one. */
   .stack__item{ padding:2vh 0; }
   .stack__frame{ height:76vh; }
+  /* Matches the METADATA-COLLISION FIX's width cap above -- `.stack__frame`
+     is 76vh here, not 82vh, so the phone's height budget must use the same
+     76vh or the cap silently stops applying at exactly the breakpoint
+     where the card got shorter and the collision risk went up. */
+  .copia-teaser .phone-shot{ width: clamp(90px, 25vh, min(300px, calc((76vh - 280px) / 2.1741))); }
   .card{ border-radius:16px; }
   .card__index{ top:1.1rem; left:1.25rem; font-size:0.9rem; }
   .card__index--backdrop{ top:3.6rem; padding:0.25rem 0.5rem; }
@@ -1606,11 +1611,53 @@ a{ color:inherit; }
    see this case study's own "visual system" swatches, darkened slightly to
    read as a card surface) plus the grain texture below. The real phone
    screenshot is the card's entire visual interest. */
+/* METADATA-COLLISION FIX (Ryan, real device screenshot: "ensure all of the
+   apps content can work" -- the phone's own tab bar was landing behind/
+   under the card's title text; "you keep messing this up... find real
+   mockup templates instead" -- the mockup ASSET was never the problem
+   here, so a different template would have hit the identical collision;
+   this is a layout-sizing bug, not a rendering-quality one, and applies to
+   whatever image sits in this slot).
+   Root cause, measured directly on a true 390x844 check: `.card__meta`
+   (build-log.md's title/tag/byline/CTA block, below) is
+   `position:absolute; bottom:0`, sized to its own content (241px measured)
+   and completely independent of the phone's size or position -- nothing
+   here ever accounted for it. `.copia-teaser` used to just `inset:0` its
+   parent, `.card__media`, which is deliberately OVERSIZED
+   (`top:-14%; bottom:-14%`, i.e. 128% of the card's real height, so the
+   parallax scroll animation always has real pixels to reveal -- see
+   `.card__media`'s own comment, do not shrink that). Centering the phone
+   within THAT oversized box put its vertical center near the real card's
+   own center, not accounting for `.card__meta` eating the bottom ~240px --
+   the phone (uncapped by anything) reached 148px past `.card__meta`'s own
+   top edge.
+   Fix: give `.copia-teaser` its OWN `top`/`bottom` instead of inheriting
+   `inset:0` from its oversized parent -- `10.9375%` is exactly
+   `0.14 / 1.28` (the real card's own top/bottom edge, expressed as a
+   fraction of `.card__media`'s 128%-of-card height), so `top:10.9375%`
+   and a bare `bottom:10.9375%` would map this box back onto the REAL
+   card's bounds regardless of the card's actual height at any breakpoint
+   (a ratio, not a fixed value -- it doesn't need a separate mobile
+   override the way a px-based fix would). `calc(10.9375% + 280px)` on
+   `bottom` then reserves real space for `.card__meta` on top of that (280px
+   -- the measured 241px plus margin, since metadata height can vary
+   slightly with content/line-wrapping) -- CSS resolves the percentage part
+   against `.card__media`'s own height first, then adds the flat px
+   reservation, so the phone can now only ever center within "the real
+   card, minus the metadata's own space" -- structurally incapable of
+   reaching into `.card__meta`'s territory, not just tuned to avoid it at
+   the one width this was caught at. */
 .copia-teaser{
-  position:absolute; inset:0;
+  position:absolute; top:10.9375%; right:0; bottom:calc(10.9375% + 280px); left:0;
   display:flex; align-items:center; justify-content:center;
   background:#1c1310;
 }
+/* Repositioning alone (above) closed nearly all of the collision (measured:
+   -128px overlap -> -10.8px at a true 390x844 check) but the phone's own
+   uncapped height can still exceed even the correctly-bounded box, so it
+   still centers-and-overflows slightly both edges. Cap the phone itself so
+   it actually FITS the box instead of just centering within it -- see
+   `.copia-teaser .phone-shot` below. */
 .copia-teaser__grain{
   position:absolute; inset:0;
   background-image: radial-gradient(circle at 1px 1px, rgba(244,242,236,0.05) 1px, transparent 0);
@@ -1655,7 +1702,28 @@ a{ color:inherit; }
    going edge-to-edge. `margin:0` overrides PhoneShot's own default top
    margin (meant for a figure sitting in document flow, not centered in a
    flex box). */
-.copia-teaser .phone-shot{ width: clamp(190px, 25vh, 300px); margin:0; }
+/* Second half of the METADATA-COLLISION FIX (see `.copia-teaser` above):
+   caps the phone's WIDTH -- and therefore, via `.phone-shot__body`'s own
+   fixed aspect-ratio, its height -- so it actually FITS inside the
+   now-correctly-bounded box instead of just centering within it and
+   overflowing both edges. `82vh` matches `.stack__frame`'s own default
+   height; `280px` is the same metadata reservation as the box above;
+   `/2.1741` (2622/1206) converts an allowed HEIGHT budget into the WIDTH
+   this rule actually sets, since capping height directly wouldn't shrink
+   the aspect-ratio-driven box proportionally (only its width input does).
+   `min()` against the old 300px cap so this only ever tightens things on
+   short/narrow viewports. Floor lowered 190px -> 90px: CSS clamp() returns
+   the FLOOR whenever it's greater than the computed cap (a min>max clamp()
+   is spec'd to just return min, silently ignoring the max) -- the old
+   190px floor was ITSELF the thing overriding this fix at real narrow-and-
+   short devices (checked against the shortest common real iPhone, SE at
+   375x667 -- the true budget-derived cap there is ~104px; a 150px floor
+   tried first still silently won and still collided). 90px stays safely
+   below any budget this formula is likely to compute at a real device
+   size, so the formula actually drives the size instead of being
+   overridden -- see the matching mobile override below, `.stack__frame`
+   drops to 76vh at <=640px so the budget calc must match. */
+.copia-teaser .phone-shot{ width: clamp(90px, 25vh, min(300px, calc((82vh - 280px) / 2.1741))); margin:0; }
 
 /* ---------- phone-shot (real screenshots, device-bezel treatment) ----------
    See PhoneShot.jsx's own comment -- a metal-edge chassis + rounded glass
