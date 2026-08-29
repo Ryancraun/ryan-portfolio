@@ -1775,21 +1775,20 @@ a{ color:inherit; }
   border-radius: 1.75rem; overflow:hidden;
   border:1px solid rgba(244,242,236,0.07);
   background:var(--bg-raise);
-  /* SCREEN INSET, ROUND 2 (Ryan, after the contrast fix: "need more
-     padding, make it look like it has 16-24px of padding"). The contrast
-     fix made the screenshot's OWN real ~34px card-to-edge margin actually
-     visible -- correct as far as it went, but Ryan's direct ask now is
-     for more breathing room than that image-internal margin gives at this
-     display size, a deliberate presentational choice, not a
-     pixel-accuracy question. Unlike the contrast fix, this genuinely IS a
-     second inset layered on top of the image's own margin -- done
-     intentionally this time, on Ryan's explicit instruction, not
-     mistaken for the same problem. 20px split the requested 16-24px
-     range; `--bg-raise` (this screen's own background, already used
-     behind the image before it loads) shows through the gap so it reads
-     as a deliberate mat around the capture, not a color mismatch. */
-  padding: 20px;
 }
+/* SCREEN INSET, ROUND 2 -- ADDED THEN REMOVED (Ryan: "need more padding,
+   make it look like it has 16-24px of padding", then, after seeing it
+   live: "Still looks awful, remove the 'Fake padding'"). A real 20px
+   `padding` here (screen background showing through as a mat around the
+   capture) did what was asked, but reads wrong on an actual device
+   screenshot -- real iOS apps don't have a colored gutter between their
+   content and the physical screen edge, so an inset mat breaks the "real
+   iPhone" illusion PhoneShot exists for in the first place, however
+   deliberately it was drawn. Reverted; back to full-bleed like every
+   other screenshot on this site. The CARD-PADDING CONTRAST FIX directly
+   below is what actually stands: the screenshot's own genuine ~34px
+   internal margin, made legible via contrast rather than covered by a
+   second, fabricated one. */
 /* CARD-PADDING CONTRAST FIX (Ryan: "the app has padding, you placed the
    image in there at FULL but give it what looks like padding" -- correct;
    the earlier "no padding" read was mine, mistaken). Measured directly on
@@ -1808,15 +1807,7 @@ a{ color:inherit; }
    route/scan-pages) share this same low-contrast card-on-near-black
    pattern -- verified visually against the brighter/light screenshots too
    (recipes, paywall, scan-review) to confirm this doesn't blow them out. */
-.phone-shot__screen img{
-  display:block; width:100%; height:100%; object-fit:cover;
-  filter:contrast(1.14) brightness(1.05);
-  /* Concentric with the screen's own 1.75rem (28px) radius minus the new
-     20px inset above -- 8px keeps the image's own corner rounding
-     visually aligned with the screen's, instead of a sharp-cornered photo
-     sitting inside a rounded mat. */
-  border-radius: 8px;
-}
+.phone-shot__screen img{ display:block; width:100%; height:100%; object-fit:cover; filter:contrast(1.14) brightness(1.05); }
 .phone-shot__caption{
   margin-top:0.85rem;
   font-family:var(--font-sans);
