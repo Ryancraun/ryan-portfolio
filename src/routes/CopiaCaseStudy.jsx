@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ScrollReveal from '@/components/ScrollReveal';
-import PhoneShot from '@/components/PhoneShot';
 import AppStoreBadge from '@/components/AppStoreBadge';
 import StatNumber from '@/components/StatNumber';
 import { setDocumentMeta } from '@/lib/documentMeta';
@@ -56,6 +55,21 @@ import copiaPaywall from '@/assets/copia-paywall.jpg';
 // just sized for a readable case-study figure instead of a small card
 // preview. No second Dynamic Island drawn on top -- every capture already
 // has its own real one baked in from the simulator.
+//
+// APP-STORE-FRAME ROUND (Ryan: real App Store marketing screenshots
+// replaced 4 of the 10 captures above -- hero, decision 1's shopping
+// screen, decision 5's scan-in-progress shot, and the recipe browser --
+// cropped to screen-content-only from the source frames. Those crops
+// don't share the original simulator captures' exact 1206:2622 ratio,
+// which made `PhoneShot.jsx`'s fixed-aspect-ratio + object-fit:cover
+// bezel crop the top/bottom of the new ones (Ryan: "they are getting
+// cutoff"). Rather than re-crop to chase an exact ratio, EVERY
+// screenshot on this page (not just the 4 new ones) moved back from
+// `PhoneShot.jsx` to the plain `.cs-shot` bordered rectangle already
+// used on Vault/PickTheOdds -- `height:auto`, no forced ratio, nothing
+// to crop -- so every image on the page renders uncropped and looks
+// consistent with itself. PhoneShot.jsx itself is untouched and still
+// used by the home page's Copia teaser card.
 //
 // AUDIENCE PASS (Ryan: "these seem engineering heavy... optimized for
 // PRODUCT designers / UX / UI designers"): "Building for trust" and "What
@@ -134,10 +148,13 @@ export default function CopiaCaseStudy() {
           </div>
         </div>
 
-        <PhoneShot
-          src={copiaHomeDark}
-          alt="Copia's home screen: an active-trip hero card with a route progress dial, a pinned quick-top-up list, and category rows"
-        />
+        <figure className="cs-shot">
+          <img
+            src={copiaHomeDark}
+            alt="Copia's home screen: an active-trip hero card with a route progress dial, a pinned quick-top-up list, and category rows"
+            loading="lazy"
+          />
+        </figure>
       </section>
 
       <ScrollReveal as="section" className="cs-section cs-problems">
@@ -250,17 +267,18 @@ export default function CopiaCaseStudy() {
             failure mode of a missing one. A designer documenting they changed their own mind after watching a real
             person shop is the most persuasive thing on this page.
           </p>
-          <PhoneShot
-            src={copiaRouteDark}
-            alt="Copia's shopping screen: aisle stations with item rows (Carrots, Bananas, Ground beef, Cheddar cheese), no quantity number on any row"
-            caption={
-              <>
-                The shipped row, no quantity display: the earlier &ldquo;eggs 3&rdquo; version this decision
-                reversed was never captured, since it no longer exists to screenshot; the reasoning above is the
-                record of it.
-              </>
-            }
-          />
+          <figure className="cs-shot">
+            <img
+              src={copiaRouteDark}
+              alt="Copia's shopping screen: aisle stations with item rows (Carrots, Bananas, Ground beef, Cheddar cheese), no quantity number on any row"
+              loading="lazy"
+            />
+            <figcaption>
+              The shipped row, no quantity display: the earlier &ldquo;eggs 3&rdquo; version this decision
+              reversed was never captured, since it no longer exists to screenshot; the reasoning above is the
+              record of it.
+            </figcaption>
+          </figure>
         </ScrollReveal>
 
         <ScrollReveal as="article" className="cs-decision" id="decision-2">
@@ -276,16 +294,17 @@ export default function CopiaCaseStudy() {
             automatically, one that&rsquo;s written only by the explicit &ldquo;make this the trip&rdquo; action.
             The bug looked like a broken menu; the real cause was one concept doing two jobs, not a broken control.
           </p>
-          <PhoneShot
-            src={copiaHomeLight}
-            alt="Copia's home screen, light appearance: the Weekly hero card is the one currently promoted as the active trip"
-            caption={
-              <>
-                The hero card in question: &ldquo;Weekly&rdquo; is promoted here because of the second, explicit
-                timestamp, not just because it was touched most recently.
-              </>
-            }
-          />
+          <figure className="cs-shot">
+            <img
+              src={copiaHomeLight}
+              alt="Copia's home screen, light appearance: the Weekly hero card is the one currently promoted as the active trip"
+              loading="lazy"
+            />
+            <figcaption>
+              The hero card in question: &ldquo;Weekly&rdquo; is promoted here because of the second, explicit
+              timestamp, not just because it was touched most recently.
+            </figcaption>
+          </figure>
         </ScrollReveal>
 
         <ScrollReveal as="article" className="cs-decision" id="decision-3">
@@ -328,22 +347,29 @@ export default function CopiaCaseStudy() {
             scan.
           </p>
           <div className="cs-decision__visual">
-            <PhoneShot
-              src={copiaScanPages}
-              alt="Copia's live scan view: camera framing a cookbook page with corner guides, 'Reading page 4 of 9,' ingredients streaming in below as they're recognized"
-              caption="The scan in progress: a progress rail across the top, ingredients appearing as each page is read, not a spinner."
-            />
-            <PhoneShot
-              src={copiaScanReview}
-              alt="Copia's scan review screen: six parsed ingredients with amounts, ready to add to the Weekly list"
-              caption={
-                <>
-                  The review step: parsed lines with their real measures, one tap from &ldquo;Add 8 items.&rdquo;
-                  The &ldquo;Apple Intelligence is still downloading&rdquo; line is the simulator&rsquo;s own honest
-                  fallback to its on-device parser, not a bug, just absent on a real device.
-                </>
-              }
-            />
+            <figure className="cs-shot">
+              <img
+                src={copiaScanPages}
+                alt="Copia's live scan view: camera framing a cookbook page with corner guides, 'Reading page 4 of 9,' ingredients streaming in below as they're recognized"
+                loading="lazy"
+              />
+              <figcaption>
+                The scan in progress: a progress rail across the top, ingredients appearing as each page is read,
+                not a spinner.
+              </figcaption>
+            </figure>
+            <figure className="cs-shot">
+              <img
+                src={copiaScanReview}
+                alt="Copia's scan review screen: six parsed ingredients with amounts, ready to add to the Weekly list"
+                loading="lazy"
+              />
+              <figcaption>
+                The review step: parsed lines with their real measures, one tap from &ldquo;Add 8 items.&rdquo;
+                The &ldquo;Apple Intelligence is still downloading&rdquo; line is the simulator&rsquo;s own honest
+                fallback to its on-device parser, not a bug, just absent on a real device.
+              </figcaption>
+            </figure>
           </div>
         </ScrollReveal>
 
@@ -385,11 +411,14 @@ export default function CopiaCaseStudy() {
             rather than a daily reset: a daily reset trains people to ration; a lifetime cap lets them experience
             the feature properly, then decide.
           </p>
-          <PhoneShot
-            src={copiaPaywall}
-            alt="Copia Pro paywall: Monthly $3.99, Annual $24.99 (best value, selected), Lifetime $49.99, 14-day free trial"
-            caption="The shipped paywall: three tiers, annual pre-selected as best value, lifetime alongside it."
-          />
+          <figure className="cs-shot">
+            <img
+              src={copiaPaywall}
+              alt="Copia Pro paywall: Monthly $3.99, Annual $24.99 (best value, selected), Lifetime $49.99, 14-day free trial"
+              loading="lazy"
+            />
+            <figcaption>The shipped paywall: three tiers, annual pre-selected as best value, lifetime alongside it.</figcaption>
+          </figure>
         </ScrollReveal>
       </section>
 
@@ -437,26 +466,38 @@ export default function CopiaCaseStudy() {
           The recipe side of the same problem, and the first thing a new user sees.
         </p>
         <div className="cs-gallery">
-          <PhoneShot
-            src={copiaRecipes}
-            alt="Copia's recipe browser: search, quick filters (Under 30 min, Low effort), featured recipes with real photos"
-            caption="Browsing: search, quick filters, real photography."
-          />
-          <PhoneShot
-            src={copiaRecipeDetail}
-            alt="A recipe detail screen: Flan, 7 ingredients, numbered steps with measures folded directly into the instruction text"
-            caption="Recipe detail: measures folded into the method, not a separate list to cross-reference."
-          />
-          <PhoneShot
-            src={copiaListFromRecipe}
-            alt="A shopping list with a 'Recipes on this list' rail showing the Flan recipe, sitting directly above the aisle-station item rows"
-            caption="The loop closes: the recipe now lives on the list it was scanned into."
-          />
-          <PhoneShot
-            src={copiaOnboarding}
-            alt="Copia's first-run onboarding: 'The list writes itself,' a custom illustration of a checklist card"
-            caption="First run: custom illustrations, not stock icons, from screen one."
-          />
+          <figure className="cs-shot">
+            <img
+              src={copiaRecipes}
+              alt="Copia's recipe browser: search, quick filters (Under 30 min, Low effort), featured recipes with real photos"
+              loading="lazy"
+            />
+            <figcaption>Browsing: search, quick filters, real photography.</figcaption>
+          </figure>
+          <figure className="cs-shot">
+            <img
+              src={copiaRecipeDetail}
+              alt="A recipe detail screen: Flan, 7 ingredients, numbered steps with measures folded directly into the instruction text"
+              loading="lazy"
+            />
+            <figcaption>Recipe detail: measures folded into the method, not a separate list to cross-reference.</figcaption>
+          </figure>
+          <figure className="cs-shot">
+            <img
+              src={copiaListFromRecipe}
+              alt="A shopping list with a 'Recipes on this list' rail showing the Flan recipe, sitting directly above the aisle-station item rows"
+              loading="lazy"
+            />
+            <figcaption>The loop closes: the recipe now lives on the list it was scanned into.</figcaption>
+          </figure>
+          <figure className="cs-shot">
+            <img
+              src={copiaOnboarding}
+              alt="Copia's first-run onboarding: 'The list writes itself,' a custom illustration of a checklist card"
+              loading="lazy"
+            />
+            <figcaption>First run: custom illustrations, not stock icons, from screen one.</figcaption>
+          </figure>
         </div>
       </ScrollReveal>
 
