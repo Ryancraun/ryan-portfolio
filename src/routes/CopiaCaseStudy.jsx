@@ -71,6 +71,20 @@ import copiaPaywall from '@/assets/copia-paywall.jpg';
 // consistent with itself. PhoneShot.jsx itself is untouched and still
 // used by the home page's Copia teaser card.
 //
+// FULL FRAMES, NOT CROPS (Ryan: "why aren't you using the real pictures
+// from the file?"): the hero, decision 5's scan shot, and the recipe
+// gallery shot now show the actual App Store marketing frames as
+// shipped -- coral background, headline, device bezel and all --
+// instead of the screen-content-only crop used above. Decision 1's
+// shopping screen is the one deliberate exception: its full frame's
+// own headline ("Never zigzag the store again") advertises the
+// walk-order aisle feature that Decision 6 explicitly says is
+// "planned, not yet built," so that one stays the screen-only crop to
+// avoid the page contradicting itself. 4-paste.png (the fifth frame,
+// "One link. Whole list.") is still unused -- its source file has a
+// baked-in rendering glitch, a ghost status bar overlaid on the "Read
+// the recipe" button.
+//
 // AUDIENCE PASS (Ryan: "these seem engineering heavy... optimized for
 // PRODUCT designers / UX / UI designers"): "Building for trust" and "What
 // testers changed" were rewritten to drop implementation-level detail a
@@ -151,7 +165,7 @@ export default function CopiaCaseStudy() {
         <figure className="cs-shot cs-shot--phone">
           <img
             src={copiaHomeDark}
-            alt="Copia's home screen: an active-trip hero card with a route progress dial, a pinned quick-top-up list, and category rows"
+            alt="Copia App Store screenshot, 'Every list, one place': the Lists screen with an active-trip hero card, a route progress dial, a pinned quick-top-up list, and category rows"
             loading="lazy"
           />
         </figure>
@@ -350,7 +364,7 @@ export default function CopiaCaseStudy() {
             <figure className="cs-shot cs-shot--phone">
               <img
                 src={copiaScanPages}
-                alt="Copia's live scan view: camera framing a cookbook page with corner guides, 'Reading page 4 of 9,' ingredients streaming in below as they're recognized"
+                alt="Copia App Store screenshot, 'Stop retyping ingredients': camera framing a cookbook page with corner guides, 'Reading page 4 of 9,' ingredients streaming in below as they're recognized"
                 loading="lazy"
               />
               <figcaption>
@@ -469,7 +483,7 @@ export default function CopiaCaseStudy() {
           <figure className="cs-shot cs-shot--phone">
             <img
               src={copiaRecipes}
-              alt="Copia's recipe browser: search, quick filters (Under 30 min, Low effort), featured recipes with real photos"
+              alt="Copia App Store screenshot, 'Recipes in. Groceries out.': the recipe browser with search, quick filters (Under 30 min, Low effort), featured recipes with real photos"
               loading="lazy"
             />
             <figcaption>Browsing: search, quick filters, real photography.</figcaption>
