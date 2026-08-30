@@ -330,8 +330,8 @@ export default function CopiaCaseStudy() {
           <div className="cs-decision__visual">
             <PhoneShot
               src={copiaScanPages}
-              alt="Copia's multi-page scan picker: 3 pages queued, reorderable, 'Read 3 pages'"
-              caption="The multi-select picker: pages queued, reorderable before reading starts."
+              alt="Copia's live scan view: camera framing a cookbook page with corner guides, 'Reading page 4 of 9,' ingredients streaming in below as they're recognized"
+              caption="The scan in progress: a progress rail across the top, ingredients appearing as each page is read, not a spinner."
             />
             <PhoneShot
               src={copiaScanReview}
