@@ -2098,6 +2098,22 @@ a{ color:inherit; }
   margin-left:auto;
   margin-right:auto;
 }
+/* PHONE-SCREENSHOT CAP -- `.cs-shot` alone stretches to its container's full
+   width, which is correct for Vault/PickTheOdds' landscape web screenshots
+   but not for Copia's portrait phone captures: at the case study's ~880px
+   article width a portrait shot rendered ~2000px tall (Ryan: "it takes up
+   like 4 scrolls worth of scrolling per picture"), and that much scroll
+   distance under the page's fixed nav read as content getting cut off
+   mid-scroll ("still cutoff") even though the image itself was never
+   cropped. Caps width to roughly PhoneShot.jsx's old 360px scale (the size
+   Ryan already approved) and centers it, same pattern as
+   `.cs-shot--native-res` above. */
+.cs-shot--phone{
+  max-width:320px;
+  margin-left:auto;
+  margin-right:auto;
+}
+.cs-decision__visual .cs-shot--phone{ flex:0 1 260px; }
 
 /* Decision 1's money shot -- the same guide phase at all four hint levels,
    Vault's own written example (see VaultCaseStudy.jsx's file-top comment

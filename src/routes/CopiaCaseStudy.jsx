@@ -148,7 +148,7 @@ export default function CopiaCaseStudy() {
           </div>
         </div>
 
-        <figure className="cs-shot">
+        <figure className="cs-shot cs-shot--phone">
           <img
             src={copiaHomeDark}
             alt="Copia's home screen: an active-trip hero card with a route progress dial, a pinned quick-top-up list, and category rows"
@@ -267,7 +267,7 @@ export default function CopiaCaseStudy() {
             failure mode of a missing one. A designer documenting they changed their own mind after watching a real
             person shop is the most persuasive thing on this page.
           </p>
-          <figure className="cs-shot">
+          <figure className="cs-shot cs-shot--phone">
             <img
               src={copiaRouteDark}
               alt="Copia's shopping screen: aisle stations with item rows (Carrots, Bananas, Ground beef, Cheddar cheese), no quantity number on any row"
@@ -294,7 +294,7 @@ export default function CopiaCaseStudy() {
             automatically, one that&rsquo;s written only by the explicit &ldquo;make this the trip&rdquo; action.
             The bug looked like a broken menu; the real cause was one concept doing two jobs, not a broken control.
           </p>
-          <figure className="cs-shot">
+          <figure className="cs-shot cs-shot--phone">
             <img
               src={copiaHomeLight}
               alt="Copia's home screen, light appearance: the Weekly hero card is the one currently promoted as the active trip"
@@ -347,7 +347,7 @@ export default function CopiaCaseStudy() {
             scan.
           </p>
           <div className="cs-decision__visual">
-            <figure className="cs-shot">
+            <figure className="cs-shot cs-shot--phone">
               <img
                 src={copiaScanPages}
                 alt="Copia's live scan view: camera framing a cookbook page with corner guides, 'Reading page 4 of 9,' ingredients streaming in below as they're recognized"
@@ -358,7 +358,7 @@ export default function CopiaCaseStudy() {
                 not a spinner.
               </figcaption>
             </figure>
-            <figure className="cs-shot">
+            <figure className="cs-shot cs-shot--phone">
               <img
                 src={copiaScanReview}
                 alt="Copia's scan review screen: six parsed ingredients with amounts, ready to add to the Weekly list"
@@ -411,7 +411,7 @@ export default function CopiaCaseStudy() {
             rather than a daily reset: a daily reset trains people to ration; a lifetime cap lets them experience
             the feature properly, then decide.
           </p>
-          <figure className="cs-shot">
+          <figure className="cs-shot cs-shot--phone">
             <img
               src={copiaPaywall}
               alt="Copia Pro paywall: Monthly $3.99, Annual $24.99 (best value, selected), Lifetime $49.99, 14-day free trial"
@@ -466,7 +466,7 @@ export default function CopiaCaseStudy() {
           The recipe side of the same problem, and the first thing a new user sees.
         </p>
         <div className="cs-gallery">
-          <figure className="cs-shot">
+          <figure className="cs-shot cs-shot--phone">
             <img
               src={copiaRecipes}
               alt="Copia's recipe browser: search, quick filters (Under 30 min, Low effort), featured recipes with real photos"
@@ -474,7 +474,7 @@ export default function CopiaCaseStudy() {
             />
             <figcaption>Browsing: search, quick filters, real photography.</figcaption>
           </figure>
-          <figure className="cs-shot">
+          <figure className="cs-shot cs-shot--phone">
             <img
               src={copiaRecipeDetail}
               alt="A recipe detail screen: Flan, 7 ingredients, numbered steps with measures folded directly into the instruction text"
@@ -482,7 +482,7 @@ export default function CopiaCaseStudy() {
             />
             <figcaption>Recipe detail: measures folded into the method, not a separate list to cross-reference.</figcaption>
           </figure>
-          <figure className="cs-shot">
+          <figure className="cs-shot cs-shot--phone">
             <img
               src={copiaListFromRecipe}
               alt="A shopping list with a 'Recipes on this list' rail showing the Flan recipe, sitting directly above the aisle-station item rows"
@@ -490,7 +490,7 @@ export default function CopiaCaseStudy() {
             />
             <figcaption>The loop closes: the recipe now lives on the list it was scanned into.</figcaption>
           </figure>
-          <figure className="cs-shot">
+          <figure className="cs-shot cs-shot--phone">
             <img
               src={copiaOnboarding}
               alt="Copia's first-run onboarding: 'The list writes itself,' a custom illustration of a checklist card"
