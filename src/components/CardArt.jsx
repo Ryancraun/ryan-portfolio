@@ -1,7 +1,7 @@
 import Particles from '@/components/reactbits/Particles/Particles';
 import InViewMount from './InViewMount';
 import PhoneShot from './PhoneShot';
-import copiaHomeDark from '@/assets/copia-home-dark.jpg';
+import copiaTeaserScreen from '@/assets/copia-teaser-screen.jpg';
 import pickTheOddsScreenshot from '@/assets/picktheodds.png';
 
 // 03 PickTheOdds -- RESOLUTION CAP (Ryan: "can we ensure that all pictures
@@ -52,9 +52,22 @@ export function PickTheOddsCardArt() {
 // pitch (this case study's own title: "A Grocery List Built for the Aisle,
 // Not the Desk") is the grocery-list/route experience, not recipes --
 // recipes are one feature among several, not the thing being sold. Now
-// shows copia-home-dark.jpg, the same real capture already used to open the
-// case study's own hero, so the card and the page it links to lead with the
-// same screen rather than two different first impressions of the app.
+// shows the same Lists screen already used to open the case study's own
+// hero, so the card and the page it links to lead with the same screen
+// rather than two different first impressions of the app.
+//
+// DOUBLE-BEZEL FIX (Ryan: "take the marketing photo out of the iphone frame
+// since there is an iphone frame in the picture already"): the case study's
+// hero later switched from a screen-only crop to the actual App Store
+// marketing frame (its own coral background + headline + device bezel
+// baked in) -- since this teaser shares that same "Lists screen" intent but
+// still wraps its image in PhoneShot's OWN bezel, reusing that same
+// full-frame asset here double-framed it (PhoneShot's metal chassis drawn
+// around an image that already has a bezel drawn into it). This teaser now
+// points at `copia-teaser-screen.jpg` -- a dedicated screen-content-only
+// crop of the same Lists screen, no baked-in frame -- so PhoneShot's bezel
+// is the only one. Keep these two assets separate: don't repoint this at
+// copia-home-dark.jpg again.
 
 // 01 Copia (grocery/recipe iOS app) -- COPIA CASE STUDY (Addendum 4):
 // deliberately NOT another live reactbits.dev canvas. This card's whole
@@ -74,7 +87,7 @@ export function CopiaTeaserArt() {
   return (
     <div className="copia-teaser" aria-hidden="true">
       <div className="copia-teaser__grain" />
-      <PhoneShot src={copiaHomeDark} alt="" />
+      <PhoneShot src={copiaTeaserScreen} alt="" />
     </div>
   );
 }

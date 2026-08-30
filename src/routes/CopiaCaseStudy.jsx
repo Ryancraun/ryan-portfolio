@@ -85,6 +85,16 @@ import copiaPaywall from '@/assets/copia-paywall.jpg';
 // baked-in rendering glitch, a ghost status bar overlaid on the "Read
 // the recipe" button.
 //
+// CROP FIX (Ryan's screenshot: the left-edge category timeline -- the
+// colored dots/line next to "Produce"/"Meat & Seafood"/etc -- was
+// clipped in half): the screen-only crop above used a uniform inset on
+// all four sides to keep the display's own rounded corners out of
+// frame, but this screen's timeline sits close enough to the true left
+// edge that the same inset clipped it. Re-cropped with a smaller
+// left/right inset (still large enough to avoid corner bleed, verified
+// against the source frame directly) and a slightly larger top/bottom
+// inset to compensate.
+//
 // AUDIENCE PASS (Ryan: "these seem engineering heavy... optimized for
 // PRODUCT designers / UX / UI designers"): "Building for trust" and "What
 // testers changed" were rewritten to drop implementation-level detail a
