@@ -1807,7 +1807,20 @@ a{ color:inherit; }
    route/scan-pages) share this same low-contrast card-on-near-black
    pattern -- verified visually against the brighter/light screenshots too
    (recipes, paywall, scan-review) to confirm this doesn't blow them out. */
-.phone-shot__screen img{ display:block; width:100%; height:100%; object-fit:cover; filter:contrast(1.14) brightness(1.05); }
+/* OBJECT-FIT: CONTAIN, NOT COVER (Ryan: "the crop is on the right side
+   only... that loop is what's failed four times already" -- right after
+   this teaser's screenshot was re-cropped to match this box's aspect
+   ratio and still cropped). Root cause: `.phone-shot__screen`'s ratio
+   isn't a fixed number to crop to -- it's `.phone-shot__body`'s fixed
+   1206:2622 minus a fixed 14px padding on each side, and since the body's
+   own size is viewport-relative (`.copia-teaser .phone-shot`'s width is a
+   `clamp(...vh...)`), that leftover ratio drifts with render size. A
+   crop matched to one measured render width silently stops matching at
+   any other. `cover` requires an exact, stable ratio match to avoid
+   cropping; `contain` doesn't -- it always shows the whole image,
+   regardless of any mismatch, so this can't recur no matter how the
+   image or the container's size changes. */
+.phone-shot__screen img{ display:block; width:100%; height:100%; object-fit:contain; filter:contrast(1.14) brightness(1.05); }
 .phone-shot__caption{
   margin-top:0.85rem;
   font-family:var(--font-sans);
