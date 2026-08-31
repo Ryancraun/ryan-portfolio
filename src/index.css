@@ -1740,7 +1740,20 @@ a{ color:inherit; }
 .phone-shot__body{
   position:relative;
   width:100%;
-  aspect-ratio: 1206 / 2622; /* the real capture's own ratio -- no letterboxing */
+  /* SCREEN-OWNS-THE-RATIO FIX (a peer session's diagnosis, verified: the
+     real bug was here, not in the source image). This used to carry
+     `aspect-ratio:1206/2622` directly, with `.phone-shot__screen` below
+     just filling whatever box that left over (width/height:100% of the
+     PADDED body). Padding is a fixed 14px regardless of render size, so
+     the box `.phone-shot__screen` actually got was NEVER exactly
+     1206:2622 -- it drifted further from it the smaller the card
+     rendered, which is what silently re-cropped every screenshot dropped
+     into this component regardless of how carefully it was cropped to
+     match. Moving the fixed ratio onto `.phone-shot__screen` itself (see
+     below) and letting THIS box's height auto-follow the screen's
+     rendered height + padding, instead of the other way around, means
+     the screen box is always exactly the declared ratio, at any size --
+     nothing left to drift. */
   border-radius: 2.6rem;
   /* BEZEL VISIBILITY FIX, ROUND 2 (Ryan, still "no padding" after the
      round-1 padding bump: "the actual app has no padding within the
@@ -1766,7 +1779,16 @@ a{ color:inherit; }
   box-shadow: 0 30px 60px -22px rgba(0,0,0,0.65), inset 0 0 0 1.5px rgba(244,242,236,0.22);
 }
 .phone-shot__screen{
-  position:relative; width:100%; height:100%;
+  position:relative; width:100%;
+  /* Owns the fixed ratio now (see `.phone-shot__body`'s comment above) --
+     1320:2868 is a real 6.9" iPhone screenshot's own native ratio
+     (~0.4603, effectively identical to the previous 1206:2622 value this
+     replaced; the point of the fix is WHERE the ratio lives, not which
+     of two near-identical device sizes it names). `height:100%` removed
+     -- with a fixed `aspect-ratio` AND a parent that no longer forces
+     its own ratio, height is computed FROM this box's own width instead,
+     which is what makes the ratio exact at any render size. */
+  aspect-ratio: 1320 / 2868;
   /* Kept roughly concentric with the outer 2.6rem radius now that the
      bezel padding above is 14px, not the old 9px -- outer radius minus
      the new padding is ~1.73rem; 1.75rem is the clean rounded value, so
