@@ -1,7 +1,6 @@
 import Particles from '@/components/reactbits/Particles/Particles';
 import InViewMount from './InViewMount';
-import PhoneShot from './PhoneShot';
-import copiaTeaserScreen from '@/assets/copia-teaser-screen.jpg';
+import copiaHomeDark from '@/assets/copia-home-dark.jpg';
 import pickTheOddsScreenshot from '@/assets/picktheodds.png';
 
 // 03 PickTheOdds -- RESOLUTION CAP (Ryan: "can we ensure that all pictures
@@ -42,8 +41,7 @@ export function PickTheOddsCardArt() {
 // iphone, not a shitty looking mockup iphone"): CopiaTeaserArt used to
 // center an empty PhoneFrame placeholder (deleted, along with
 // VisualPlaceholder.jsx -- both fully unused once real screenshots existed
-// everywhere they were standing in). Now centers a real screenshot in
-// PhoneShot's device-bezel component.
+// everywhere they were standing in). Now centers a real screenshot.
 //
 // THUMBNAIL ROUND 2 (Ryan: "the thumbnail image for Copia should be the
 // home screen so it doesn't look like a recipe app"): swapped off
@@ -56,18 +54,24 @@ export function PickTheOddsCardArt() {
 // hero, so the card and the page it links to lead with the same screen
 // rather than two different first impressions of the app.
 //
-// DOUBLE-BEZEL FIX (Ryan: "take the marketing photo out of the iphone frame
-// since there is an iphone frame in the picture already"): the case study's
-// hero later switched from a screen-only crop to the actual App Store
-// marketing frame (its own coral background + headline + device bezel
-// baked in) -- since this teaser shares that same "Lists screen" intent but
-// still wraps its image in PhoneShot's OWN bezel, reusing that same
-// full-frame asset here double-framed it (PhoneShot's metal chassis drawn
-// around an image that already has a bezel drawn into it). This teaser now
-// points at `copia-teaser-screen.jpg` -- a dedicated screen-content-only
-// crop of the same Lists screen, no baked-in frame -- so PhoneShot's bezel
-// is the only one. Keep these two assets separate: don't repoint this at
-// copia-home-dark.jpg again.
+// DOUBLE-BEZEL FIX, then FRAME DELETED (Ryan first: "take the marketing
+// photo out of the iphone frame since there is an iphone frame in the
+// picture already" -- then, later: "delete the CSS phone frame entirely...
+// replace with a plain <img>"). The case study's hero had switched to the
+// actual App Store marketing frame (its own coral background + headline +
+// device bezel already composited in), and this card was still wrapping
+// its image in PhoneShot.jsx's OWN CSS-drawn bezel -- reusing that same
+// full-frame asset here doubled the bezel. First fix (round 1) gave this
+// card a separate, bezel-free screen-only crop instead
+// (`copia-teaser-screen.jpg`) so PhoneShot's bezel stayed the only one --
+// but that crop turned out to be cropped short on export in its own
+// right (confirmed by inspecting the file: real content, not background,
+// ran to its rightmost column), which is what PhoneShot.jsx's CSS fixes
+// kept chasing without ever fully closing. Round 2 removes PhoneShot.jsx
+// and its CSS outright (see index.css's own note on the deletion) and
+// points this card at the same complete, uncropped `copia-home-dark.jpg`
+// the case study hero uses -- correct now that there's no second bezel
+// left to double up with.
 
 // 01 Copia (grocery/recipe iOS app) -- COPIA CASE STUDY (Addendum 4):
 // deliberately NOT another live reactbits.dev canvas. This card's whole
@@ -80,14 +84,17 @@ export function PickTheOddsCardArt() {
 // single-corner glow; a route-and-stations motif lifted from the app's own
 // UI). Every one of them was an invented background layer, and every one
 // read as slop regardless of composition. The fix isn't a fourth motif --
-// it's no motif. `.copia-teaser` is a flat solid base plus the grain
-// texture (below, unchanged); the real phone screenshot is this card's
-// entire visual interest.
+// it's no motif. `.copia-teaser`'s own flat solid base color is gone too
+// now (see FRAME DELETED above and index.css) -- the screenshot's own
+// coral background covers the card full-bleed, so a second color behind
+// it would only ever show as an unwanted border. The grain texture
+// (below, unchanged) still overlays on top of everything; the real
+// screenshot is this card's entire visual interest.
 export function CopiaTeaserArt() {
   return (
     <div className="copia-teaser" aria-hidden="true">
       <div className="copia-teaser__grain" />
-      <PhoneShot src={copiaTeaserScreen} alt="" />
+      <img className="copia-teaser__shot" src={copiaHomeDark} alt="" loading="lazy" />
     </div>
   );
 }
