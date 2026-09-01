@@ -1353,6 +1353,95 @@ a{ color:inherit; }
   color:var(--ink-faint);
 }
 .chroma__form-note a{ color:var(--ink-dim); text-decoration:underline; text-underline-offset:2px; }
+
+/* SUCCESS STATE (Ryan: the old confirmation -- dim `.chroma__form-note`
+   text -- was almost invisible). On a sent message the whole form is
+   replaced by this centered confirmation, in the section's own amber/glass
+   vocabulary: a glowing amber check that draws itself in, a bold headline,
+   and a readable subline. Uses the same #E5A445 accent, glow-shadow, and
+   SF Pro as the fields/CTA above so it reads as native, not bolted on. */
+.chroma__success{
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  gap:0.85rem;
+  padding:1.5rem 0 0.5rem;
+  animation: chroma-success-in 0.5s cubic-bezier(.2,.7,.2,1) both;
+}
+@keyframes chroma-success-in{
+  from{ opacity:0; transform:translateY(14px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+.chroma__success-check{
+  display:grid;
+  place-items:center;
+  width:66px; height:66px;
+  border-radius:999px;
+  background:rgba(229,164,69,0.12);
+  box-shadow:0 0 0 1px rgba(229,164,69,0.35),
+             0 24px 55px -20px rgba(229,164,69,0.65);
+}
+.chroma__success-check svg{ width:38px; height:38px; overflow:visible; }
+.chroma__success-check circle{
+  fill:none;
+  stroke:rgba(229,164,69,0.55);
+  stroke-width:2;
+  stroke-dasharray:151;
+  stroke-dashoffset:151;
+  animation: chroma-check-ring 0.6s ease-out 0.12s forwards;
+}
+.chroma__success-check path{
+  fill:none;
+  stroke:#E5A445;
+  stroke-width:4;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-dasharray:44;
+  stroke-dashoffset:44;
+  animation: chroma-check-mark 0.34s ease-out 0.5s forwards;
+}
+@keyframes chroma-check-ring{ to{ stroke-dashoffset:0; } }
+@keyframes chroma-check-mark{ to{ stroke-dashoffset:0; } }
+.chroma__success-title{
+  margin:0.35rem 0 0;
+  font-family:var(--font-sans);
+  font-weight:700;
+  font-size:clamp(24px, 3vw, 32px);
+  letter-spacing:-0.015em;
+  color:#F5F3F0;
+}
+.chroma__success-sub{
+  margin:0;
+  font-family:var(--font-sans);
+  font-size:1.02rem;
+  color:var(--ink-dim);
+}
+.chroma__success-again{
+  margin-top:0.35rem;
+  padding:0.3rem 0.2rem;
+  background:none;
+  border:none;
+  cursor:pointer;
+  font-family:var(--font-sans);
+  font-size:0.85rem;
+  color:var(--ink-dim);
+  text-decoration:underline;
+  text-underline-offset:3px;
+  transition:color 0.2s ease;
+}
+.chroma__success-again:hover{ color:var(--ink); }
+.chroma__success-again:focus-visible{
+  outline:2px solid var(--ink);
+  outline-offset:4px;
+  border-radius:4px;
+}
+@media (prefers-reduced-motion: reduce){
+  .chroma__success{ animation:none; }
+  .chroma__success-check circle,
+  .chroma__success-check path{ animation:none; stroke-dashoffset:0; }
+}
 @media (max-width:640px){
   .chroma{ padding:5rem 1.25rem; }
   /* Same safe-area addition as the base rule above, mobile's own smaller

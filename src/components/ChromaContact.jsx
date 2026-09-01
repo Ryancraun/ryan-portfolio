@@ -185,6 +185,25 @@ export default function ChromaContact() {
             worth using.
           </h2>
         </div>
+        {status === 'sent' ? (
+          <div className="chroma__success" role="status" aria-live="polite">
+            <span className="chroma__success-check" aria-hidden="true">
+              <svg viewBox="0 0 52 52">
+                <circle cx="26" cy="26" r="24" />
+                <path d="M15 27 l7.5 7.5 L38 17" />
+              </svg>
+            </span>
+            <p className="chroma__success-title">Message sent</p>
+            <p className="chroma__success-sub">Thanks &mdash; I&rsquo;ll get back to you soon.</p>
+            <button
+              type="button"
+              className="chroma__success-again"
+              onClick={() => setStatus('idle')}
+            >
+              Send another
+            </button>
+          </div>
+        ) : (
         <form className="chroma__form" onSubmit={handleSubmit} aria-labelledby="chroma-heading">
           {/* Honeypot: hidden from real users, catches bots that auto-fill
               every field. Kept out of the tab order and off screen readers. */}
@@ -220,6 +239,7 @@ export default function ChromaContact() {
             {status !== 'sent' && <a href="mailto:craunryan@gmail.com">craunryan@gmail.com</a>}
           </p>
         </form>
+        )}
       </div>
     </section>
   );
