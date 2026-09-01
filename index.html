@@ -3,6 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- Google Analytics (GA4). Only initialised on the live domain, so local
+         dev, Vercel preview builds, and the build-time prerender (headless
+         Chrome on localhost, see scripts/prerender.mjs) never send hits and
+         never pollute the report. GA4 Enhanced Measurement (on by default)
+         already tracks this SPA's client-side route changes via the History
+         API that react-router uses, so no per-route tracking code is needed --
+         a manual page_view on top of it would double-count every navigation. -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-B4413WPYBK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      if (/(^|\.)ryancraun\.com$/i.test(location.hostname)) {
+        gtag('js', new Date());
+        gtag('config', 'G-B4413WPYBK');
+      }
+    </script>
     <title>Ryan Craun | Product Design</title>
     <meta name="description" content="Ryan Craun, product designer. Selected work in consumer iOS, content platforms, and B2B SaaS / sports analytics, including Copia, a native iOS grocery app launching on the App Store." />
     <!-- WEB QUALITY AUDIT FIX (high priority #4): default OG/Twitter Card
