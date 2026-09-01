@@ -3,6 +3,7 @@ import LoadWash from '@/components/LoadWash';
 import ScrollProgress from '@/components/ScrollProgress';
 import SiteNav from '@/components/SiteNav';
 import CustomCursor from '@/components/CustomCursor';
+import GlassScrollbar from '@/components/GlassScrollbar';
 import ScrollToTop from './ScrollToTop';
 
 // Persistent app chrome, mounted once for the whole app lifetime regardless
@@ -19,6 +20,7 @@ export default function Layout() {
       <ScrollProgress />
       <SiteNav />
       <CustomCursor />
+      <GlassScrollbar />
       <Outlet />
     </>
   );
