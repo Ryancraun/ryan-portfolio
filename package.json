@@ -8,7 +8,8 @@
     "build": "vite build && node scripts/prerender.mjs && node scripts/strip-dev-only-files.mjs",
     "build:vite-only": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "og": "node scripts/generate-og-image.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",
