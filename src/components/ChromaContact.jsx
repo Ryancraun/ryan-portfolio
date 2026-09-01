@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import ChromaCanvas from './ChromaCanvas';
-import { supabase } from '@/lib/supabaseClient';
 
 // These margins protect the ARC (not just its crown -- see below) from
 // ever crossing the heading or the first field -- measured, not
@@ -107,40 +106,39 @@ export default function ChromaContact() {
     return () => window.removeEventListener('resize', updateCrownY);
   }, []);
 
-  // REAL SUBMISSION (Ryan: "will probably use supabase for the be[nd]" --
-  // answers the earlier "does this actually submit, or just open my email
-  // app" question). Was a `mailto:` redirect only -- the visitor's own
-  // email client opened with a pre-filled draft they still had to send
-  // themselves, not a real submission, and it silently did nothing if they
-  // had no default mail client configured. Now inserts directly into a
-  // Supabase table (see supabaseClient.js / .env.example / build-log.md for
-  // the table + RLS policy to create). Falls back to the original `mailto:`
-  // behavior when `supabase` is null -- i.e. `.env.local` hasn't been set
-  // up yet, or a deploy target hasn't configured the env vars -- so the
-  // form keeps working through that gap instead of breaking outright.
+  // REAL SUBMISSION. The visitor stays on the page: the form POSTs to this
+  // site's own /api/contact serverless function (see api/contact.js), which
+  // emails the message to Ryan via Resend. `website` is a honeypot field --
+  // hidden from humans, so anything that fills it is a bot.
+  //
+  // If /api/contact is unreachable or not configured yet (503 -- e.g. the
+  // Resend key/env var isn't set), we fall back to the original `mailto:`
+  // behavior so the form keeps working through that gap instead of breaking.
   const handleSubmit = async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
     const name = form.name.value.trim();
     const email = form.email.value.trim();
     const message = form.message.value.trim();
+    const website = form.website ? form.website.value.trim() : ''; // honeypot
 
-    if (!supabase) {
+    setStatus('sending');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, message, website }),
+      });
+      if (!res.ok) throw new Error(`contact endpoint returned ${res.status}`);
+      form.reset();
+      setStatus('sent');
+    } catch {
+      // Backend not available yet -> open the visitor's mail app as a fallback.
       const subject = encodeURIComponent(name ? `Portfolio contact from ${name}` : 'Portfolio contact');
       const body = encodeURIComponent(`${message}\n\nFrom ${name}${email ? ` (${email})` : ''}`);
       window.location.href = `mailto:craunryan@gmail.com?subject=${subject}&body=${body}`;
       setStatus('sent');
-      return;
     }
-
-    setStatus('sending');
-    const { error } = await supabase.from('contact_submissions').insert({ name, email, message });
-    if (error) {
-      setStatus('error');
-      return;
-    }
-    form.reset();
-    setStatus('sent');
   };
 
   return (
@@ -188,6 +186,16 @@ export default function ChromaContact() {
           </h2>
         </div>
         <form className="chroma__form" onSubmit={handleSubmit} aria-labelledby="chroma-heading">
+          {/* Honeypot: hidden from real users, catches bots that auto-fill
+              every field. Kept out of the tab order and off screen readers. */}
+          <input
+            type="text"
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
+          />
           <div className="chroma__form-row">
             <label className="chroma__field" ref={firstFieldRef}>
               <span>Name</span>
@@ -206,7 +214,7 @@ export default function ChromaContact() {
             {status === 'sending' ? 'Sending…' : 'Send message'}
           </button>
           <p className="chroma__form-note" role="status">
-            {status === 'sent' && (supabase ? "Thanks — I'll get back to you soon." : 'Opening your email app with this message filled in…')}
+            {status === 'sent' && "Thanks — I'll get back to you soon."}
             {status === 'error' && 'Something went wrong. Please email directly: '}
             {(status === 'idle' || status === 'sending') && 'Or email directly: '}
             {status !== 'sent' && <a href="mailto:craunryan@gmail.com">craunryan@gmail.com</a>}
