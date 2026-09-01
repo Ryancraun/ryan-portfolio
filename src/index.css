@@ -506,47 +506,6 @@ a{ color:inherit; }
   will-change:opacity;
   transition:opacity .5s ease;
 }
-/* "CURRENTLY AT FEVO" HIERARCHY FIX (Ryan: fix spacing/hierarchy only, no
-   copy changes, no new components). Four things, in order:
-   1. `margin-top:2.75rem` -- roughly double `.intro__p`'s own 1.5rem
-      margin-bottom, reusing (not inventing) `.intro__statement`'s own
-      margin-bottom value from right above in this same file -- the next
-      real step up already present in this component's own spacing, not a
-      hand-picked pixel number.
-   2. `max-width:720px` -- the exact value `.intro__lede` already uses
-      above, so both paragraphs wrap at the same measure.
-   The eyebrow and lede rules below handle points 3-4. */
-.intro__fevo{ margin-top:2.75rem; max-width:720px; }
-/* Point 4: was reusing `.cs-decision__kicker` (`color:var(--ink-faint)`,
-   0.72rem) -- measured against `--bg`, ink-faint at full opacity is only
-   ~2.9:1, not a real "increase contrast" option (and would fail WCAG AA
-   for text this size regardless). `--ink-dim` is what `.work__eyebrow`
-   ("Selected Work," same page) already uses for exactly this job -- a
-   real, safe contrast lift (~7.9:1) using a color this site's own eyebrow
-   convention already establishes, not a new one. Letter-spacing (0.03em)
-   matches that same `.work__eyebrow` precedent too. No text-transform:
-   uppercase was already removed sitewide (Ryan: "no AUTOCAPS anywhere")
-   and doesn't exist anywhere left to match, so per the instruction's own
-   "if that treatment already exists elsewhere" condition, it's left off
-   here. Tight `margin-bottom` groups it with the paragraph right below as
-   one unit. */
-.intro__fevo-eyebrow{
-  font-family:var(--font-sans);
-  font-size:0.8rem; letter-spacing:0.03em;
-  color:var(--ink-dim);
-  margin:0 0 0.6rem;
-}
-/* Point 3: one step down from `.intro__p`'s clamp(1.15rem, 2.4vw, 1.5rem).
-   Color is deliberately left at `.intro__p`'s own `--ink-dim` rather than
-   dropped further -- `--ink-faint` (the only dimmer token) measures
-   ~2.9:1 against `--bg`, well under the 4.5:1 AA floor this exact file has
-   already gone out of its way to protect elsewhere (see `.intro__statement`
-   above), and this element's `opacity` is already owned by the Fade
-   scroll-reveal it's wrapped in ([data-fade].is-visible{opacity:1}), so a
-   second permanent opacity value here would just get overridden the
-   instant it scrolls into view. Size alone (smaller, not dimmer) is the
-   safe, real demotion. */
-.intro__fevo-lede{ font-size:clamp(1rem, 1.6vw, 1.15rem); }
 [data-fade].is-visible{ opacity:1; }
 
 /* ---------- work ---------- */
