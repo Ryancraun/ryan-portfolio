@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ChromaCanvas from './ChromaCanvas';
 
 // These margins protect the ARC (not just its crown -- see below) from
@@ -37,9 +37,11 @@ const HEADING_CLEARANCE_PX = 20;
 // actual page content -- eyebrow/heading/form.
 export default function ChromaContact() {
   const [status, setStatus] = useState('idle');
+  const [errorMsg, setErrorMsg] = useState('');
   const sectionRef = useRef(null);
   const headingRef = useRef(null);
   const firstFieldRef = useRef(null);
+  const successRef = useRef(null);
   // Was a CSS custom property (`--crown-y`) set imperatively via ref, back
   // when the arc was CSS. Now the arc is `<ChromaCanvas>`, which computes
   // its circle geometry in JS, not CSS -- so this needs to be real React
@@ -61,11 +63,14 @@ export default function ChromaContact() {
   // was needed.
   const [scrimAnchorY, setScrimAnchorY] = useState(null);
 
-  useEffect(() => {
-    const updateCrownY = () => {
+  const updateCrownY = useCallback(() => {
       const section = sectionRef.current;
       const heading = headingRef.current;
-      const field = firstFieldRef.current;
+      // Measure the first form field when the form is showing, or the success
+      // panel once it has replaced the form -- either way there is always some
+      // content below the heading to clamp the arc's crown against, so the
+      // crown never rides up into the heading in either state.
+      const field = firstFieldRef.current || successRef.current;
       if (!section || !heading || !field) return;
       const sectionRect = section.getBoundingClientRect();
       const sectionTop = sectionRect.top;
@@ -97,23 +102,35 @@ export default function ChromaContact() {
       const nextCrownY = maxY >= minY ? Math.min(Math.max(idealMid, minY), maxY) : (minY + maxY) / 2;
       setCrownY(nextCrownY);
       setScrimAnchorY(fieldTop + fieldRect.height / 2);
-    };
+  }, []);
+
+  useEffect(() => {
     updateCrownY();
     window.addEventListener('resize', updateCrownY);
     // Re-measure once web fonts finish loading -- the heading's rendered
     // height (and therefore the gap) can shift after the initial paint.
     document.fonts?.ready?.then(updateCrownY).catch(() => {});
     return () => window.removeEventListener('resize', updateCrownY);
-  }, []);
+  }, [updateCrownY]);
+
+  // Re-measure when the form is swapped for the success panel (or reset back).
+  // That swap changes the content height, which shifts the heading; without a
+  // re-measure the arc keeps its old crown position and the heading can end up
+  // sitting on the arc. rAF lets the new layout commit before we measure.
+  useEffect(() => {
+    const id = requestAnimationFrame(updateCrownY);
+    return () => cancelAnimationFrame(id);
+  }, [status, updateCrownY]);
 
   // REAL SUBMISSION. The visitor stays on the page: the form POSTs to this
   // site's own /api/contact serverless function (see api/contact.js), which
   // emails the message to Ryan via Resend. `website` is a honeypot field --
   // hidden from humans, so anything that fills it is a bot.
   //
-  // If /api/contact is unreachable or not configured yet (503 -- e.g. the
-  // Resend key/env var isn't set), we fall back to the original `mailto:`
-  // behavior so the form keeps working through that gap instead of breaking.
+  // On failure we surface WHAT went wrong (the server's own message when it
+  // gives one, otherwise a plain-language reason by kind) and keep the form
+  // filled so the visitor can retry -- rather than silently opening a mail
+  // app. The persistent "or email directly" link stays as a manual backstop.
   const handleSubmit = async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -122,6 +139,7 @@ export default function ChromaContact() {
     const message = form.message.value.trim();
     const website = form.website ? form.website.value.trim() : ''; // honeypot
 
+    setErrorMsg('');
     setStatus('sending');
     try {
       const res = await fetch('/api/contact', {
@@ -129,15 +147,28 @@ export default function ChromaContact() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, message, website }),
       });
-      if (!res.ok) throw new Error(`contact endpoint returned ${res.status}`);
-      form.reset();
-      setStatus('sent');
+      if (res.ok) {
+        form.reset();
+        setStatus('sent');
+        return;
+      }
+      let serverMsg = '';
+      try {
+        const data = await res.json();
+        serverMsg = data && typeof data.error === 'string' ? data.error : '';
+      } catch {
+        /* response wasn't JSON */
+      }
+      setErrorMsg(
+        serverMsg ||
+          (res.status >= 500
+            ? 'Something went wrong on my end sending this. Please try again in a moment.'
+            : "That didn't go through — please double-check your details and try again."),
+      );
+      setStatus('error');
     } catch {
-      // Backend not available yet -> open the visitor's mail app as a fallback.
-      const subject = encodeURIComponent(name ? `Portfolio contact from ${name}` : 'Portfolio contact');
-      const body = encodeURIComponent(`${message}\n\nFrom ${name}${email ? ` (${email})` : ''}`);
-      window.location.href = `mailto:craunryan@gmail.com?subject=${subject}&body=${body}`;
-      setStatus('sent');
+      setErrorMsg("Couldn't reach the server — check your connection and try again.");
+      setStatus('error');
     }
   };
 
@@ -186,7 +217,7 @@ export default function ChromaContact() {
           </h2>
         </div>
         {status === 'sent' ? (
-          <div className="chroma__success" role="status" aria-live="polite">
+          <div className="chroma__success" ref={successRef} role="status" aria-live="polite">
             <span className="chroma__success-check" aria-hidden="true">
               <svg viewBox="0 0 52 52">
                 <circle cx="26" cy="26" r="24" />
@@ -229,14 +260,21 @@ export default function ChromaContact() {
             <span>Message</span>
             <textarea name="message" rows={4} required />
           </label>
+          {status === 'error' && (
+            <div className="chroma__form-error" role="alert">
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" strokeWidth="1.5" />
+                <line x1="10" y1="5.5" x2="10" y2="11.2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                <circle cx="10" cy="14.4" r="1" fill="currentColor" />
+              </svg>
+              <span>{errorMsg}</span>
+            </div>
+          )}
           <button type="submit" className="chroma__cta" disabled={status === 'sending'}>
             {status === 'sending' ? 'Sending…' : 'Send message'}
           </button>
-          <p className="chroma__form-note" role="status">
-            {status === 'sent' && "Thanks — I'll get back to you soon."}
-            {status === 'error' && 'Something went wrong. Please email directly: '}
-            {(status === 'idle' || status === 'sending') && 'Or email directly: '}
-            {status !== 'sent' && <a href="mailto:craunryan@gmail.com">craunryan@gmail.com</a>}
+          <p className="chroma__form-note">
+            Or email directly: <a href="mailto:craunryan@gmail.com">craunryan@gmail.com</a>
           </p>
         </form>
         )}

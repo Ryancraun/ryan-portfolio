@@ -1442,6 +1442,33 @@ a{ color:inherit; }
   .chroma__success-check circle,
   .chroma__success-check path{ animation:none; stroke-dashoffset:0; }
 }
+
+/* ERROR STATE (Ryan: "error states on the form with context of what went
+   wrong"). Shown in place, right above the send button, carrying the specific
+   reason. Warm coral rather than pure red so it stays in the site's warm
+   palette while still reading unmistakably as an error. */
+.chroma__form-error{
+  display:flex;
+  align-items:flex-start;
+  gap:0.55rem;
+  padding:0.7rem 0.85rem;
+  border-radius:10px;
+  background:rgba(226,120,90,0.12);
+  border:1px solid rgba(226,120,90,0.42);
+  color:#f2b5a4;
+  font-family:var(--font-sans);
+  font-size:0.9rem;
+  line-height:1.45;
+  animation: chroma-error-in 0.28s ease both;
+}
+.chroma__form-error svg{ flex:0 0 auto; width:18px; height:18px; margin-top:1px; }
+@keyframes chroma-error-in{
+  from{ opacity:0; transform:translateY(-4px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+@media (prefers-reduced-motion: reduce){
+  .chroma__form-error{ animation:none; }
+}
 @media (max-width:640px){
   .chroma{ padding:5rem 1.25rem; }
   /* Same safe-area addition as the base rule above, mobile's own smaller
