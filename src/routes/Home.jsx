@@ -30,7 +30,7 @@ const SCROLL_MARGIN_BUFFER_PX = 24;
 //
 // CARD REORDER (Addendum 4): Copia is the new card 01 (a real
 // /work/copia route via ProjectCard's `to` prop, no stats -- it's
-// pre-launch, no metrics to show). PickTheOdds moves to card 02.
+// no stats on the card). PickTheOdds moves to card 02.
 //
 // CUT THE CONCEPT CARDS (Ryan: "should we get rid of the empty projects?"
 // -> "cut all 3"): Anchorpoint/Wayfare/Ledgerline (fictional, unbuilt
@@ -125,7 +125,7 @@ export default function Home() {
             client="Copia"
             title="A Grocery List Built for the Aisle, Not the Desk"
             tag="Native iOS / Consumer"
-            byline="Solo, launching on the App Store this week"
+            byline="Solo: design & engineering. Live on the App Store"
             to="/work/copia"
             ctaLabel="View case study"
             useSpecularCta

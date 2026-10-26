@@ -10,7 +10,7 @@
 // route by default.
 const DEFAULT_TITLE = 'Ryan Craun | Product Design';
 const DEFAULT_DESCRIPTION =
-  'Ryan Craun, product designer. Selected work in consumer iOS, content platforms, and B2B SaaS / sports analytics, including Copia, a native iOS grocery app launching on the App Store, and Vault, a live ad-free gaming guide platform.';
+  'Ryan Craun, product designer. Selected work in consumer iOS, content platforms, and B2B SaaS / sports analytics, including Copia, a native iOS grocery app live on the App Store, and Vault, a live ad-free gaming guide platform.';
 
 function setMetaDescription(content) {
   let tag = document.querySelector('meta[name="description"]');

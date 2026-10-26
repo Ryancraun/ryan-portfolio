@@ -1920,7 +1920,7 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
   max-width:62ch;
   margin:0 0 1.5rem;
 }
-.cs-trust p, .cs-testers p, .cs-swatches > p, .cs-next > p{
+.cs-outcome p, .cs-next > p{
   font-size:1rem; line-height:1.7; color:var(--ink-dim);
   max-width:68ch;
   margin:0 0 1.25rem;
@@ -1979,58 +1979,24 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
   font-family:var(--font-sans); font-size:0.75rem; color:var(--ink-dim);
 }
 
-/* problems */
-.cs-problems__list{
-  list-style:none; margin:0; padding:0;
-  display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
-  gap:1.75rem 2rem;
-}
-/* ROW-ALIGNMENT FIX: in a CSS Grid row, each `<li>` (heading + paragraph)
-   is only as tall as its own content -- the grid doesn't align a heading
-   in one column against a heading in another, so a heading that wraps to
-   2 lines pushes ONLY that column's paragraph down, while every other
-   column's paragraph starts higher, up against a 1-line heading. Reserving
-   2 lines of height on every heading (`line-height` set explicitly here so
-   `min-height` is a precise multiple of it, not guessing at an inherited
-   default) means a 1-line heading and a 2-line heading occupy the same
-   vertical space, so every paragraph in the row starts at the same Y
-   regardless of which column's heading happened to wrap. */
-.cs-problems__list h3{
-  font-family:var(--font-sans); font-weight:700; font-size:1rem;
-  color:var(--ink);
-  line-height:1.3;
-  min-height:2.6em;
-  margin:0 0 0.4rem;
-}
-.cs-problems__list p{
-  font-size:0.9rem; line-height:1.55; color:var(--ink-dim);
+/* at a glance -- problem / constraint / role, the three context answers a
+   reviewer wants before any decision (replaces the old problems grid and
+   decision jump list) */
+.cs-snapshot{
+  display:grid; grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:1.5rem 2rem;
   margin:0;
 }
-
-/* jump list */
-.cs-jumplist__list{
-  list-style:none; margin:0; padding:0;
-  display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr));
-  gap:0.6rem 1.5rem;
-  counter-reset: decision;
-}
-.cs-jumplist__list li{ counter-increment: decision; }
-.cs-jumplist__list a{
-  display:flex; align-items:baseline; gap:0.6rem;
-  font-family:var(--font-sans); font-size:0.92rem; font-weight:500;
-  color:var(--ink-dim);
-  text-decoration:none;
-  padding:0.55rem 0;
-  border-bottom:1px solid var(--line);
-  transition:color 0.2s ease, border-color 0.2s ease;
-}
-.cs-jumplist__list a::before{
-  content: counter(decision, decimal-leading-zero);
-  font-family:var(--font-sans); font-weight:600; font-size:0.78rem;
+.cs-snapshot dt{
+  font-family:var(--font-sans); font-size:0.72rem; font-weight:600;
+  letter-spacing:0.06em; text-transform:uppercase;
   color:var(--accent);
-  flex-shrink:0;
+  margin:0 0 0.5rem;
 }
-.cs-jumplist__list a:hover{ color:var(--ink); border-color:var(--line-strong); }
+.cs-snapshot dd{
+  margin:0;
+  font-size:0.95rem; line-height:1.6; color:var(--ink-dim);
+}
 
 /* decisions */
 .cs-decision{
@@ -2046,7 +2012,7 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
    needs real internal breathing room regardless of being first -- unlike
    a plain `.cs-decision`, which has no box of its own and genuinely
    shouldn't add extra space above the jumplist right before it. */
-.cs-decision:first-child:not(.cs-decision--feature){ border-top:none; padding-top:0; }
+.cs-decision:first-of-type:not(.cs-decision--feature){ border-top:none; padding-top:0; }
 .cs-decision__kicker{
   font-family:var(--font-sans); font-size:0.72rem; letter-spacing:0.02em;
   color:var(--ink-faint);
@@ -2064,10 +2030,14 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
   max-width:68ch;
   margin:0 0 1.1rem;
 }
+.cs-decision p.cs-decision__tradeoff{
+  padding-left:1rem;
+  border-left:2px solid var(--line-strong);
+}
 .cs-decision p strong{ color:var(--ink); font-weight:600; }
 .cs-decision p em{ color:var(--ink); font-style:italic; }
 .cs-decision__visual{
-  display:flex; flex-wrap:wrap; gap:1.5rem;
+  display:flex; flex-wrap:wrap; justify-content:center; gap:1.5rem;
   margin-top:1.5rem;
 }
 /* Two real screenshots side by side inside a decision (Copia's scan-flow
@@ -2225,86 +2195,6 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
   color:var(--ink-faint);
 }
 
-/* Decision 3's pipeline diagram -- real content (5 real steps from the
-   source doc), not a generic placeholder shape like VisualPlaceholder's
-   diagram mode -- this project actually has the steps to draw. */
-.cs-pipeline{
-  display:flex;
-  align-items:stretch;
-  flex-wrap:wrap;
-  gap:0.75rem;
-  margin:1.75rem 0;
-}
-.cs-pipeline__step{
-  flex:1 1 150px;
-  background:var(--bg-raise);
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:1rem 1.1rem 1.2rem;
-}
-.cs-pipeline__step--live{
-  border-color:rgba(255,138,61,0.45);
-  background:rgba(255,138,61,0.06);
-}
-.cs-pipeline__num{
-  display:block;
-  font-family:var(--font-sans);
-  font-size:0.7rem;
-  font-weight:700;
-  letter-spacing:0.08em;
-  color:var(--vault-accent);
-  margin-bottom:0.45rem;
-}
-/* Same row-alignment fix as `.cs-problems__list h3` above -- flexbox
-   `align-items:stretch` (the default, see `.cs-pipeline` above) stretches
-   each STEP's own box to match the row's tallest step, but that only adds
-   empty space at the BOTTOM of a shorter box; it does nothing to align
-   the heading/paragraph boundary WITHIN each step, so a 2-line step title
-   still pushes only that step's own paragraph down relative to its
-   neighbors. Reserving 2 lines of heading height fixes that the same way. */
-.cs-pipeline__step h4{
-  margin:0 0 0.4rem;
-  font-family:var(--font-sans);
-  font-size:0.95rem;
-  line-height:1.3;
-  min-height:2.6em;
-  color:var(--ink);
-}
-.cs-pipeline__step p{ margin:0; font-size:0.78rem; line-height:1.5; color:var(--ink-dim); }
-.cs-pipeline__arrow{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:var(--ink-faint);
-  font-size:1.1rem;
-  padding:0 0.1rem;
-}
-
-/* Visual-system swatches -- generic across every case study (originally
-   Vault-only, renamed off "cs-vault-*" during the PickTheOdds case study
-   round so a second page could reuse it without a misleading class name).
-   Pass a real hex via the `--sw-color` inline style when a project has a
-   confirmed value, so the chip renders FILLED; omit it (or add `--outline`)
-   for a value that isn't confirmed yet, which renders as a dashed, unfilled
-   ring -- same honesty contract as VisualPlaceholder, just mixed within one
-   row instead of an all-or-nothing set. */
-.cs-swatch-grid{
-  display:flex;
-  flex-wrap:wrap;
-  gap:1.5rem;
-  margin-top:1.5rem;
-}
-.cs-swatch{ display:flex; align-items:center; gap:0.65rem; max-width:15rem; }
-.cs-swatch__chip{
-  width:2rem; height:2rem;
-  border-radius:999px;
-  flex-shrink:0;
-  background:var(--sw-color, transparent);
-  border:1px solid var(--line-strong);
-}
-.cs-swatch--outline .cs-swatch__chip{ background:transparent; border-style:dashed; }
-.cs-swatch__label{ font-size:0.78rem; color:var(--ink-dim); line-height:1.4; }
-
 /* DataBar.jsx -- reusable horizontal bar-chart row (label / track+fill /
    value), used wherever a case study compares a handful of real numbers
    at a glance instead of asking the reader to scan a table. Label column
@@ -2348,35 +2238,6 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
   white-space:nowrap;
 }
 
-/* Stats row -- reuses the site's own generic `.stat`/`.stat__num`/
-   `.stat__label` (already used by ProjectCard's PickTheOdds tiles), just a
-   new flex wrapper local to this section. */
-.cs-stats__row{
-  display:flex;
-  flex-wrap:wrap;
-  gap:2rem;
-  margin:1.5rem 0 0;
-}
-.cs-stats__note{
-  margin:1.5rem 0 0;
-  padding-top:1.25rem;
-  border-top:1px solid var(--line);
-  font-size:0.82rem;
-  line-height:1.6;
-  color:var(--ink-dim);
-}
-
-/* "Impact, in detail" section -- subheads inside this ScrollReveal for
-   its two chart groups (device split, CTR-by-guide), one step down from
-   `.cs-section__heading` since they're internal to this one section, not
-   page-level headings of their own. */
-.cs-impact__subhead{
-  margin:2.25rem 0 0.35rem;
-  font-family:var(--font-sans);
-  font-size:1.05rem;
-  color:var(--ink);
-}
-.cs-impact__sublede{ margin:0 0 0.5rem; font-size:0.85rem; color:var(--ink-dim); }
 .cs-databar-group{
   margin-top:0.75rem;
   padding-top:0.25rem;
@@ -2422,15 +2283,11 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
   .cs{ padding:6.5rem 0 4rem; }
   .cs-hero__title{ max-width:none; }
   .cs-hero__frame{ font-size:0.76rem; }
-  .cs-problems__list{ grid-template-columns:1fr; }
-  .cs-jumplist__list{ grid-template-columns:1fr; }
   .cs-gallery{ grid-template-columns:1fr; }
+  .cs-snapshot{ grid-template-columns:1fr; }
   .cs-decision--feature{ padding:1.5rem 1.25rem 1.75rem; }
   .cs-decision__visual{ gap:1rem; }
   .cs-hint-grid{ grid-template-columns:1fr; }
-  .cs-pipeline{ flex-direction:column; }
-  .cs-pipeline__arrow{ transform:rotate(90deg); padding:0.1rem 0; }
-  .cs-stats__row{ gap:1.25rem 1.75rem; }
   .cs-hero__stats{ gap:1.25rem 1.75rem; }
   .data-bar{ grid-template-columns:1fr; gap:0.35rem; }
   .data-bar__value{ justify-self:start; }

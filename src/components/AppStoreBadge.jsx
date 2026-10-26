@@ -10,15 +10,15 @@ import appStoreBadge from '@/assets/appstore-badge.svg';
 // filename convention Apple ships this badge under; confirmed unmodified --
 // full Apple logo glyph + full "Download on the App Store" wordmark
 // present, standard black badge, original viewBox/aspect ratio untouched).
-// Links to `#` for now -- Copia isn't live on the App Store yet -- swappable
-// to the real listing URL the moment it is.
+// Links to Copia's live App Store listing.
 export default function AppStoreBadge({ className = '' }) {
   return (
     <a
       className={`appstore-badge ${className}`}
-      href="#"
-      aria-label="Download on the App Store, coming soon"
-      onClick={(e) => e.preventDefault()}
+      href="https://apps.apple.com/us/app/copia-grocery-lists/id6799573460"
+      target="_blank"
+      rel="noopener"
+      aria-label="Download Copia on the App Store"
     >
       <img src={appStoreBadge} alt="Download on the App Store" width={120} height={40} />
     </a>
