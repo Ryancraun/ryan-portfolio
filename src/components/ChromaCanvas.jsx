@@ -27,15 +27,18 @@ const RIM_APEX_DEG = 77;
 // gradient (see CHROMA_BOOST) can be built from the exact same stops
 // without a second hand-maintained list -- one source of truth for hue,
 // two renderings of it.
+// Warm-only sweep built around the site's --accent amber (#e2a73c, about
+// oklch 77% 0.14 75): ember at both ends, warm white at the crown. Was a
+// full violet-to-red spectrum, the one off-palette color on the site.
 const HUE_STOPS = [
-  { g: 42, l: 68, c: 0.28, h: 305 },
-  { g: 52, l: 66, c: 0.26, h: 278 },
-  { g: 61, l: 74, c: 0.25, h: 255 },
-  { g: 69, l: 88, c: 0.19, h: 200 },
-  { g: 77, l: 90, c: 0.24, h: 150 },
-  { g: 87, l: 95, c: 0.2, h: 100 },
-  { g: 99, l: 86, c: 0.22, h: 58 },
-  { g: 111, l: 72, c: 0.26, h: 25 },
+  { g: 42, l: 62, c: 0.19, h: 38 },
+  { g: 52, l: 68, c: 0.18, h: 48 },
+  { g: 61, l: 75, c: 0.16, h: 62 },
+  { g: 69, l: 84, c: 0.13, h: 75 },
+  { g: 77, l: 93, c: 0.07, h: 85 },
+  { g: 87, l: 84, c: 0.13, h: 75 },
+  { g: 99, l: 75, c: 0.16, h: 62 },
+  { g: 111, l: 64, c: 0.19, h: 42 },
 ];
 const RIM_LOWER_DEG = RIM_APEX_DEG - RIM_SPAN_DEG / 2; // 32 -- transparent bookend
 const RIM_UPPER_DEG = RIM_APEX_DEG + RIM_SPAN_DEG / 2; // 122 -- transparent bookend
