@@ -141,7 +141,7 @@ export default function Home() {
             id="work-teneo"
             index="01"
             client="Teneo"
-            title="Keep the Muscle While the Weight Comes Off"
+            title="Built Around the Shot Week"
             tag="Native iOS / Health"
             byline="Solo: design & engineering. In App Review"
             to="/work/teneo"
@@ -177,7 +177,7 @@ export default function Home() {
             stats={[
               { num: '4,900', label: 'users in its first 8 months' },
               { num: '252', label: 'guides published' },
-              { num: '862', label: 'search clicks, Jan–Aug 2026' },
+              { num: '4', label: 'hint levels, one control' },
             ]}
             media={<img src={vaultCardShot} alt="Vault, an ad-free gaming guide site (dark UI, orange accent)" loading="lazy" />}
           />
@@ -186,17 +186,17 @@ export default function Home() {
             id="work-picktheodds"
             index="04"
             client="PickTheOdds"
-            title="Modernizing a Subscription Platform"
-            tag="B2B SaaS / Sports Analytics"
+            title="Structuring a Betting Tool Around Its Core Loop"
+            tag="Web App / Sports Betting"
             byline="Contract UX/UI Designer, 8 months"
             to="/work/picktheodds"
             ctaLabel="View case study"
             useSpecularCta
             indexBackdrop
             stats={[
-              { num: '31%', label: 'faster to select a betting category' },
-              { num: '25%', label: 'increase in user retention' },
-              { num: '84%', label: 'increase in time on site' },
+              { num: '31%', label: 'faster to choose a betting category, timed test' },
+              { num: '68%', label: 'of a 700+ member Discord poll said filters were too slow' },
+              { num: '3', label: 'structural fixes: filters, navigation, billing' },
             ]}
             media={<PickTheOddsCardArt />}
           />

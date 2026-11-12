@@ -2034,7 +2034,7 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
 
 /* ---------- Copia case study page ---------- */
 .cs{ width:var(--wrap); margin:0 auto; padding:7rem 0 5rem; }
-.cs-section{ padding:3.5rem 0; border-top:1px solid var(--line); }
+.cs-section{ padding:4.5rem 0; border-top:1px solid var(--line); }
 .cs-section__heading{
   font-family:var(--font-sans); font-weight:700; letter-spacing:-0.01em;
   font-size:clamp(1.5rem, 3.2vw, 2.1rem);
@@ -2042,8 +2042,8 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
   margin:0 0 1rem;
 }
 .cs-section__lede{
-  font-family:var(--font-serif); font-style:italic; font-weight:500;
-  font-size:clamp(1.05rem, 2vw, 1.25rem);
+  font-family:var(--font-sans); font-weight:400;
+  font-size:clamp(1.05rem, 1.8vw, 1.2rem);
   line-height:1.55;
   color:var(--ink-dim);
   max-width:62ch;
@@ -2079,9 +2079,9 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
   max-width:20ch;
 }
 .cs-hero__line{
-  font-family:var(--font-serif); font-style:italic; font-weight:500;
-  font-size:clamp(1.1rem, 2.2vw, 1.4rem);
-  line-height:1.5;
+  font-family:var(--font-sans); font-weight:400;
+  font-size:clamp(1.05rem, 1.7vw, 1.22rem);
+  line-height:1.6;
   color:var(--ink-dim);
   max-width:52ch;
   margin:0 0 1.75rem;
@@ -2119,10 +2119,9 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
 /* Four items (Teneo adds a Constraint line) read as a 2x2, not 3 + 1. */
 .cs-snapshot--four{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
 .cs-snapshot dt{
-  font-family:var(--font-sans); font-size:0.72rem; font-weight:600;
-  letter-spacing:0.06em; text-transform:uppercase;
-  color:var(--accent);
-  margin:0 0 0.5rem;
+  font-family:var(--font-sans); font-size:0.95rem; font-weight:600;
+  color:var(--ink);
+  margin:0 0 0.4rem;
 }
 .cs-snapshot dd{
   margin:0;
@@ -2131,8 +2130,7 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
 
 /* decisions */
 .cs-decision{
-  padding:2.5rem 0;
-  border-top:1px solid var(--line);
+  padding:3.5rem 0;
   scroll-margin-top: 6rem;
 }
 /* PADDING FIX: excludes `.cs-decision--feature` -- it was matching too,
@@ -2143,7 +2141,7 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
    needs real internal breathing room regardless of being first -- unlike
    a plain `.cs-decision`, which has no box of its own and genuinely
    shouldn't add extra space above the jumplist right before it. */
-.cs-decision:first-of-type:not(.cs-decision--feature){ border-top:none; padding-top:0; }
+.cs-decision:first-of-type{ border-top:none; padding-top:1.5rem; }
 .cs-decision__kicker{
   font-family:var(--font-sans); font-size:0.72rem; letter-spacing:0.02em;
   color:var(--ink-faint);
@@ -2194,13 +2192,10 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
    accent-hairline card, not a loud full accent fill (hoarded-hue discipline
    still applies: this is the ONE decision that earns extra visual weight,
    not a second recurring accent pattern). */
-.cs-decision--feature{
-  padding:2rem 2rem 2.5rem;
-  border:1px solid rgba(226,167,60,0.28);
-  border-radius:20px;
-  background:rgba(226,167,60,0.035);
-}
-.cs-decision--feature .cs-decision__kicker{ color:var(--accent); }
+/* DE-TEMPLATE PASS (2026-11-12): the amber-tinted bordered card is gone.
+   Every decision now has the same quiet frame; the lead one earns its
+   weight from position and its kicker's own words, not from a glowing box. */
+.cs-decision--feature{ padding:3.5rem 0; }
 
 /* ---------- Vault case study -- brand-local accent ---------- */
 /* Vault's own product accent (#ff8a3d, doc gives #FF6B1A -- warmed slightly
@@ -2550,34 +2545,43 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
   column-gap:clamp(2rem, 5vw, 4.5rem);
   align-items:start;
 }
+/* Room for a two-phone flow beside the copy (Teneo Decision 04). */
+.cs-decision--split-wide{ grid-template-columns:minmax(0, 1fr) minmax(0, 500px); }
+.cs-decision--split > .phone-flow{ margin-top:0; }
+.cs-decision--split > .phone--solo{ width:100%; max-width:260px; justify-self:center; }
 .cs-decision--split > .cs-shot--phone{ margin:0; max-width:none; width:100%; }
 .cs-decision--split .cs-decision__body > :last-child{ margin-bottom:0; }
 
 /* Reading order: the kicker says which decision you're on, the heading says
-   what was decided, the body explains it, and the trade-off is set apart as
-   its own labeled note so it's findable when skimming. */
+   what was decided, the body explains it, and the trade-off is a labelled
+   paragraph, findable when skimming without being boxed.
+   DE-TEMPLATE PASS (2026-11-12): no amber uppercase micro-labels and no
+   bordered trade-off card. The kicker is plain small text; the trade-off
+   label is a sentence-case run-in heading in full ink. */
 .cs-decision__kicker{
-  font-size:0.72rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase;
-  color:var(--accent);
-  margin-bottom:0.75rem;
+  font-size:0.86rem; font-weight:500; letter-spacing:0; text-transform:none;
+  font-variant-numeric:tabular-nums;
+  color:var(--ink-dim);
+  margin-bottom:0.6rem;
 }
 .cs-decision h3{ font-size:clamp(1.4rem, 2.6vw, 1.85rem); line-height:1.2; margin-bottom:1.1rem; }
 .cs-decision p.cs-decision__tradeoff{
-  border-left:none;
-  padding:1rem 1.15rem;
-  border-radius:12px;
-  background:rgba(244,242,236,0.04);
-  border:1px solid var(--line);
+  border:none; padding:0; background:none;
+  margin-top:1.6rem;
   color:var(--ink-dim);
 }
 .cs-decision__tradeoff-label{
   display:block;
-  font-size:0.72rem; font-weight:600 !important; letter-spacing:0.08em; text-transform:uppercase;
+  font-size:0.95rem; font-weight:600 !important;
   color:var(--ink) !important;
-  margin-bottom:0.35rem;
+  margin-bottom:0.2rem;
 }
-.cs--teneo .cs-decision{ padding:3.5rem 0; }
-.cs--teneo .cs-decision--feature{ padding:2.5rem; }
+/* A one-line side note under a decision's visuals ("Rejected: ..."). */
+.cs-decision p.cs-decision__aside{
+  font-size:0.88rem; line-height:1.6; color:var(--ink-dim);
+  margin:1.75rem 0 0; max-width:68ch;
+}
+.cs-decision__aside strong{ color:var(--ink); font-weight:600; margin-right:0.35em; }
 
 @media (max-width:860px){
   .cs-hero--split{
@@ -2587,6 +2591,8 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
   .cs-hero--split .cs-hero__shot{ max-width:300px; justify-self:center; margin-top:2.5rem; }
   .cs-decision--split{ grid-template-columns:1fr; }
   .cs-decision--split > .cs-shot--phone{ max-width:300px; justify-self:center; margin-top:2rem; }
+  .cs-decision--split > .phone-flow{ margin-top:2rem; }
+  .cs-decision--split > .phone--solo{ margin-top:2rem; max-width:240px; }
 }
 @media (max-width:640px){
   .cs-hero--split .cs-hero__stats{ grid-template-columns:1fr; gap:1.5rem; }
@@ -2599,8 +2605,8 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
   .cs-hero__frame{ font-size:0.76rem; }
   .cs-gallery{ grid-template-columns:1fr; }
   .cs-snapshot{ grid-template-columns:1fr; }
-  .cs-decision--feature,
-  .cs--teneo .cs-decision--feature{ padding:1.5rem 1.25rem 1.75rem; }
+  .cs-section{ padding:3.25rem 0; }
+  .cs-decision, .cs-decision--feature{ padding:3rem 0; }
   .cs-decision__visual{ gap:1rem; }
   .cs-hero__stats{ gap:1.25rem 1.75rem; }
   .data-bar{ grid-template-columns:1fr; gap:0.35rem; }
@@ -2621,19 +2627,14 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
    their note in a third column instead of one tall image per row. Phone
    pairs stay 2-up on a phone too, because side by side is the comparison;
    everything else stacks. Additive only: no existing rule is changed. */
-.cs-process{
-  margin-top:2rem;
-  padding-top:1.5rem;
-  border-top:1px dashed var(--line);
-}
+.cs-process{ margin-top:2.5rem; }
 .cs-process--flush{ margin-top:0; padding-top:0; border-top:none; }
-.cs-process + .cs-process{ margin-top:2.5rem; }
+.cs-process + .cs-process{ margin-top:4rem; }
 /* Inside a split decision, span both columns, under the copy and the shot. */
 .cs-decision--split > .cs-process{ grid-column:1 / -1; min-width:0; }
 .cs-process .cs-process__label{
-  font-family:var(--font-sans); font-size:0.7rem; font-weight:600;
-  letter-spacing:0.08em; text-transform:uppercase;
-  color:var(--ink-dim);
+  font-family:var(--font-sans); font-size:0.95rem; font-weight:600;
+  color:var(--ink);
   margin:0 0 1rem; max-width:none;
 }
 .cs-process__item{ margin:0; display:flex; flex-direction:column; align-items:flex-start; gap:0.5rem; min-width:0; }
@@ -2646,17 +2647,17 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
   font-family:var(--font-sans); font-size:0.82rem; line-height:1.6;
   color:var(--ink-dim); max-width:72ch;
 }
+/* DE-TEMPLATE PASS (2026-11-12): tags are plain run-in words, not pills.
+   "Before" / "After" sit above their image as a small label; "Rejected" /
+   "Replaced" lead a caption sentence, so they take a colon. */
 .cs-process__tag{
-  display:inline-block;
-  font-family:var(--font-sans); font-size:0.66rem; font-weight:600;
-  letter-spacing:0.08em; text-transform:uppercase; line-height:1;
-  padding:0.3rem 0.55rem; border-radius:999px;
-  border:1px solid var(--line-strong);
-  color:var(--ink-dim);
-  white-space:nowrap; vertical-align:0.1em;
+  display:inline;
+  font-family:var(--font-sans); font-size:0.86rem; font-weight:600;
+  color:var(--ink);
+  white-space:nowrap;
 }
-.cs-process__tag--after{ color:var(--accent); border-color:rgba(226,167,60,0.45); }
-.cs-process__tag--rejected{ color:var(--ink-dim); border-style:dashed; }
+.cs-process__tag--after{ color:var(--ink); }
+.cs-process__tag--rejected::after{ content:":"; }
 
 /* Before | After | note */
 .cs-process__pair{
@@ -2715,4 +2716,138 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
 .cs-next__next{ margin-left:auto; color:var(--ink); }
 @media (max-width: 640px){
   .cs-next__next{ margin-left:0; }
+}
+
+/* ---------- PhoneFrame / PhoneFlow (src/components/PhoneFrame.jsx) ----------
+   Raw simulator captures inside a plain iPhone body, so each step of a flow
+   reads as its own screen. Width is set by the flow; the frame scales with
+   it (radius and bezel are % / em of the frame width). */
+.phone{ margin:0; display:flex; flex-direction:column; align-items:center; gap:0.75rem; min-width:0; }
+.phone__body{
+  width:100%;
+  padding:3.2%;
+  border-radius:13.5% / 6.4%;
+  background:linear-gradient(145deg, #3a3a3e, #1b1b1e 40%, #2a2a2d);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.10),
+    0 0 0 1px rgba(0,0,0,0.6),
+    0 18px 40px -18px rgba(0,0,0,0.7);
+}
+.phone__screen{
+  position:relative; overflow:hidden;
+  border-radius:11% / 5.2%;
+  background:#000;
+}
+.phone__screen img{ display:block; width:100%; height:auto; }
+.phone__island{
+  position:absolute; top:1.6%; left:50%; transform:translateX(-50%);
+  width:30%; aspect-ratio:3.4 / 1;
+  border-radius:999px; background:#000;
+}
+.phone__caption{
+  font-family:var(--font-sans); font-size:0.82rem; line-height:1.4;
+  color:var(--ink-dim); text-align:center; max-width:22ch;
+}
+.phone-flow{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+  gap:clamp(1rem, 2.5vw, 2rem);
+  align-items:start;
+  margin:2rem 0 0;
+}
+@media (max-width:640px){
+  /* Phones: two across, so a 4-step flow is two rows and each screen is
+     still big enough to read. Never one-per-row (wasted space). */
+  .phone-flow{ grid-template-columns:repeat(2, minmax(0, 1fr)); gap:1.25rem 1rem; }
+}
+
+/* Fixed column counts for a known number of screens, so a 3-step flow
+   doesn't stretch each phone to a third of the page. Phones cap at 250px:
+   big enough to read the UI, small enough that a flow fits one screen. */
+.phone-flow--2{ grid-template-columns:repeat(2, minmax(0, 250px)); }
+.phone-flow--3{ grid-template-columns:repeat(3, minmax(0, 250px)); }
+.phone-flow--4{ grid-template-columns:repeat(4, minmax(0, 250px)); }
+.phone__caption{ text-wrap:balance; }
+
+/* A flow with a visible branch name above it (PhoneFlow `title`). */
+.phone-flow-block{ min-width:0; }
+.phone-flow-block .phone-flow{ margin-top:0; }
+.phone-flow__title{
+  font-family:var(--font-sans); font-size:0.95rem; font-weight:600;
+  color:var(--ink);
+  margin:0 0 1rem;
+}
+
+/* Two branches of one flow, side by side (Teneo onboarding: weekly shot |
+   daily pill). Columns follow the screen counts, so phones match in size. */
+/* Every phone is the same width (--pw) so both branches line up; the
+   gap between branches is wider than the gap inside one. */
+.cs-branches{
+  --pw:200px;
+  display:flex; flex-wrap:wrap; justify-content:space-between;
+  gap:2.5rem 3rem;
+  margin-top:2rem;
+}
+.cs-branches .phone-flow--2{ grid-template-columns:repeat(2, var(--pw)); }
+.cs-branches .phone-flow--3{ grid-template-columns:repeat(3, var(--pw)); }
+@media (max-width:1180px){
+  .cs-branches{ --pw:190px; justify-content:flex-start; }
+}
+
+/* A decision whose visuals run full width below it: the heading takes the
+   left column and the copy the right, so the text block doesn't leave half
+   the page empty above the flow. Stacks under 860px. */
+.cs-decision__body--wide{
+  display:grid;
+  grid-template-columns:minmax(0, 5fr) minmax(0, 7fr);
+  column-gap:clamp(2rem, 5vw, 5rem);
+  align-items:start;
+}
+.cs-decision__body--wide .cs-decision__head h3{ max-width:18ch; margin-bottom:0; }
+.cs-decision__body--wide .cs-decision__text > :first-child{ margin-top:0; }
+.cs-decision__body--wide .cs-decision__text > :last-child{ margin-bottom:0; }
+.cs-decision__body--wide + .phone-flow,
+.cs-decision__body--wide + .cs-branches{ margin-top:3rem; }
+
+/* Icon study: the kept options read in full ink, the rejected ones dimmer. */
+.cs-process__option-tag{ color:var(--ink); font-weight:600; }
+.cs-process__option:not(.is-kept) img{ opacity:0.72; }
+
+@media (max-width:860px){
+  .cs-decision__body--wide{ grid-template-columns:1fr; }
+  .cs-decision__body--wide .cs-decision__head h3{ max-width:none; margin-bottom:1.1rem; }
+}
+@media (max-width:640px){
+  .phone-flow--2, .phone-flow--3, .phone-flow--4,
+  .cs-branches .phone-flow--2, .cs-branches .phone-flow--3{
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+  }
+  .cs-branches{ display:grid; grid-template-columns:1fr; gap:2.5rem; }
+  .cs-decision__body--wide + .phone-flow,
+  .cs-decision__body--wide + .cs-branches{ margin-top:2rem; }
+  .phone-flow{ gap:1.5rem 1rem; }
+}
+
+/* ---------- Round 4 fixes 16-17 (builder r4a, 2026-11-12) ----------
+   16: the Copia-only centred 230px flow rule was deleted; Copia flows now use
+   the shared .phone-flow--3 / --4 columns, so every flow starts at the text
+   edge with 250px phones.
+   17: on phones, 3- and 4-screen flows become a horizontal snap scroller
+   (two phones visible plus a sliver of the next) instead of leaving the last
+   phone alone on a half-empty row. 2-screen flows are unchanged. The
+   scroller takes keyboard focus (tabIndex in PhoneFrame.jsx). */
+@media (max-width:640px){
+  .phone-flow--3, .phone-flow--4, .cs-branches .phone-flow--3{ grid-template-columns:none; grid-auto-flow:column; grid-auto-columns:42%; overflow-x:auto; scroll-snap-type:x mandatory; padding-bottom:.5rem; }
+  .phone-flow--3 > .phone, .phone-flow--4 > .phone{ scroll-snap-align:start; }
+}
+.phone-flow:focus-visible{ outline:2px solid var(--ink); outline-offset:6px; border-radius:4px; }
+
+/* R4 fix 15 (Vault + PickTheOdds builder): Vault's decisions now use the
+   Teneo wide body, so the hint demo and the title-test bars sit below it
+   at full width. Give them the same breathing room a flow gets there. */
+.cs-decision__body--wide + .cs-hint,
+.cs-decision__body--wide + .cs-databar-group{ margin-top:2.5rem; }
+@media (max-width:640px){
+  .cs-decision__body--wide + .cs-hint,
+  .cs-decision__body--wide + .cs-databar-group{ margin-top:2rem; }
 }

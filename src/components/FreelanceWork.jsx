@@ -1,4 +1,3 @@
-import StatNumber from '@/components/StatNumber';
 import upworkLogo from '@/assets/upwork-logo.png';
 
 // FREELANCE & CLIENT WORK -- ROUND 2 (Ryan, on the first version's Ebony
@@ -39,21 +38,15 @@ export default function FreelanceWork() {
 
       <div className="freelance__stats">
         <div className="stat">
-          <span className="stat__num">
-            <StatNumber value={100} suffix="%" />
-          </span>
+          <span className="stat__num">100%</span>
           <span className="stat__label">Job Success score</span>
         </div>
         <div className="stat">
-          <span className="stat__num">
-            <StatNumber value={5} decimals={1} />
-          </span>
+          <span className="stat__num">5.0</span>
           <span className="stat__label">average rating (8 of 8 rated jobs)</span>
         </div>
         <div className="stat">
-          <span className="stat__num">
-            <StatNumber value={15} />
-          </span>
+          <span className="stat__num">15</span>
           <span className="stat__label">jobs completed on Upwork</span>
         </div>
       </div>

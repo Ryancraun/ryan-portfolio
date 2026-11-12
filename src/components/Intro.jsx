@@ -12,12 +12,12 @@ function Fade({ as: Tag = 'p', className, children }) {
 export default function Intro() {
   return (
     <section className="intro" id="intro">
-      <Fade className="intro__statement">I&rsquo;d rather ship and measure than polish a mockup.</Fade>
+      <Fade className="intro__statement">I change the design when users show me I&rsquo;m wrong.</Fade>
       <div className="intro__lede">
         <Fade className="intro__p">
           In Copia I took item counts off the list because one shopper misread them, then put them back weeks
-          later when users told me I was wrong. Both versions shipped. Because I build what I design, the fix
-          is days, not a sprint.
+          later when users told me I was wrong. Both versions shipped. Watching people use the first version
+          is how I found the second.
         </Fade>
       </div>
     </section>
