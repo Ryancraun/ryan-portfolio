@@ -61,6 +61,7 @@ const projectRoot = path.resolve(__dirname, '..');
 const ROUTES = [
   { path: '/', outFile: 'index.html' },
   { path: '/work/copia', outFile: 'work/copia/index.html' },
+  { path: '/work/teneo', outFile: 'work/teneo/index.html' },
   { path: '/work/vault', outFile: 'work/vault/index.html' },
   { path: '/work/picktheodds', outFile: 'work/picktheodds/index.html' },
 ];
@@ -72,6 +73,7 @@ const ROUTES = [
 const READY_SELECTOR = {
   '/': '.work__eyebrow',
   '/work/copia': '.cs-hero__title',
+  '/work/teneo': '.cs-hero__title',
   '/work/vault': '.cs-hero__title',
   '/work/picktheodds': '.cs-hero__title',
 };

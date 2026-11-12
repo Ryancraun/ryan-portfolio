@@ -1,6 +1,7 @@
 import Particles from '@/components/reactbits/Particles/Particles';
 import InViewMount from './InViewMount';
 import copiaHomeDark from '@/assets/copia-home-dark.jpg';
+import teneoPromise from '@/assets/teneo-promise.jpg';
 import pickTheOddsScreenshot from '@/assets/picktheodds.png';
 
 // 03 PickTheOdds -- RESOLUTION CAP (Ryan: "can we ensure that all pictures
@@ -95,6 +96,18 @@ export function CopiaTeaserArt() {
     <div className="copia-teaser" aria-hidden="true">
       <div className="copia-teaser__grain" />
       <img className="copia-teaser__shot" src={copiaHomeDark} alt="" loading="lazy" />
+    </div>
+  );
+}
+
+// 02 Teneo -- same treatment as CopiaTeaserArt (real App Store frame, no
+// live canvas), reusing its layout classes. Leads with the same screen as
+// the case study hero, so card and page open on one first impression.
+export function TeneoTeaserArt() {
+  return (
+    <div className="copia-teaser" aria-hidden="true">
+      <div className="copia-teaser__grain" />
+      <img className="copia-teaser__shot" src={teneoPromise} alt="" loading="lazy" />
     </div>
   );
 }

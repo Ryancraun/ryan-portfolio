@@ -7,7 +7,7 @@ import WorkSidebar from '@/components/WorkSidebar';
 import FreelanceWork from '@/components/FreelanceWork';
 import ChromaContact from '@/components/ChromaContact';
 import Footer from '@/components/Footer';
-import { CopiaTeaserArt, PickTheOddsCardArt } from '@/components/CardArt';
+import { CopiaTeaserArt, TeneoTeaserArt, PickTheOddsCardArt } from '@/components/CardArt';
 import vaultCardShot from '@/assets/vault-home.jpg';
 import { setDocumentMeta } from '@/lib/documentMeta';
 import { smoothScrollTo } from '@/lib/smoothScrollTo';
@@ -133,8 +133,21 @@ export default function Home() {
           />
 
           <ProjectCard
-            id="work-vault"
+            id="work-teneo"
             index="02"
+            client="Teneo"
+            title="Keep the Muscle While the Weight Comes Off"
+            tag="Native iOS / Health"
+            byline="Solo: design & engineering. In App Review"
+            to="/work/teneo"
+            ctaLabel="View case study"
+            useSpecularCta
+            media={<TeneoTeaserArt />}
+          />
+
+          <ProjectCard
+            id="work-vault"
+            index="03"
             client="Vault"
             title="Get Unstuck Without Getting Spoiled"
             tag="Web / Content Platform"
@@ -153,7 +166,7 @@ export default function Home() {
 
           <ProjectCard
             id="work-picktheodds"
-            index="03"
+            index="04"
             client="PickTheOdds"
             title="Modernizing a Subscription Platform"
             tag="B2B SaaS / Sports Analytics"

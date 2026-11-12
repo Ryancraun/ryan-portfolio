@@ -29,6 +29,7 @@ import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 // same mechanism, nothing else about the scrollspy/indicator changes.
 const TABS = [
   { id: 'work-copia', label: 'Copia' },
+  { id: 'work-teneo', label: 'Teneo' },
   { id: 'work-vault', label: 'Vault' },
   { id: 'work-picktheodds', label: 'PickTheOdds' },
 ];

@@ -27,6 +27,7 @@ import Layout from './routes/Layout.jsx'
 // splitting is the clear, low-risk win within this pass's scope.
 const Home = lazy(() => import('./routes/Home.jsx'))
 const CopiaCaseStudy = lazy(() => import('./routes/CopiaCaseStudy.jsx'))
+const TeneoCaseStudy = lazy(() => import('./routes/TeneoCaseStudy.jsx'))
 const VaultCaseStudy = lazy(() => import('./routes/VaultCaseStudy.jsx'))
 const PickTheOddsCaseStudy = lazy(() => import('./routes/PickTheOddsCaseStudy.jsx'))
 
@@ -64,6 +65,14 @@ createRoot(document.getElementById('root')).render(
             element={
               <Suspense fallback={null}>
                 <CopiaCaseStudy />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/work/teneo"
+            element={
+              <Suspense fallback={null}>
+                <TeneoCaseStudy />
               </Suspense>
             }
           />
