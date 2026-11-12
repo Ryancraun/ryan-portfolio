@@ -130,7 +130,7 @@ export default function Home() {
             <p className="now-strip__eyebrow">Now · FEVO</p>
             <p className="now-strip__role">Product Designer, Nov 2025 – present</p>
             <p className="now-strip__body">
-              On a cross-functional product team, I lead design for referral and sharing, an AI offer builder, and a
+              On a cross-functional product team, I design referral and sharing features, an AI offer builder, and a
               consumer marketplace. This work is under NDA; case study available on request.
             </p>
             <a className="now-strip__link" href="mailto:craunryan@gmail.com?subject=FEVO%20case%20study%20request">
