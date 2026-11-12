@@ -240,7 +240,7 @@ export default function TeneoCaseStudy() {
           </figure>
         </ScrollReveal>
 
-        <ScrollReveal as="article" className="cs-decision cs-decision--split">
+        <ScrollReveal as="article" className="cs-decision">
           <div className="cs-decision__body">
             <p className="cs-decision__kicker">Decision 04</p>
             <h3>Shot history has to survive every update</h3>
@@ -332,8 +332,9 @@ export default function TeneoCaseStudy() {
       <ScrollReveal as="section" className="cs-section cs-outcome">
         <h2 className="cs-section__heading">Outcome</h2>
         <p>
-          Teneo went from first commit to App Store submission in a week. The first review flagged the screens shown
-          before permission requests. I fixed them and resubmitted the next day. 
+          Teneo went from first commit to App Store submission in a week. Apple&rsquo;s first review flagged two things: the screen shown
+          before the Apple Health permission request, and an account sign-up that failed for the reviewer. I fixed both
+          and resubmitted the next day.
         </p>
         <p>
           <strong>Next:</strong> launch, then clear states for shots that are due, late or skipped, so a missed dose

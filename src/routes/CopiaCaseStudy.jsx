@@ -8,7 +8,7 @@ import { setDocumentMeta } from '@/lib/documentMeta';
 import copiaHomeDark from '@/assets/copia-home-dark.jpg';
 import copiaRouteDark from '@/assets/copia-route-dark.jpg';
 import copiaScanPages from '@/assets/copia-scan-pages.jpg';
-import copiaScanReview from '@/assets/copia-scan-review.jpg';
+import copiaScanReview from '@/assets/copia-scan-review-crop.jpg';
 import copiaPaywall from '@/assets/copia-paywall.jpg';
 // Process images: real before/after captures from restock-ios docs/shots/
 // (each call site cites its source file and the commit or note behind it).
@@ -121,7 +121,7 @@ export default function CopiaCaseStudy() {
         <h2 className="cs-section__heading">Key decisions</h2>
 
         <ScrollReveal as="article" className="cs-decision">
-          <p className="cs-decision__kicker">01</p>
+          <p className="cs-decision__kicker">Decision 01</p>
           <h3>Sort the list by the walk, not by when you typed it</h3>
           <p>
             Items file into aisles automatically, and the shopping view reads as a route: aisles are stations,
@@ -129,7 +129,7 @@ export default function CopiaCaseStudy() {
             aisle, Copia remembers it on every list, and you can set your own aisle order.
           </p>
           <p className="cs-decision__tradeoff">
-            <strong>Trade-off:</strong> I didn&rsquo;t use a retailer API for &ldquo;real&rdquo; aisle numbers,
+            <strong className="cs-decision__tradeoff-label">Trade-off</strong>I didn&rsquo;t use a retailer API for &ldquo;real&rdquo; aisle numbers,
             because it would need an account and a network call. The on-device order is a little rougher, and it
             stays entirely on the user&rsquo;s phone.
           </p>
@@ -179,7 +179,7 @@ export default function CopiaCaseStudy() {
         </ScrollReveal>
 
         <ScrollReveal as="article" className="cs-decision cs-decision--feature">
-          <p className="cs-decision__kicker">02 · Reversed after launch</p>
+          <p className="cs-decision__kicker">Decision 02 · Reversed after launch</p>
           <h3>Removed the quantity, then brought it back</h3>
           <p>
             Watching someone shop, I saw that &ldquo;eggs 3&rdquo; read as a measure, not a count, so 1.0 shipped
@@ -189,7 +189,7 @@ export default function CopiaCaseStudy() {
             dropdown on every row.
           </p>
           <p className="cs-decision__tradeoff">
-            <strong>Trade-off:</strong> the most-glanced row gets one more element. The &ldquo;×&rdquo; keeps a
+            <strong className="cs-decision__tradeoff-label">Trade-off</strong> The most-glanced row gets one more element. The &ldquo;×&rdquo; keeps a
             count from reading as a weight, and recipe measures still stay off the row.
           </p>
 
@@ -233,7 +233,7 @@ export default function CopiaCaseStudy() {
         </ScrollReveal>
 
         <ScrollReveal as="article" className="cs-decision">
-          <p className="cs-decision__kicker">03</p>
+          <p className="cs-decision__kicker">Decision 03</p>
           <h3>Make a long scan feel like progress, not a spinner</h3>
           <p>
             Each page is read on its own and the results are merged at the end, so one bad page costs one page,
@@ -241,7 +241,7 @@ export default function CopiaCaseStudy() {
             review step where you can edit, untick or move items before they reach the list.
           </p>
           <p className="cs-decision__tradeoff">
-            <strong>Trade-off:</strong> every import gets an extra screen. That&rsquo;s worth it, because a wrong
+            <strong className="cs-decision__tradeoff-label">Trade-off</strong> Every import gets an extra screen. That&rsquo;s worth it, because a wrong
             ingredient costs a tap at home but a second trip once you&rsquo;re in the store.
           </p>
           <div className="cs-decision__visual">
@@ -255,7 +255,7 @@ export default function CopiaCaseStudy() {
             <figure className="cs-shot cs-shot--phone">
               <img
                 src={copiaScanReview}
-                alt="Copia's scan review screen: parsed ingredients with amounts, ready to add to the Weekly list"
+                alt="Copia's scan review: ingredients read from the page, each with its amount and a checkbox, above an Add button"
                 loading="lazy"
               />
             </figure>
@@ -263,7 +263,7 @@ export default function CopiaCaseStudy() {
         </ScrollReveal>
 
         <ScrollReveal as="article" className="cs-decision">
-          <p className="cs-decision__kicker">04</p>
+          <p className="cs-decision__kicker">Decision 04</p>
           <h3>Charge for the habit, never for the household</h3>
           <p>
             Free scans are capped over your lifetime, not per day. A daily reset teaches people to ration, while a
@@ -272,7 +272,7 @@ export default function CopiaCaseStudy() {
             a second phone, and paywalls were a top-five complaint about competitors.
           </p>
           <p className="cs-decision__tradeoff">
-            <strong>Trade-off:</strong> Pro has less to sell. In return, sharing is free, and sharing is the one
+            <strong className="cs-decision__tradeoff-label">Trade-off</strong>Pro has less to sell. In return, sharing is free, and sharing is the one
             way a solo app spreads without an ad budget.
           </p>
           <figure className="cs-shot cs-shot--phone">
@@ -289,7 +289,7 @@ export default function CopiaCaseStudy() {
         <h2 className="cs-section__heading">Outcome</h2>
         <p>
           Copia has been live on the App Store since September 8, 2026, and went from 1.0 to 1.6 in six weeks.
-          Every update answers one of the complaint themes above. Shared-list sync bugs are fixed, and lists show who
+          The updates went after three of the five themes above. Shared-list sync bugs are fixed, and lists show who
           checked what. Aisles are remembered, and you can set your own order. Imports get one review step, and
           there are no surprise paywalls. Widgets, Siri and Apple Watch arrived along the way.
         </p>

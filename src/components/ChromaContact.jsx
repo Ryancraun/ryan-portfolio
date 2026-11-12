@@ -211,9 +211,9 @@ export default function ChromaContact() {
         <div className="chroma__heading-block">
           <p className="chroma__eyebrow">Get in touch</p>
           <h2 id="chroma-heading" className="chroma__heading" ref={headingRef}>
-            Hiring a designer
+            Hiring a designer who ships?
             <br />
-            who ships? Let&rsquo;s talk.
+            Let&rsquo;s talk.
           </h2>
         </div>
         {status === 'sent' ? (

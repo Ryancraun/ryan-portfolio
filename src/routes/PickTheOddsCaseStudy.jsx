@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import StatNumber from '@/components/StatNumber';
 import DataBar from '@/components/DataBar';
 import { setDocumentMeta } from '@/lib/documentMeta';
-import pickTheOddsScreenshot from '@/assets/picktheodds-crop.png';
+import pickTheOddsScreenshot from '@/assets/picktheodds-crop2.png';
 
 // Same format as CopiaCaseStudy.jsx (see its file-top comment). Every fact,
 // number and the founder quote come from the original Framer write-up of
@@ -70,7 +70,7 @@ export default function PickTheOddsCaseStudy() {
         </div>
 
         <figure className="cs-shot cs-shot--native-res">
-          <img src={pickTheOddsScreenshot} alt="PickTheOdds arbitrage dashboard: odds table, grouped filters, dark UI" loading="lazy" />
+          <img src={pickTheOddsScreenshot} alt="PickTheOdds odds table: NFL games with over and under lines, odds and wager columns, dark UI" loading="lazy" />
         </figure>
       </section>
 
@@ -102,7 +102,7 @@ export default function PickTheOddsCaseStudy() {
         <h2 className="cs-section__heading">Key decisions</h2>
 
         <ScrollReveal as="article" className="cs-decision cs-decision--feature">
-          <p className="cs-decision__kicker">01</p>
+          <p className="cs-decision__kicker">Decision 01</p>
           <h3>Group the filters, don&rsquo;t shrink them</h3>
           <p>
             I polled the product&rsquo;s 700+ member Discord. 68% of users found the filters too slow, and 72% said
@@ -110,34 +110,34 @@ export default function PickTheOddsCaseStudy() {
             task on the old panel and the new one. The grouped version cut the time to select a betting category by 31%.
           </p>
           <p className="cs-decision__tradeoff">
-            <strong>What I didn&rsquo;t do:</strong> shrink every filter to fit. That would have kept the same flat
+            <strong className="cs-decision__tradeoff-label">What I didn&rsquo;t do</strong> Shrink every filter to fit. That would have kept the same flat
             hierarchy in less space, and the hierarchy was the real problem.
           </p>
         </ScrollReveal>
 
         <ScrollReveal as="article" className="cs-decision">
-          <p className="cs-decision__kicker">02</p>
+          <p className="cs-decision__kicker">Decision 02</p>
           <h3>Cut the distance between the odds and the bet</h3>
           <p>
             Every user runs the same loop all day, from the Odds screen to the matching Game screen. I rebuilt the
-            navigation around making that path as short as possible. This is the most likely driver of the
-            engagement gains: 84% more time on site and 25% higher retention.
+            navigation around making that path as short as possible. Over the engagement, time on site rose 84%
+            and retention 25%.
           </p>
           <p className="cs-decision__tradeoff">
-            <strong>Trade-off:</strong> paths people used less got less attention. That was
+            <strong className="cs-decision__tradeoff-label">Trade-off</strong> Paths people used less got less attention. That was
             deliberate, because the core loop is where the product earns its money.
           </p>
         </ScrollReveal>
 
         <ScrollReveal as="article" className="cs-decision">
-          <p className="cs-decision__kicker">03</p>
+          <p className="cs-decision__kicker">Decision 03</p>
           <h3>Design billing in, don&rsquo;t bolt it on</h3>
           <p>
             The product had no subscription flow. Instead of adding a separate settings page, I put plan and billing
             into one central account panel, so paying fit into the same navigation fix happening everywhere else.
           </p>
           <p className="cs-decision__tradeoff">
-            <strong>Trade-off:</strong> more account architecture up front than a bolted-on page, before there were any paying users to justify it.
+            <strong className="cs-decision__tradeoff-label">Trade-off</strong> More account architecture up front than a bolted-on page, before there were any paying users to justify it.
           </p>
         </ScrollReveal>
       </section>

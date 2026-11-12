@@ -5,7 +5,7 @@ import teneoPromise from '@/assets/teneo-promise.jpg';
 import teneoShotDay from '@/assets/teneo-shot-day.jpg';
 import teneoPhotoProtein from '@/assets/teneo-photo-protein.jpg';
 import teneoProgress from '@/assets/teneo-progress.jpg';
-import pickTheOddsScreenshot from '@/assets/picktheodds-crop.png';
+import pickTheOddsScreenshot from '@/assets/picktheodds-crop2.png';
 
 // 03 PickTheOdds -- RESOLUTION CAP (Ryan: "can we ensure that all pictures
 // are super high resolution" -> this is the one real screenshot on the site

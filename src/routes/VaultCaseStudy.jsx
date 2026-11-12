@@ -78,7 +78,7 @@ export default function VaultCaseStudy() {
             <span className="stat__num">
               <StatNumber value={4900} />
             </span>
-            <span className="stat__label">users, Jan–Aug 2026</span>
+            <span className="stat__label">users in its first 8 months</span>
           </div>
           <div className="stat">
             <span className="stat__num">
@@ -127,7 +127,7 @@ export default function VaultCaseStudy() {
         <h2 className="cs-section__heading">Key decisions</h2>
 
         <ScrollReveal as="article" className="cs-decision cs-decision--feature">
-          <p className="cs-decision__kicker">01: the reversal</p>
+          <p className="cs-decision__kicker">Decision 01 · The reversal</p>
           <h3>Progressive detail, not progressive disclosure</h3>
           <p>
             The first build hid hints behind accordions and blurs you clicked to reveal. It shipped, and it was
@@ -137,14 +137,14 @@ export default function VaultCaseStudy() {
           <HintLevelControl />
           <p className="cs-hint-grid__caption">The same boss phase at all four levels. Same facts, more specific each time.</p>
           <p className="cs-decision__tradeoff">
-            <strong>Trade-off:</strong> every section has to be written four times, about four times the content.
+            <strong className="cs-decision__tradeoff-label">Trade-off</strong> Every section has to be written four times, about four times the content.
             That&rsquo;s only affordable because guides come out of a pipeline that pulls the facts from sources
             and writes all four levels from them.
           </p>
         </ScrollReveal>
 
         <ScrollReveal as="article" className="cs-decision">
-          <p className="cs-decision__kicker">02</p>
+          <p className="cs-decision__kicker">Decision 02</p>
           <h3>One control for the whole page</h3>
           <p>
             A hint control on every section turned one decision into twelve, for someone who was already
@@ -152,29 +152,29 @@ export default function VaultCaseStudy() {
             user&rsquo;s choice, so spoiler-averse players are protected by default.
           </p>
           <p className="cs-decision__tradeoff">
-            <strong>Trade-off:</strong> you can&rsquo;t mix levels across sections. One fast decision is worth more
+            <strong className="cs-decision__tradeoff-label">Trade-off</strong> You can&rsquo;t mix levels across sections. One fast decision is worth more
             than that flexibility to someone stuck mid-fight.
           </p>
         </ScrollReveal>
 
         <ScrollReveal as="article" className="cs-decision">
-          <p className="cs-decision__kicker">03</p>
+          <p className="cs-decision__kicker">Decision 03</p>
           <h3>Zero ads, promised publicly</h3>
           <p>
             It&rsquo;s the one advantage the big sites can&rsquo;t copy. IGN or Game8 could build a hint system
             next quarter, but they can&rsquo;t drop the ad stack their business depends on.
           </p>
           <p className="cs-decision__tradeoff">
-            <strong>Trade-off:</strong> there&rsquo;s no revenue model yet. A supporter tier or sponsorship is the
+            <strong className="cs-decision__tradeoff-label">Trade-off</strong> There&rsquo;s no revenue model yet. A supporter tier or sponsorship is the
             likely path. It&rsquo;s the biggest open question about Vault, and I&rsquo;d rather say so than hide it.
           </p>
         </ScrollReveal>
 
         <ScrollReveal as="article" className="cs-decision">
-          <p className="cs-decision__kicker">04: from the data</p>
+          <p className="cs-decision__kicker">Decision 04 · From the data</p>
           <h3>Title guides the way people search</h3>
           <p>
-            Pages ranking in the same band in search got very different click-through rates. In a small sample of four pages ranking in the same band, the top performer was titled the way people type
+            Four pages ranking in the same band got very different click-through rates. The top performer was titled the way people type
             (&ldquo;Burhum Maze&rdquo;), and the two weakest used formal lore names alone (&ldquo;Elowen: Witch of
             Wisdom&rdquo;). New titles lead with the search term.
           </p>
@@ -185,7 +185,7 @@ export default function VaultCaseStudy() {
             <DataBar label="Elowen: Witch of Wisdom" valueLabel="2.09% · pos 7.3" pct={26.3} />
           </div>
           <p className="cs-decision__tradeoff">
-            <strong>Caveat:</strong> this only holds for pages already ranking 6–8. The site-wide 1.68% CTR is
+            <strong className="cs-decision__tradeoff-label">Caveat</strong> This only holds for pages already ranking 6–8. The site-wide 1.68% CTR is
             normal for an average position of 11.7.
           </p>
         </ScrollReveal>
