@@ -12,13 +12,12 @@ function Fade({ as: Tag = 'p', className, children }) {
 export default function Intro() {
   return (
     <section className="intro" id="intro">
-      <Fade className="intro__statement">I design for people, and let the data settle the rest.</Fade>
+      <Fade className="intro__statement">I&rsquo;d rather ship and measure than polish a mockup.</Fade>
       <div className="intro__lede">
         <Fade className="intro__p">
-          Human-centered from the first sketch. Decisions start from how people actually use a product, not
-          opinions in a room, and get validated against real behavior. Clarity and accessibility are the
-          starting point, not a final polish. And because I build what I design, it holds up in production,
-          not just the mockup.
+          In Copia I took item counts off the list because one shopper misread them, then put them back weeks
+          later when users told me I was wrong. Both versions shipped. Because I build what I design, the fix
+          is days, not a sprint.
         </Fade>
       </div>
     </section>

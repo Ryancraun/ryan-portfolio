@@ -1,18 +1,20 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ScrollReveal from '@/components/ScrollReveal';
+import Footer from '@/components/Footer';
 import SpecularButton from '@/components/reactbits/SpecularButton/SpecularButton';
 import StatNumber from '@/components/StatNumber';
 import DataBar from '@/components/DataBar';
+import HintLevelControl from '@/components/HintLevelControl';
 import { setDocumentMeta } from '@/lib/documentMeta';
-import vaultGuideShot from '@/assets/vault-guide-bloomreaper.jpg';
+
 import vaultHomeShot from '@/assets/vault-home.jpg';
 
 // Same format as CopiaCaseStudy.jsx (see its file-top comment). Every
 // number is Ryan's own GA / Search Console pull (Jan 1 - Aug 25 2026) or
 // the Reddit launch post. The hint-level example in decision 01 is Vault's
-// own written example, shown as text rather than a screenshot of the live
-// control.
+// own written example, rendered as a working recreation of the live control
+// (HintLevelControl.jsx) rather than a screenshot.
 function VisitVaultButton() {
   return (
     <a className="cs-hero__live-link" href="https://vaultgg.app" target="_blank" rel="noopener">
@@ -46,6 +48,7 @@ export default function VaultCaseStudy() {
   }, []);
 
   return (
+    <>
     <main className="cs cs-vault">
       <section className="cs-hero">
         <Link className="cs-hero__back" to="/" state={{ scrollTo: 'work' }}>
@@ -79,15 +82,15 @@ export default function VaultCaseStudy() {
           </div>
           <div className="stat">
             <span className="stat__num">
-              <StatNumber value={51.4} decimals={1} suffix="K" />
+              <StatNumber value={862} />
             </span>
-            <span className="stat__label">search impressions</span>
+            <span className="stat__label">search clicks (1.68% CTR)</span>
           </div>
           <div className="stat">
             <span className="stat__num">
-              <StatNumber value={134} />
+              <StatNumber value={252} />
             </span>
-            <span className="stat__label">upvotes on the r/Borderlands4 launch post</span>
+            <span className="stat__label">guides published, zero ads</span>
           </div>
         </div>
 
@@ -131,28 +134,7 @@ export default function VaultCaseStudy() {
             wrong. It treated help as a reward, and at the lowest level the page collapsed to an intro paragraph.
             Now every step is always visible, and the hint level changes only how much each step tells you.
           </p>
-          <div className="cs-hint-grid">
-            <div className="cs-hint-card">
-              <span className="cs-hint-card__label">None</span>
-              <p>The fight changes significantly at 50% health. Figure out what triggers it and how to respond.</p>
-            </div>
-            <div className="cs-hint-card">
-              <span className="cs-hint-card__label">Nudge</span>
-              <p>At 50% he teleports to center. Something spawns that you need to deal with before focusing him again.</p>
-            </div>
-            <div className="cs-hint-card">
-              <span className="cs-hint-card__label">Bigger Hint</span>
-              <p>At 50% he teleports center and summons four clockwork minions. Kill the minions first or they&rsquo;ll heal him.</p>
-            </div>
-            <div className="cs-hint-card cs-hint-card--full">
-              <span className="cs-hint-card__label">Full Guide</span>
-              <p>
-                At 50% he teleports center and spawns four clockwork minions. Kill them within 10 seconds: they
-                heal him at 2% per second. His pattern also switches from targeted shots to a radial sweep. Stay in
-                melee range during this phase.
-              </p>
-            </div>
-          </div>
+          <HintLevelControl />
           <p className="cs-hint-grid__caption">The same boss phase at all four levels. Same facts, more specific each time.</p>
           <p className="cs-decision__tradeoff">
             <strong>Trade-off:</strong> every section has to be written four times, about four times the content.
@@ -173,13 +155,6 @@ export default function VaultCaseStudy() {
             <strong>Trade-off:</strong> you can&rsquo;t mix levels across sections. One fast decision is worth more
             than that flexibility to someone stuck mid-fight.
           </p>
-          <figure className="cs-shot cs-shot--boss">
-            <img
-              src={vaultGuideShot}
-              alt="A Bloomreaper The Invincible boss guide on Vault: phase badge, difficulty rating and a green PRO TIP callout"
-              loading="lazy"
-            />
-          </figure>
         </ScrollReveal>
 
         <ScrollReveal as="article" className="cs-decision">
@@ -199,13 +174,13 @@ export default function VaultCaseStudy() {
           <p className="cs-decision__kicker">04: from the data</p>
           <h3>Title guides the way people search</h3>
           <p>
-            Pages ranking in the same band in search got very different click-through rates. The winners were
-            titled the way people type (&ldquo;burhum puzzle&rdquo;), and the losers used formal lore names
-            (&ldquo;Elowen: Witch of Wisdom&rdquo;). New titles lead with the search term.
+            Pages ranking in the same band in search got very different click-through rates. In a small sample of four pages ranking in the same band, the top performer was titled the way people type
+            (&ldquo;Burhum Maze&rdquo;), and the two weakest used formal lore names alone (&ldquo;Elowen: Witch of
+            Wisdom&rdquo;). New titles lead with the search term.
           </p>
           <div className="cs-databar-group">
             <DataBar label="Burhum Maze" valueLabel="7.96% CTR · pos 6.4" pct={100} highlight />
-            <DataBar label="Areciel: Witch of Strength" valueLabel="6.02% · pos 6.2" pct={75.6} highlight />
+            <DataBar label="Areciel: Witch of Strength" valueLabel="6.02% · pos 6.2" pct={75.6} />
             <DataBar label="Bari: Witch of Kindness" valueLabel="2.60% · pos 7.6" pct={32.7} />
             <DataBar label="Elowen: Witch of Wisdom" valueLabel="2.09% · pos 7.3" pct={26.3} />
           </div>
@@ -238,8 +213,13 @@ export default function VaultCaseStudy() {
           <Link className="cs-next__back" to="/" state={{ scrollTo: 'work' }}>
             ← Back to work
           </Link>
+          <Link className="cs-next__back cs-next__next" to="/work/picktheodds">
+            Next: PickTheOdds →
+          </Link>
         </div>
       </ScrollReveal>
     </main>
+      <Footer />
+    </>
   );
 }

@@ -123,7 +123,7 @@ export default function SiteNav() {
           for free -- no custom onClick needed here, unlike Contact Me
           (which has to branch on same-page vs. cross-page). */}
       {onCaseStudy && (
-        <Link className="sitenav__link" to="/" state={{ scrollTo: 'work' }}>
+        <Link className="sitenav__link sitenav__link--back" to="/" state={{ scrollTo: 'work' }}>
           ← Back to work
         </Link>
       )}

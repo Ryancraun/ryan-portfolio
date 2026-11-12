@@ -28,6 +28,9 @@ const SCROLL_MARGIN_BUFFER_PX = 24;
 // navigation. This component keeps only what's actually specific to the
 // home page: the hero, the intro, and the work section.
 //
+// TENEO FIRST (Ryan): Teneo is the most recent work, so it leads as card
+// 01; Copia 02, Vault 03, PickTheOdds 04. WorkSidebar.jsx's TABS match.
+//
 // CARD REORDER (Addendum 4): Copia is the new card 01 (a real
 // /work/copia route via ProjectCard's `to` prop, no stats -- it's
 // no stats on the card). PickTheOdds moves to card 02.
@@ -119,22 +122,24 @@ export default function Home() {
         <div className="work__layout">
           <WorkSidebar />
           <ul className="stack">
-          <ProjectCard
-            id="work-copia"
-            index="01"
-            client="Copia"
-            title="A Grocery List Built for the Aisle, Not the Desk"
-            tag="Native iOS / Consumer"
-            byline="Solo: design & engineering. Live on the App Store"
-            to="/work/copia"
-            ctaLabel="View case study"
-            useSpecularCta
-            media={<CopiaTeaserArt />}
-          />
-
+          {/* FEVO (Round 2): day-job work under NDA has no case study, so a
+              full card read as padding / a loading skeleton. A slim
+              "current role" strip instead -- no art, one accent. Keeps
+              id="work-fevo" so WorkSidebar's scrollspy still targets it. */}
+          <li className="now-strip" id="work-fevo">
+            <p className="now-strip__eyebrow">Now · FEVO</p>
+            <p className="now-strip__role">Product Designer, Nov 2025 – present</p>
+            <p className="now-strip__body">
+              On a cross-functional product team, I lead design for referral and sharing, an AI offer builder, and a
+              consumer marketplace. This work is under NDA; case study available on request.
+            </p>
+            <a className="now-strip__link" href="mailto:craunryan@gmail.com?subject=FEVO%20case%20study%20request">
+              Request the case study →
+            </a>
+          </li>
           <ProjectCard
             id="work-teneo"
-            index="02"
+            index="01"
             client="Teneo"
             title="Keep the Muscle While the Weight Comes Off"
             tag="Native iOS / Health"
@@ -143,6 +148,19 @@ export default function Home() {
             ctaLabel="View case study"
             useSpecularCta
             media={<TeneoTeaserArt />}
+          />
+
+          <ProjectCard
+            id="work-copia"
+            index="02"
+            client="Copia"
+            title="A Grocery List Built for the Aisle, Not the Desk"
+            tag="Native iOS / Consumer"
+            byline="Solo: design & engineering. Live on the App Store"
+            to="/work/copia"
+            ctaLabel="View case study"
+            useSpecularCta
+            media={<CopiaTeaserArt />}
           />
 
           <ProjectCard
@@ -157,9 +175,9 @@ export default function Home() {
             useSpecularCta
             indexBackdrop
             stats={[
-              { num: '4,900', label: 'real users, Jan–Aug 2026' },
-              { num: '0', label: 'ads, ever (by design)' },
-              { num: '134', label: 'upvotes on r/Borderlands4 launch' },
+              { num: '4,900', label: 'users in its first 8 months' },
+              { num: '252', label: 'guides published' },
+              { num: '862', label: 'search clicks, Jan–Aug 2026' },
             ]}
             media={<img src={vaultCardShot} alt="Vault, an ad-free gaming guide site (dark UI, orange accent)" loading="lazy" />}
           />
@@ -170,13 +188,13 @@ export default function Home() {
             client="PickTheOdds"
             title="Modernizing a Subscription Platform"
             tag="B2B SaaS / Sports Analytics"
-            byline="Role: UX/UI Designer, 1 Month"
+            byline="Contract UX/UI Designer, 8 months"
             to="/work/picktheodds"
             ctaLabel="View case study"
             useSpecularCta
             indexBackdrop
             stats={[
-              { num: '31%', label: 'decrease in time to place a bet' },
+              { num: '31%', label: 'faster to select a betting category' },
               { num: '25%', label: 'increase in user retention' },
               { num: '84%', label: 'increase in time on site' },
             ]}

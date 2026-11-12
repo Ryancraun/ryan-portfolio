@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ScrollReveal from '@/components/ScrollReveal';
+import Footer from '@/components/Footer';
 import AppStoreBadge from '@/components/AppStoreBadge';
 import StatNumber from '@/components/StatNumber';
 import { setDocumentMeta } from '@/lib/documentMeta';
@@ -9,6 +10,12 @@ import copiaRouteDark from '@/assets/copia-route-dark.jpg';
 import copiaScanPages from '@/assets/copia-scan-pages.jpg';
 import copiaScanReview from '@/assets/copia-scan-review.jpg';
 import copiaPaywall from '@/assets/copia-paywall.jpg';
+// Process images: real before/after captures from restock-ios docs/shots/
+// (each call site cites its source file and the commit or note behind it).
+import processRouteBefore from '@/assets/copia-process-route-ax-before.jpg';
+import processRouteAfter from '@/assets/copia-process-route-ax-after.jpg';
+import processQtyBefore from '@/assets/copia-process-qty-before.jpg';
+import processQtyAfter from '@/assets/copia-process-qty-after.jpg';
 
 // CASE STUDY FORMAT (shared by all three case studies): hero with impact
 // stats -> "at a glance" (problem / constraint-or-evidence / role) -> 3-4
@@ -30,6 +37,7 @@ export default function CopiaCaseStudy() {
   }, []);
 
   return (
+    <>
     <main className="cs">
       <section className="cs-hero">
         <Link className="cs-hero__back" to="/" state={{ scrollTo: 'work' }}>
@@ -71,7 +79,7 @@ export default function CopiaCaseStudy() {
             <span className="stat__num">
               <StatNumber value={20} />
             </span>
-            <span className="stat__label">cookbook pages read as one recipe in a single scan</span>
+            <span className="stat__label">pages per scan, merged into one recipe</span>
           </div>
         </div>
 
@@ -97,8 +105,9 @@ export default function CopiaCaseStudy() {
           <div>
             <dt>Evidence</dt>
             <dd>
-              In 687 one-to-three-star reviews of the top ten grocery apps, 25% blamed sync and sharing, 23% blamed
-              aisles that weren&rsquo;t remembered, and 21% blamed paywalls.
+              In 687 one-to-three-star reviews of the top ten grocery apps, the top complaint (31%) was an update
+              breaking what worked, then crashes and lost lists (26%), sync and sharing (25%), aisles that
+              weren&rsquo;t remembered (23%) and paywalls (21%).
             </dd>
           </div>
           <div>
@@ -131,26 +140,101 @@ export default function CopiaCaseStudy() {
               loading="lazy"
             />
           </figure>
+
+          {/* Source: restock-ios docs/shots/list/before-list-ax.png and
+              after-list-ax.png (top of screen, cropped). Caption facts: commit
+              b7e133e "List detail: a route that scales with the type ramp, and a
+              count that stops spending coral" (12pt station, 1.75x cap). */}
+          <div className="cs-process">
+            <p className="cs-process__label">Process · The route at the largest text size</p>
+            <div className="cs-process__pair">
+              <figure className="cs-process__item">
+                <span className="cs-process__tag">Before</span>
+                <img
+                  src={processRouteBefore}
+                  alt="Copia list at an accessibility text size, before: 'Produce' renders very large while its route dot stays tiny, and '2 items' is coral"
+                  loading="lazy"
+                />
+              </figure>
+              <figure className="cs-process__item">
+                <span className="cs-process__tag cs-process__tag--after">After</span>
+                <img
+                  src={processRouteAfter}
+                  alt="Copia list at the same text size, after: the Produce route dot is scaled up to match the text, and '2 items' is in plain ink"
+                  loading="lazy"
+                />
+              </figure>
+              <div className="cs-process__note">
+                <p>
+                  With the largest text, aisle names grew but the station dot stayed a 12&nbsp;pt speck. The one mark
+                  that says &ldquo;you are here&rdquo; was the one a low-vision shopper couldn&rsquo;t see.
+                </p>
+                <p>
+                  Now the route scales with the text, capped at 1.75× so it never runs into the words. The count
+                  dropped its coral, so the dot is the aisle&rsquo;s only accent.
+                </p>
+              </div>
+            </div>
+          </div>
         </ScrollReveal>
 
         <ScrollReveal as="article" className="cs-decision cs-decision--feature">
-          <p className="cs-decision__kicker">02: the reversal, reversed</p>
+          <p className="cs-decision__kicker">02 · Reversed after launch</p>
           <h3>Removed the quantity, then brought it back</h3>
           <p>
             Watching someone shop, I saw that &ldquo;eggs 3&rdquo; read as a measure, not a count, so 1.0 shipped
             with no numbers on the row. After launch, several users asked to set how many of an item to buy. That
             meant my assumption was wrong, not their reading. In 1.2.1, counts came back as &ldquo;×3&rdquo; (read
-            aloud by VoiceOver as &ldquo;3 of them&rdquo;), with a stepper in the add field.
+            aloud by VoiceOver as &ldquo;3 of them&rdquo;), first with a stepper in the add field, then as a
+            dropdown on every row.
           </p>
           <p className="cs-decision__tradeoff">
             <strong>Trade-off:</strong> the most-glanced row gets one more element. The &ldquo;×&rdquo; keeps a
             count from reading as a weight, and recipe measures still stay off the row.
           </p>
+
+          {/* Sources: restock-ios docs/shots/09-list-light.png (pre-launch
+              capture, commit 3be6a0a, Aug 12 2026) and
+              docs/shots/quantity/rows-light.png (commit 72c82ab, Sep 29 2026).
+              Caption facts: docs/references/item-quantity.md (stepper in the
+              add field rejected; dropdown is its own button). */}
+          <div className="cs-process">
+            <p className="cs-process__label">Process · The row, before and after</p>
+            <div className="cs-process__pair">
+              <figure className="cs-process__item">
+                <span className="cs-process__tag">Before · Aug 2026</span>
+                <img
+                  src={processQtyBefore}
+                  alt="Copia Weekly list from a pre-launch build: rows show only item names, with no count"
+                  loading="lazy"
+                />
+              </figure>
+              <figure className="cs-process__item">
+                <span className="cs-process__tag cs-process__tag--after">After · Sep 2026</span>
+                <img
+                  src={processQtyAfter}
+                  alt="Copia Weekly list after: every row ends in a small count dropdown, '×1' in grey and '×2' on Basil in full ink"
+                  loading="lazy"
+                />
+              </figure>
+              <div className="cs-process__note">
+                <p>
+                  <span className="cs-process__tag cs-process__tag--rejected">Replaced</span> The stepper inside the
+                  add field. It shipped first and read as odd straight away, and a second pass through references (Target, Walmart,
+                  Cherrypick) found no list app that does it.
+                </p>
+                <p>
+                  The count moved to a dropdown on every row, quiet at ×1. It&rsquo;s its own button, so setting an
+                  amount can&rsquo;t check the item off.
+                </p>
+              </div>
+            </div>
+          </div>
         </ScrollReveal>
 
         <ScrollReveal as="article" className="cs-decision">
           <p className="cs-decision__kicker">03</p>
-          <h3>Make a nine-page scan feel like progress, not a spinner</h3>
+          <h3>Make a long scan feel like progress, not a spinner</h3>
           <p>
             Each page is read on its own and the results are merged at the end, so one bad page costs one page,
             not the whole scan. Ingredients stream in as each page lands. Since 1.6, every import ends in a single
@@ -217,8 +301,13 @@ export default function CopiaCaseStudy() {
           <Link className="cs-next__back" to="/" state={{ scrollTo: 'work' }}>
             ← Back to work
           </Link>
+          <Link className="cs-next__back cs-next__next" to="/work/vault">
+            Next: Vault →
+          </Link>
         </div>
       </ScrollReveal>
     </main>
+      <Footer />
+    </>
   );
 }

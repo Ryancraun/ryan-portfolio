@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ScrollReveal from '@/components/ScrollReveal';
+import Footer from '@/components/Footer';
 import StatNumber from '@/components/StatNumber';
 import DataBar from '@/components/DataBar';
 import { setDocumentMeta } from '@/lib/documentMeta';
-import pickTheOddsScreenshot from '@/assets/picktheodds.png';
+import pickTheOddsScreenshot from '@/assets/picktheodds-crop.png';
 
 // Same format as CopiaCaseStudy.jsx (see its file-top comment). Every fact,
 // number and the founder quote come from the original Framer write-up of
@@ -15,11 +16,12 @@ export default function PickTheOddsCaseStudy() {
     return setDocumentMeta({
       title: 'PickTheOdds | Ryan Craun',
       description:
-        'PickTheOdds, modernizing a sports-analytics subscription platform in one month: grouped filters, a shorter path from odds to bet, and billing designed in. Daily active users grew from 50 to 500+.',
+        'PickTheOdds, modernizing a sports-analytics subscription platform over an eight-month contract: grouped filters, a shorter path from odds to bet, and billing designed in. Daily active users grew from 50 to 500+.',
     });
   }, []);
 
   return (
+    <>
     <main className="cs">
       <section className="cs-hero">
         <Link className="cs-hero__back" to="/" state={{ scrollTo: 'work' }}>
@@ -29,12 +31,13 @@ export default function PickTheOddsCaseStudy() {
         <h1 className="cs-hero__title">Built to scale past six links.</h1>
         <p className="cs-hero__line">
           PickTheOdds had real arbitrage math buried under navigation that broke past six links and a filter panel
-          nobody could parse. In a one-month redesign of the interface, daily active users grew from 50 to 500+.
+          nobody could parse. Over an eight-month contract I redesigned the interface, and daily active users grew
+          from 50 to 500+.
         </p>
         <div className="cs-hero__frame">
           <span>Role: UX/UI Designer</span>
           <span className="cs-hero__dot" aria-hidden="true" />
-          <span>1 month</span>
+          <span>Contract, Dec 2023 &ndash; Jul 2024</span>
           <span className="cs-hero__dot" aria-hidden="true" />
           <span>Shipped client engagement</span>
         </div>
@@ -83,7 +86,7 @@ export default function PickTheOddsCaseStudy() {
           </div>
           <div>
             <dt>Constraint</dt>
-            <dd>One month, interface only. The data and the arbitrage engine underneath stayed as they were.</dd>
+            <dd>Interface only. The data and the arbitrage engine underneath stayed as they were.</dd>
           </div>
           <div>
             <dt>My role</dt>
@@ -99,12 +102,12 @@ export default function PickTheOddsCaseStudy() {
         <h2 className="cs-section__heading">Key decisions</h2>
 
         <ScrollReveal as="article" className="cs-decision cs-decision--feature">
-          <p className="cs-decision__kicker">01: the evidence-backed one</p>
+          <p className="cs-decision__kicker">01</p>
           <h3>Group the filters, don&rsquo;t shrink them</h3>
           <p>
             I polled the product&rsquo;s 700+ member Discord. 68% of users found the filters too slow, and 72% said
-            they&rsquo;d pay for better ones. I grouped the filters into categories and A/B tested that against the
-            old panel. The grouped version cut the time to select a betting category by 31%.
+            they&rsquo;d pay for better ones. I grouped the filters into categories, then timed users doing the same
+            task on the old panel and the new one. The grouped version cut the time to select a betting category by 31%.
           </p>
           <p className="cs-decision__tradeoff">
             <strong>What I didn&rsquo;t do:</strong> shrink every filter to fit. That would have kept the same flat
@@ -121,7 +124,7 @@ export default function PickTheOddsCaseStudy() {
             engagement gains: 84% more time on site and 25% higher retention.
           </p>
           <p className="cs-decision__tradeoff">
-            <strong>Trade-off:</strong> paths people used less got less attention in a one-month window. That was
+            <strong>Trade-off:</strong> paths people used less got less attention. That was
             deliberate, because the core loop is where the product earns its money.
           </p>
         </ScrollReveal>
@@ -134,8 +137,7 @@ export default function PickTheOddsCaseStudy() {
             into one central account panel, so paying fit into the same navigation fix happening everywhere else.
           </p>
           <p className="cs-decision__tradeoff">
-            <strong>Trade-off:</strong> more account architecture up front than a bolted-on page, in an engagement
-            that had little time to spare.
+            <strong>Trade-off:</strong> more account architecture up front than a bolted-on page, before there were any paying users to justify it.
           </p>
         </ScrollReveal>
       </section>
@@ -143,8 +145,8 @@ export default function PickTheOddsCaseStudy() {
       <ScrollReveal as="section" className="cs-section cs-outcome">
         <h2 className="cs-section__heading">Outcome</h2>
         <p>
-          Daily active users grew tenfold over the engagement. No single change explains that on its own, but the
-          filter and navigation fixes were the structural changes behind all three metrics moving together. Every
+          Daily active users grew tenfold over the engagement. The founder credits the redesign, and the filter
+          and navigation fixes were the structural changes behind all three metrics moving together. Every
           wireframe and prototype went back through the same Discord community before any visual design started.
         </p>
         <div className="cs-databar-group">
@@ -159,8 +161,13 @@ export default function PickTheOddsCaseStudy() {
           <Link className="cs-next__back" to="/" state={{ scrollTo: 'work' }}>
             ← Back to work
           </Link>
+          <Link className="cs-next__back cs-next__next" to="/work/teneo">
+            Next: Teneo →
+          </Link>
         </div>
       </ScrollReveal>
     </main>
+      <Footer />
+    </>
   );
 }

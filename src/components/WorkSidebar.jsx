@@ -28,8 +28,11 @@ import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 // Ledgerline never linked anywhere, see Home.jsx): three fewer entries,
 // same mechanism, nothing else about the scrollspy/indicator changes.
 const TABS = [
-  { id: 'work-copia', label: 'Copia' },
+  // FEVO (Round 2) is a slim non-card "now" strip above Teneo, too short to
+  // ever cross the -45%/-45% scrollspy band (clicking it lit up Teneo), so
+  // it's deliberately not a tab; it already sits at the top of the list.
   { id: 'work-teneo', label: 'Teneo' },
+  { id: 'work-copia', label: 'Copia' },
   { id: 'work-vault', label: 'Vault' },
   { id: 'work-picktheodds', label: 'PickTheOdds' },
 ];

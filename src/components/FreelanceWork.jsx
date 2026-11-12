@@ -61,13 +61,6 @@ export default function FreelanceWork() {
       <div className="freelance__quotes">
         <blockquote className="cs-quote">
           <p>
-            &ldquo;He understood my vision, made all the changes I requested and delivered a website that looks
-            professional, modern and exactly how I imagined it.&rdquo;
-          </p>
-          <cite>Client, Ebony Hair Revival landing page</cite>
-        </blockquote>
-        <blockquote className="cs-quote">
-          <p>
             &ldquo;It truly felt like he approached the project as if he owned the company himself... Without
             question, Ryan will be the very first person I contact for any future work.&rdquo;
           </p>

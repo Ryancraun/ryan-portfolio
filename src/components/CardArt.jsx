@@ -2,7 +2,10 @@ import Particles from '@/components/reactbits/Particles/Particles';
 import InViewMount from './InViewMount';
 import copiaHomeDark from '@/assets/copia-home-dark.jpg';
 import teneoPromise from '@/assets/teneo-promise.jpg';
-import pickTheOddsScreenshot from '@/assets/picktheodds.png';
+import teneoShotDay from '@/assets/teneo-shot-day.jpg';
+import teneoPhotoProtein from '@/assets/teneo-photo-protein.jpg';
+import teneoProgress from '@/assets/teneo-progress.jpg';
+import pickTheOddsScreenshot from '@/assets/picktheodds-crop.png';
 
 // 03 PickTheOdds -- RESOLUTION CAP (Ryan: "can we ensure that all pictures
 // are super high resolution" -> this is the one real screenshot on the site
@@ -74,7 +77,7 @@ export function PickTheOddsCardArt() {
 // the case study hero uses -- correct now that there's no second bezel
 // left to double up with.
 
-// 01 Copia (grocery/recipe iOS app) -- COPIA CASE STUDY (Addendum 4):
+// 02 Copia (grocery/recipe iOS app) -- COPIA CASE STUDY (Addendum 4):
 // deliberately NOT another live reactbits.dev canvas. This card's whole
 // point is that it carries the site's first REAL, deep content -- more
 // visual noise on top of it would be the exact "content-vs-craft imbalance"
@@ -91,6 +94,7 @@ export function PickTheOddsCardArt() {
 // it would only ever show as an unwanted border. The grain texture
 // (below, unchanged) still overlays on top of everything; the real
 // screenshot is this card's entire visual interest.
+
 export function CopiaTeaserArt() {
   return (
     <div className="copia-teaser" aria-hidden="true">
@@ -100,14 +104,26 @@ export function CopiaTeaserArt() {
   );
 }
 
-// 02 Teneo -- same treatment as CopiaTeaserArt (real App Store frame, no
-// live canvas), reusing its layout classes. Leads with the same screen as
-// the case study hero, so card and page open on one first impression.
+// 01 Teneo -- PANORAMA SPREAD (Ryan: "can we do like a couple screenshots
+// or something just so it doesn't look like such a big empty wasted
+// spot"). The single portrait App Store frame left ~60% of this wide card
+// as empty dark space. The four Teneo App Store frames were designed as
+// one continuous panorama (the blue progress line and the mascot run
+// across the panel seams, and every panel shares the same #0a0b0d base),
+// so they're laid edge to edge as that panorama, filling the card's full
+// width, rather than an invented collage or tilt. Each panel's bottom
+// fades into the card so the phones never run under the title. Two panels
+// at mobile width (see `.teneo-teaser` in index.css).
 export function TeneoTeaserArt() {
   return (
-    <div className="copia-teaser" aria-hidden="true">
-      <div className="copia-teaser__grain" />
-      <img className="copia-teaser__shot" src={teneoPromise} alt="" loading="lazy" />
+    <div className="teneo-teaser" aria-hidden="true">
+      <div className="teneo-teaser__strip">
+        <img className="teneo-teaser__shot" src={teneoPromise} alt="" loading="lazy" />
+        <img className="teneo-teaser__shot" src={teneoShotDay} alt="" loading="lazy" />
+        <img className="teneo-teaser__shot teneo-teaser__shot--wide" src={teneoPhotoProtein} alt="" loading="lazy" />
+        <img className="teneo-teaser__shot teneo-teaser__shot--wide" src={teneoProgress} alt="" loading="lazy" />
+      </div>
+      <div className="teneo-teaser__grain" />
     </div>
   );
 }

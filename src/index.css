@@ -504,18 +504,6 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
   white-space:nowrap;
   border:0;
 }
-.hero__scrollcue{
-  position:absolute; left:50%; bottom:2rem; z-index:2;
-  transform:translateX(-50%);
-  font-family:var(--font-sans);
-  font-size:0.7rem; letter-spacing:0.04em;
-  color:var(--ink-dim);
-}
-.hero__scrollcue::after{
-  content:''; display:block; width:1px; height:22px; margin:0.6rem auto 0;
-  background:linear-gradient(var(--ink-faint), transparent);
-}
-
 /* ---------- intro ---------- */
 .intro{
   width:var(--wrap); margin:0 auto;
@@ -604,6 +592,86 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
    + IntersectionObserver scrollspy that sits beside this list
    (`.work__layout`, above). */
 .stack{ list-style:none; margin:0; padding:0; min-width:0; }
+
+/* ---------- ROUND 2 (home/global): FEVO "now" strip, back-link, PTO phone card ----------
+   FEVO is NDA day-job work with no case study, so it's a slim current-role
+   strip at the top of the Selected Work column instead of a full card:
+   dark raised surface, hairline border, card radius family, accent used
+   once (the eyebrow). Link stays ink so the amber isn't doubled. */
+.now-strip{
+  margin:2vh 0 1vh;
+  padding:1.6rem 1.75rem 1.5rem;
+  background:var(--bg-raise);
+  border:1px solid var(--line);
+  border-radius:22px;
+  display:grid;
+  grid-template-columns:minmax(0, 1fr) auto;
+  column-gap:2.5rem; row-gap:0.35rem;
+  align-items:end;
+  min-width:0;
+}
+.now-strip__eyebrow{
+  grid-column:1 / -1;
+  margin:0 0 0.35rem;
+  font:600 0.72rem var(--font-sans); letter-spacing:0.08em; text-transform:uppercase;
+  color:var(--accent);
+}
+.now-strip__role{
+  grid-column:1 / -1;
+  margin:0;
+  font:700 1.15rem/1.3 var(--font-sans); letter-spacing:-0.005em;
+  color:var(--ink);
+}
+.now-strip__body{
+  margin:0;
+  max-width:62ch;
+  font:400 0.95rem/1.55 var(--font-sans);
+  color:var(--ink-dim);
+}
+.now-strip__link{
+  justify-self:end;
+  white-space:nowrap;
+  font:500 0.85rem var(--font-sans); letter-spacing:0.01em;
+  color:var(--ink);
+  text-decoration:none;
+  padding:0.55rem 1rem;
+  border:1px solid var(--line-strong);
+  border-radius:999px;
+  transition:border-color .2s ease, background-color .2s ease;
+}
+.now-strip__link:hover{ border-color:rgba(244,242,236,0.4); background:rgba(244,242,236,0.04); }
+.now-strip__link:focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }
+.now-strip + .stack__item{ padding-top:2vh; }
+@media (max-width:640px){
+  .now-strip{
+    grid-template-columns:minmax(0, 1fr);
+    padding:1.25rem 1.25rem 1.2rem;
+    border-radius:16px;
+    row-gap:0.4rem;
+  }
+  .now-strip__role{ font-size:1.02rem; }
+  .now-strip__body{ font-size:0.9rem; }
+  .now-strip__link{ justify-self:start; margin-top:0.5rem; font-size:0.8rem; }
+}
+/* Fix 19: case-study pages already carry their own .cs-hero__back link
+   directly under the nav, so the nav's duplicate is dropped at every width
+   (it also pushed "View Resume" off-screen at 390px). */
+.sitenav__link--back{ display:none; }
+/* Fix 22: PickTheOdds card on phones -- the title sat on top of the
+   screenshot. Stack instead: pin the shot to the top of the card (10.9375%
+   = the media's 14% overscan mapped back onto card bounds, + room for the
+   index chip) and give the text block a solid surface with a short fade,
+   so the two never share pixels. */
+@media (max-width:640px){
+  #work-picktheodds .picktheodds-teaser img{
+    position:absolute; left:0; right:0; margin:0 auto;
+    top:calc(10.9375% + 5.75rem);
+    max-height:34%;
+  }
+  #work-picktheodds .card__meta{
+    background:linear-gradient(to bottom, rgba(17,17,20,0) 0, var(--bg-raise) 1.5rem);
+  }
+}
 /* GAP FIX, ROUND 3 -- fix the section size, not the frame size (Ryan, after
    round 2 stretched the frame to close the gap: "They're a little long on
    desktop no?"). Round 2's mistake: forcing `min-height:100vh` on every
@@ -1880,6 +1948,61 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
   height:auto;
 }
 
+/* ---------- Teneo card art: panorama spread (TeneoTeaserArt) ----------
+   Own classes on purpose -- `.copia-teaser*` above stays Copia-only.
+   The four Teneo App Store frames are one designed panorama (shared
+   #0a0b0d base, the blue line and mascot cross the seams), so they sit
+   edge to edge at equal widths and fill the card's full width at every
+   breakpoint. `.teneo-teaser` covers the whole oversized `.card__media`
+   with the panels' own base color so no seam or edge ever shows; the
+   strip itself is mapped back onto the REAL card bounds with the same
+   `10.9375%` ratio as `.copia-teaser` (see the METADATA-COLLISION FIX),
+   starts below the card index numeral, and stops above `.card__meta`.
+   Panels keep their natural ratio (width-driven, `height:auto`, never
+   upscaled-and-cropped by `object-fit`); whatever runs past the strip's
+   bottom is clipped and faded by the mask, so the phones dissolve into
+   the card instead of ending on a hard line or running under the title.
+   No motion of its own beyond `.card__media`'s existing parallax (already
+   gated on prefers-reduced-motion). */
+.teneo-teaser{
+  position:absolute; inset:0;
+  background:#0a0b0d;
+  overflow:hidden;
+}
+.teneo-teaser__strip{
+  position:absolute;
+  top:calc(10.9375% + 3.5rem); right:0; bottom:calc(10.9375% + 230px); left:0;
+  display:flex; align-items:flex-start;
+  overflow:hidden;
+  -webkit-mask-image:linear-gradient(to bottom, #000 72%, transparent 100%);
+          mask-image:linear-gradient(to bottom, #000 72%, transparent 100%);
+}
+/* `.card__media img` sets width/height 100% + object-fit:cover; the
+   `.teneo-teaser` prefix outranks it (same specificity note as
+   `.copia-teaser .copia-teaser__shot`). */
+.teneo-teaser .teneo-teaser__shot{
+  display:block;
+  flex:0 0 25%;
+  width:25%; height:auto;
+  min-width:0;
+}
+.teneo-teaser__grain{
+  position:absolute; inset:0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(244,242,236,0.05) 1px, transparent 0);
+  background-size: 3px 3px;
+  mix-blend-mode: overlay;
+  opacity:0.6;
+  pointer-events:none;
+}
+/* Narrow cards: two panels at half width each instead of four tiny ones.
+   The first two frames are still adjacent panorama panels, so the seam
+   between them stays continuous. */
+@media (max-width:640px){
+  .teneo-teaser__strip{ top:calc(10.9375% + 3rem); bottom:calc(10.9375% + 250px); }
+  .teneo-teaser .teneo-teaser__shot{ flex-basis:50%; width:50%; }
+  .teneo-teaser .teneo-teaser__shot--wide{ display:none; }
+}
+
 /* ---------- App Store badge ---------- */
 .appstore-badge{
   display:inline-flex;
@@ -2145,56 +2268,142 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
 }
 .cs-decision__visual .cs-shot--phone{ flex:0 1 260px; }
 
-/* Decision 1's money shot -- the same guide phase at all four hint levels,
-   Vault's own written example (see VaultCaseStudy.jsx's file-top comment
-   for why this is text, not a screenshot of the live toggle). Four equal
-   columns collapsing to one on mobile; the "Full Guide" column
-   gets the brand accent hairline so the eye reads left-to-right as
-   increasing detail, not four interchangeable boxes. */
-.cs-hint-grid{
-  display:grid;
-  grid-template-columns:repeat(4, 1fr);
-  gap:1px;
+/* Decision 1's money shot -- HintLevelControl.jsx, a working recreation of
+   Vault's hint-level control (replaces the old static four-column
+   .cs-hint-grid). One step card, four levels: the segmented radio group
+   swaps the text in place, the way the live guide does. Kept deliberately
+   quiet: a hairline track, not a pill tab bar; the checked level is marked
+   with Vault's accent as a tint + inset hairline, and each option carries a
+   four-tick "detail" glyph so the scale reads as increasing specificity, not
+   four interchangeable tabs. Text swap is a short crossfade with the card's
+   height easing to fit (height pinned from JS); both are dropped under
+   prefers-reduced-motion. Contrast: labels --ink-dim on --bg-raise ~7.5:1,
+   step text --ink, accent glyph is non-text. The caption moved from
+   --ink-faint (~2.9:1, failed AA) to --ink-dim. */
+.cs-hint{
   margin-top:1.5rem;
-  background:var(--line);
+  background:var(--bg-raise);
   border:1px solid var(--line);
   border-radius:14px;
   overflow:hidden;
 }
-.cs-hint-card{
-  background:var(--bg-raise);
-  padding:1.1rem 1.15rem 1.35rem;
+.cs-hint__bar{
   display:flex;
-  flex-direction:column;
-  gap:0.65rem;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+  padding:0.55rem 0.55rem 0.55rem 1.15rem;
+  border-bottom:1px solid var(--line);
 }
-.cs-hint-card__label{
+.cs-hint__eyebrow{
   font-family:var(--font-sans);
   font-size:0.68rem;
-  font-weight:700;
+  font-weight:600;
   letter-spacing:0.02em;
   color:var(--ink-dim);
-  align-self:flex-start;
-  padding:0.2rem 0.55rem;
-  border-radius:999px;
-  border:1px solid var(--line-strong);
 }
-.cs-hint-card p{
+.cs-hint__seg{
+  display:grid;
+  grid-auto-flow:column;
+  gap:2px;
+  padding:3px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:rgba(244,242,236,0.025);
+}
+.cs-hint__opt{
+  position:relative;
+  appearance:none;
+  border:0;
   margin:0;
-  font-size:0.85rem;
-  line-height:1.55;
+  background:transparent;
   color:var(--ink-dim);
+  font-family:var(--font-sans);
+  font-size:0.75rem;
+  font-weight:600;
+  line-height:1;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:0.45rem;
+  padding:0.5rem 0.75rem;
+  border-radius:7px;
+  cursor:pointer;
+  transition:color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
 }
-.cs-hint-card--full{ background:rgba(255,138,61,0.06); }
-.cs-hint-card--full .cs-hint-card__label{
-  color:var(--vault-accent);
-  border-color:rgba(255,138,61,0.45);
+.cs-hint__opt:hover{ color:var(--ink); }
+.cs-hint__opt[aria-checked="true"]{
+  color:var(--ink);
+  background:rgba(255,138,61,0.10);
+  box-shadow:inset 0 0 0 1px rgba(255,138,61,0.38);
 }
-.cs-hint-card--full p{ color:var(--ink); }
-.cs-hint-grid__caption{
+.cs-hint__opt:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+.cs-hint__ticks{
+  display:inline-flex;
+  align-items:flex-end;
+  gap:2px;
+  height:10px;
+}
+.cs-hint__ticks i{
+  display:block;
+  width:2px;
+  border-radius:1px;
+  background:var(--line-strong);
+}
+.cs-hint__ticks i:nth-child(1){ height:4px; }
+.cs-hint__ticks i:nth-child(2){ height:6px; }
+.cs-hint__ticks i:nth-child(3){ height:8px; }
+.cs-hint__ticks i:nth-child(4){ height:10px; }
+.cs-hint__ticks i.is-on{ background:var(--ink-dim); }
+.cs-hint__opt[aria-checked="true"] .cs-hint__ticks i.is-on{ background:var(--vault-accent); }
+.cs-hint__name--short{ display:none; }
+.cs-hint__step{ padding:1.15rem 1.15rem 1.35rem; }
+.cs-hint__body{
+  position:relative;
+  overflow:hidden;
+  transition:height 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.cs-hint__text{
+  margin:0;
+  max-width:62ch;
+  font-size:0.95rem;
+  line-height:1.6;
+  color:var(--ink);
+  animation:cs-hint-in 220ms ease-out both;
+}
+.cs-hint__text--ghost{
+  position:absolute;
+  top:0; left:0; right:0;
+  pointer-events:none;
+  animation:cs-hint-out 140ms ease-in forwards;
+}
+@keyframes cs-hint-in{ from{ opacity:0; transform:translateY(3px); } to{ opacity:1; transform:none; } }
+@keyframes cs-hint-out{ from{ opacity:1; } to{ opacity:0; } }
+@media (max-width:560px){
+  .cs-hint__bar{ flex-direction:column; align-items:stretch; gap:0.5rem; padding:0.75rem 0.6rem 0.6rem; }
+  .cs-hint__eyebrow{ padding-left:0.55rem; }
+  .cs-hint__seg{ grid-auto-flow:row; grid-template-columns:repeat(4, 1fr); }
+  .cs-hint__opt{ padding:0.6rem 0.25rem; gap:0.35rem; }
+  /* Long names stay in the accessibility tree (visually hidden); the
+     short ones are aria-hidden in the JSX. */
+  .cs-hint__name--long{
+    position:absolute; width:1px; height:1px; overflow:hidden;
+    clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap;
+  }
+  .cs-hint__name--short{ display:inline; }
+  .cs-hint__step{ padding:1rem 1.15rem 1.2rem; }
+}
+@media (prefers-reduced-motion: reduce){
+  .cs-hint__body,
+  .cs-hint__opt{ transition:none; }
+  .cs-hint__text{ animation:none; }
+  .cs-hint__text--ghost{ display:none; }
+}
+.cs-hint-grid__caption,
+.cs-decision p.cs-hint-grid__caption{
   margin:0.85rem 0 1.5rem;
   font-size:0.78rem;
-  color:var(--ink-faint);
+  color:var(--ink-dim);
 }
 
 /* DataBar.jsx -- reusable horizontal bar-chart row (label / track+fill /
@@ -2281,15 +2490,112 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
 }
 .cs-next__back:hover{ color:var(--ink); }
 
+/* ONE RULE, NOT TWO -- the frame line's own border-bottom sat directly on
+   top of the stats strip's border-top, drawing two hairlines 2rem apart
+   (Ryan: "it goes line, line, and then the big numbers"). When the stats
+   follow the frame, the frame's rule is the only divider. */
+.cs-hero__frame + .cs-hero__stats{ border-top:none; padding-top:0; margin-top:0; }
+
+/* Hero stats read as the headline numbers they are, not as body-size text:
+   a three-column grid with large figures and short labels underneath. */
+.cs-hero__stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(12rem, 1fr));
+  gap:1.75rem 2.5rem;
+}
+.cs-hero__stats .stat__num{
+  font-size:clamp(2rem, 4.2vw, 3rem);
+  letter-spacing:-0.03em;
+  line-height:1;
+}
+.cs-hero__stats .stat__label{
+  font-size:0.86rem; line-height:1.45;
+  margin-top:0.6rem; max-width:28ch;
+}
+
+/* ---------- Split layouts (Teneo) ----------
+   Portrait phone shots sat alone, centered in a ~1180px column, with the
+   text capped at 68ch on the left: half of every row was empty. These
+   opt-in modifiers put the shot beside the copy on wide screens and stack
+   it under the copy on narrow ones. */
+.cs-hero--split{
+  display:grid;
+  grid-template-columns:minmax(0, 1fr) 300px;
+  grid-template-areas:
+    "back  back"
+    "copy  shot";
+  column-gap:clamp(2rem, 5vw, 4.5rem);
+  align-items:center;
+}
+.cs-hero--split .cs-hero__back{ grid-area:back; justify-self:start; }
+.cs-hero--split .cs-hero__copy{ grid-area:copy; }
+.cs-hero--split .cs-hero__shot{ grid-area:shot; margin:0; max-width:none; width:100%; }
+.cs-hero--split .cs-hero__frame{ border-bottom:none; padding-bottom:0; margin-bottom:0; }
+.cs-hero--split .cs-hero__stats{
+  margin-top:2.25rem; padding-top:2rem;
+  border-top:1px solid var(--line);
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+}
+.cs-hero--split .cs-hero__title{ font-size:clamp(2.25rem, 5.4vw, 3.75rem); }
+
+.cs-decision--split{
+  display:grid;
+  grid-template-columns:minmax(0, 1fr) 280px;
+  column-gap:clamp(2rem, 5vw, 4.5rem);
+  align-items:start;
+}
+.cs-decision--split > .cs-shot--phone{ margin:0; max-width:none; width:100%; }
+.cs-decision--split .cs-decision__body > :last-child{ margin-bottom:0; }
+
+/* Reading order: the kicker says which decision you're on, the heading says
+   what was decided, the body explains it, and the trade-off is set apart as
+   its own labeled note so it's findable when skimming. */
+.cs--teneo .cs-decision__kicker{
+  font-size:0.72rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase;
+  color:var(--accent);
+  margin-bottom:0.75rem;
+}
+.cs--teneo .cs-decision h3{ font-size:clamp(1.4rem, 2.6vw, 1.85rem); line-height:1.2; margin-bottom:1.1rem; }
+.cs--teneo .cs-decision p.cs-decision__tradeoff{
+  border-left:none;
+  padding:1rem 1.15rem;
+  border-radius:12px;
+  background:rgba(244,242,236,0.04);
+  border:1px solid var(--line);
+  color:var(--ink-dim);
+}
+.cs--teneo .cs-decision__tradeoff-label{
+  display:block;
+  font-size:0.72rem; font-weight:600 !important; letter-spacing:0.08em; text-transform:uppercase;
+  color:var(--ink) !important;
+  margin-bottom:0.35rem;
+}
+.cs--teneo .cs-decision{ padding:3.5rem 0; }
+.cs--teneo .cs-decision--feature{ padding:2.5rem; }
+
+@media (max-width:860px){
+  .cs-hero--split{
+    grid-template-columns:1fr;
+    grid-template-areas: "back" "copy" "shot";
+  }
+  .cs-hero--split .cs-hero__shot{ max-width:300px; justify-self:center; margin-top:2.5rem; }
+  .cs-decision--split{ grid-template-columns:1fr; }
+  .cs-decision--split > .cs-shot--phone{ max-width:300px; justify-self:center; margin-top:2rem; }
+}
+@media (max-width:640px){
+  .cs-hero--split .cs-hero__stats{ grid-template-columns:1fr; gap:1.5rem; }
+  .cs-hero__stats .stat__label{ max-width:none; }
+}
+
 @media (max-width:640px){
   .cs{ padding:6.5rem 0 4rem; }
   .cs-hero__title{ max-width:none; }
   .cs-hero__frame{ font-size:0.76rem; }
   .cs-gallery{ grid-template-columns:1fr; }
   .cs-snapshot{ grid-template-columns:1fr; }
-  .cs-decision--feature{ padding:1.5rem 1.25rem 1.75rem; }
+  .cs-decision--feature,
+  .cs--teneo .cs-decision--feature{ padding:1.5rem 1.25rem 1.75rem; }
   .cs-decision__visual{ gap:1rem; }
-  .cs-hint-grid{ grid-template-columns:1fr; }
   .cs-hero__stats{ gap:1.25rem 1.75rem; }
   .data-bar{ grid-template-columns:1fr; gap:0.35rem; }
   .data-bar__value{ justify-self:start; }
@@ -2300,4 +2606,107 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
   .wash{ display:none; }
   *{ scroll-behavior:auto !important; }
   .cs-reveal{ transition:none; }
+}
+
+/* ---------- Case-study process moments (.cs-process*) ----------
+   Real before/after captures and rejected options, attached to the decision
+   they support (Teneo, Copia). The hiring review asked for the design to be
+   shown moving, not just described. Kept compact: phone pairs sit 2-up with
+   their note in a third column instead of one tall image per row. Phone
+   pairs stay 2-up on a phone too, because side by side is the comparison;
+   everything else stacks. Additive only: no existing rule is changed. */
+.cs-process{
+  margin-top:2rem;
+  padding-top:1.5rem;
+  border-top:1px dashed var(--line);
+}
+.cs-process--flush{ margin-top:0; padding-top:0; border-top:none; }
+.cs-process + .cs-process{ margin-top:2.5rem; }
+/* Inside a split decision, span both columns, under the copy and the shot. */
+.cs-decision--split > .cs-process{ grid-column:1 / -1; min-width:0; }
+.cs-process .cs-process__label{
+  font-family:var(--font-sans); font-size:0.7rem; font-weight:600;
+  letter-spacing:0.08em; text-transform:uppercase;
+  color:var(--ink-dim);
+  margin:0 0 1rem; max-width:none;
+}
+.cs-process__item{ margin:0; display:flex; flex-direction:column; align-items:flex-start; gap:0.5rem; min-width:0; }
+.cs-process__item img{
+  display:block; width:100%; height:auto;
+  border:1px solid var(--line); border-radius:12px;
+  background:var(--bg-raise);
+}
+.cs-process__item figcaption{
+  font-family:var(--font-sans); font-size:0.82rem; line-height:1.6;
+  color:var(--ink-dim); max-width:72ch;
+}
+.cs-process__tag{
+  display:inline-block;
+  font-family:var(--font-sans); font-size:0.66rem; font-weight:600;
+  letter-spacing:0.08em; text-transform:uppercase; line-height:1;
+  padding:0.3rem 0.55rem; border-radius:999px;
+  border:1px solid var(--line-strong);
+  color:var(--ink-dim);
+  white-space:nowrap; vertical-align:0.1em;
+}
+.cs-process__tag--after{ color:var(--accent); border-color:rgba(226,167,60,0.45); }
+.cs-process__tag--rejected{ color:var(--ink-dim); border-style:dashed; }
+
+/* Before | After | note */
+.cs-process__pair{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 300px)) minmax(0, 1fr);
+  gap:1.25rem 1.5rem;
+  align-items:start;
+}
+.cs-process__note h3{
+  font-family:var(--font-sans); font-weight:700;
+  font-size:1.05rem; line-height:1.3;
+  color:var(--ink); margin:0 0 0.6rem;
+}
+.cs-process__note p,
+.cs-process .cs-process__note p{
+  font-size:0.9rem; line-height:1.65; color:var(--ink-dim);
+  margin:0 0 0.8rem; max-width:52ch;
+}
+.cs-process__note > :last-child{ margin-bottom:0; }
+.cs-process__note--lead{ margin-bottom:1.25rem; }
+
+/* Options considered: a strip of small tiles, rejected ones marked. */
+.cs-process__options{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(6, minmax(0, 132px));
+  gap:1rem 0.9rem;
+}
+.cs-process__option{ display:flex; flex-direction:column; align-items:flex-start; gap:0.4rem; min-width:0; }
+.cs-process__option img{
+  display:block; width:100%; height:auto; aspect-ratio:1;
+  border-radius:22%;
+  border:1px solid var(--line);
+}
+.cs-process__option-name{ font-family:var(--font-sans); font-size:0.82rem; font-weight:600; color:var(--ink); }
+.cs-process__option-why{ font-family:var(--font-sans); font-size:0.76rem; line-height:1.45; color:var(--ink-dim); }
+
+@media (max-width:860px){
+  .cs-process__pair{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+  .cs-process__pair .cs-process__note{ grid-column:1 / -1; }
+  .cs-process__options{ grid-template-columns:repeat(3, minmax(0, 132px)); }
+}
+@media (max-width:640px){
+  .cs-process__pair{ gap:1rem 0.75rem; }
+}
+/* A wide multi-frame strip (Teneo's check-in) would shrink to unreadable at
+   phone width, so there it keeps a readable size and scrolls inside its own
+   box; the page itself never scrolls sideways. */
+.cs-process__scroll{ width:100%; max-width:100%; min-width:0; }
+@media (max-width:640px){
+  .cs-process__scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; border-radius:12px; }
+  .cs-process__scroll img{ width:760px; max-width:none; }
+}
+
+/* ---- Round 2 fixes (case studies): scroller focus + next-case-study ending ---- */
+.cs-process__scroll:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+.cs-next__next{ margin-left:auto; color:var(--ink); }
+@media (max-width: 640px){
+  .cs-next__next{ margin-left:0; }
 }

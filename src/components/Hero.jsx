@@ -37,13 +37,13 @@ import { useHeroDrift } from '@/hooks/useHeroDrift';
 // stat block below the subline (31% faster to place a bet / 84% more
 // time on site / source line) is gone -- Ryan's own call after seeing it
 // live, not replaced with anything.
-const TAGLINE = 'Full time product designer at FEVO. I design apps, then I build them.';
-const SUBLINE = 'Based in Columbus, OH.';
+const TAGLINE = 'Product designer at FEVO. On my own, I design apps and ship them myself.';
+const SUBLINE = 'Two native iOS apps designed and built solo, one live on the App Store. Columbus, OH.';
 
 // "Shortly after, maybe even with a time delay" -- Ryan's own words. Long
 // enough to actually read "Ryan Craun / Product Designer" first, short
 // enough that it still reads as one deliberate opening beat, not a stall.
-const REVEAL_DELAY_MS = 1400;
+const REVEAL_DELAY_MS = 700;
 
 export default function Hero() {
   const { sectionRef, innerRef } = useHeroDrift();
@@ -118,7 +118,7 @@ export default function Hero() {
           firstContent={
             <div className="hero__panel hero__panel--intro">
               <p className="hero__name">Ryan Craun</p>
-              <p className="hero__role">Product Designer</p>
+              <p className="hero__role">Product Designer · Consumer &amp; Mobile</p>
             </div>
           }
           secondContent={
@@ -129,7 +129,6 @@ export default function Hero() {
           }
         />
       </div>
-      <div className="hero__scrollcue">Scroll</div>
     </section>
   );
 }
