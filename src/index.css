@@ -2565,6 +2565,16 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
   margin-bottom:0.6rem;
 }
 .cs-decision h3{ font-size:clamp(1.4rem, 2.6vw, 1.85rem); line-height:1.2; margin-bottom:1.1rem; }
+/* Why-first lead: one sentence per section that says why, readable aloud
+   while presenting. Full ink and a step up in size; no accent or box, to
+   match the de-template pass above. */
+.cs-why, .cs-decision p.cs-why{
+  font-family:var(--font-sans); font-weight:500;
+  font-size:clamp(1.08rem, 1.7vw, 1.22rem); line-height:1.5;
+  color:var(--ink);
+  max-width:56ch;
+  margin:0 0 1.4rem;
+}
 .cs-decision p.cs-decision__tradeoff{
   border:none; padding:0; background:none;
   margin-top:1.6rem;
