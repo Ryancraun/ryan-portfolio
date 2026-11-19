@@ -140,6 +140,10 @@ export default function TeneoCaseStudy() {
 
       <ScrollReveal as="section" className="cs-section">
         <h2 className="cs-section__heading">At a glance</h2>
+        <p className="cs-why">
+          On a GLP-1, the hard part isn&rsquo;t eating less. It&rsquo;s getting enough protein and still training on
+          the days the shot knocks you flat, and no app was planning for that.
+        </p>
         <dl className="cs-snapshot cs-snapshot--four">
           {/* Problem: GLP1-Pain-Points.md #2 (side effects wreck eating and
               training days), #3 (protein shortfall); UX competitiveness plan
@@ -204,10 +208,12 @@ export default function TeneoCaseStudy() {
               <h3>The plan follows the shot week, and you can overrule it</h3>
             </header>
             <div className="cs-decision__text">
+              <p className="cs-why">
+                A calendar can&rsquo;t know how you feel. So the plan makes a guess, and you get the final say in one tap.
+              </p>
               <p>
                 Shot day is day one. Days two and three are low-energy days: training volume drops 30% and protein
-                counts toward a lower floor instead of the full goal. The rest of the week is full strength. But a
-                calendar can&rsquo;t know how one person feels on a given Tuesday.
+                counts toward a lower floor instead of the full goal. The rest of the week is full strength.
               </p>
               <p>
                 The first version asked through a 2&times;2 grid of four fixed feelings. I cut it to two answers, Good
@@ -253,6 +259,10 @@ export default function TeneoCaseStudy() {
               <h3>Ask about the medication first, and let onboarding branch</h3>
             </header>
             <div className="cs-decision__text">
+              <p className="cs-why">
+                My first build assumed everyone took a weekly shot. Reviews showed who that left out, so the first
+                question is now how you take your medication.
+              </p>
               <p>
                 The first build assumed a weekly shot on a fixed weekday. Reviews of competing trackers showed who that
                 leaves out: &ldquo;Everything is geared towards a shot&rdquo; and &ldquo;Definitely not set up for the
@@ -305,6 +315,10 @@ export default function TeneoCaseStudy() {
               <h3>A late shot never quietly changes the plan</h3>
             </header>
             <div className="cs-decision__text">
+              <p className="cs-why">
+                The app should never act on a shot that didn&rsquo;t happen, and it should never tell you what to do
+                about a late dose. That&rsquo;s your prescriber&rsquo;s call.
+              </p>
               <p>
                 Reviewing the build, I found that a shot nobody logged was treated as taken. The next morning the plan
                 eased training and dropped protein to the floor for a dose that never happened. Logging every dose is
@@ -347,6 +361,10 @@ export default function TeneoCaseStudy() {
           <div className="cs-decision__body">
             <p className="cs-decision__kicker">Decision 04</p>
             <h3>The photo estimate always gives a guess you can fix</h3>
+            <p className="cs-why">
+              Photo estimates are often wrong, and a confident wrong number is worse than an honest guess. So it shows
+              how sure it is, and fixing it takes one tap.
+            </p>
             <p>
               Wrong photo estimates drew 172 one- and two-star reviews across competitors, and portions drew 164
               more. The usual fix is a follow-up question, like &ldquo;Cooked in oil or butter?&rdquo; I rejected it,
@@ -381,7 +399,11 @@ export default function TeneoCaseStudy() {
         <ScrollReveal as="article" className="cs-decision cs-decision--split">
           <div className="cs-decision__body">
             <p className="cs-decision__kicker">Decision 05</p>
-            <h3>A free core, and a paywall that names the charge date</h3>
+            <h3>No surprises: trust over renewals</h3>
+            <p className="cs-why">
+              Surprise charges were the top complaint across competitors. I&rsquo;d rather lose a few renewals than
+              earn one of those reviews.
+            </p>
             <p>
               Money was the top complaint in competitor reviews: 1,454 of 4,974 negative reviews, 766 of them about
               surprise charges, trials or refunds. So logging, barcode scanning and export are free, with no ads and
@@ -408,6 +430,9 @@ export default function TeneoCaseStudy() {
 
       <ScrollReveal as="section" className="cs-section">
         <h2 className="cs-section__heading">Iterations</h2>
+        <p className="cs-why">
+          Small details got the same process: test it, cut what doesn&rsquo;t work, and write down why.
+        </p>
 
         {/* Source: teneo-ios branch assets/fuel-redesign, top-light.png (a
             before | after composite, split into two files). Caption facts:
@@ -478,6 +503,10 @@ export default function TeneoCaseStudy() {
           Store/Rejection 2026-11.md; research.md RED FLAG 1). */}
       <ScrollReveal as="section" className="cs-section cs-outcome">
         <h2 className="cs-section__heading">Outcome</h2>
+        <p className="cs-why">
+          The first thing I&rsquo;ll measure is whether people answer the check-in on low days, because the whole plan
+          depends on it.
+        </p>
         <p>
           I first submitted Teneo to the App Store on November 1. On November 9, Apple&rsquo;s review flagged two
           things: the screen
