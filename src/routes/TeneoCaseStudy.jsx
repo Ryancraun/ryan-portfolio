@@ -139,6 +139,53 @@ export default function TeneoCaseStudy() {
         </figure>
       </section>
 
+      {/* Problem statement. Quotes: App Store reviews/raw/6499510249.json
+          (Shotsy, 3 stars, 2026-08-14) and raw/6744178534.json (MeAgain,
+          5 stars, 2025-09-14). 43%: Frontiers in Nutrition 2025, n=69.
+          43.5%: Sehgal et al., medRxiv 2026, n=67,008 (GLP1-Pain-Points.md).
+          Split across apps: GLP1-Needs-Fit-2026.md jobs 1, 6, 12 and the
+          competitor landscape below. */}
+      <ScrollReveal as="section" className="cs-section cs-problem">
+        <h2 className="cs-section__heading">The problem</h2>
+        <p className="cs-problem__statement">
+          People on GLP-1 medication have no single place to manage the three things that decide how a week goes: the
+          dose, the food and the training. So they split them across a shot tracker, a calorie app and a gym app, and
+          each plan ignores the other two.
+        </p>
+        <div className="cs-problem__grid">
+          <div>
+            <p className="cs-problem__k">What people do instead</p>
+            <p>
+              They copy numbers between apps by hand. &ldquo;I still have to use the MFP app as well. It would be a
+              lot better if &hellip; I only needed one app.&rdquo;
+            </p>
+          </div>
+          <div>
+            <p className="cs-problem__k">What it costs them</p>
+            <p>
+              Only 43% reach the protein minimum, though 75% think they eat more. The calorie app doesn&rsquo;t know
+              it&rsquo;s a low-appetite day.
+            </p>
+          </div>
+          <div>
+            <p className="cs-problem__k">What no app does</p>
+            <p>
+              43.5% report side effects, led by nausea and fatigue. The gym app still asks for a full session the day
+              after the shot.
+            </p>
+          </div>
+        </div>
+        <p className="cs-problem__hmw">
+          <strong>So the design question became:</strong> how might one plan follow the dose week, set protein and
+          training for the day someone is actually having, and still be easier than the apps it replaces?
+        </p>
+        <ul className="cs-problem__answers">
+          <li><strong>One plan, not three trackers.</strong> Dose, food and training on one Today screen that reads the shot week (decision 01).</li>
+          <li><strong>The medication comes first.</strong> Everything else is set from the dose and schedule, weekly shot or daily pill (decision 02).</li>
+          <li><strong>Easier than copying numbers.</strong> A one-tap check-in, a photo for meals, free logging (decisions 01, 04, 05).</li>
+        </ul>
+      </ScrollReveal>
+
       <ScrollReveal as="section" className="cs-section">
         <h2 className="cs-section__heading">At a glance</h2>
         <dl className="cs-snapshot cs-snapshot--four">
@@ -149,8 +196,8 @@ export default function TeneoCaseStudy() {
           <div>
             <dt>Problem</dt>
             <dd>
-              On a GLP-1 medication, appetite and energy drop and protein quietly falls short. Shot trackers are thin
-              on protein, and strength apps ignore the medication, so no app plans the week around the dose.
+              The dose, the food and the training affect each other, but each lives in a different app. No app plans
+              the week around the dose, so people stitch it together themselves.
             </dd>
           </div>
           {/* Evidence: App Store reviews/Index.md (21,452 reviews, 33 apps,

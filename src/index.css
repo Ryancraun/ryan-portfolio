@@ -2923,3 +2923,15 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
   .cs-decision__body--wide + .cs-hint,
   .cs-decision__body--wide + .cs-databar-group{ margin-top:2rem; }
 }
+
+/* Problem statement: one large claim, three evidence cells, then the
+   how-might-we and the answers it produced. */
+.cs-problem__statement{ font-size:clamp(1.35rem, 2.2vw, 1.85rem); line-height:1.4; color:var(--ink); max-width:42ch; margin:0 0 2rem; font-weight:500; letter-spacing:-0.01em; }
+.cs-problem__grid{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:1.5rem; border-top:1px solid var(--line); padding-top:1.5rem; }
+.cs-problem__grid p{ margin:0; font-size:0.95rem; line-height:1.6; color:var(--ink-dim); }
+.cs-problem__grid .cs-problem__k{ font-size:0.78rem; font-weight:600; color:var(--ink); margin-bottom:0.5rem; }
+.cs-problem__hmw{ margin:2.25rem 0 1rem; font-size:1.05rem; line-height:1.6; color:var(--ink); max-width:68ch; }
+.cs-problem__answers{ margin:0; padding-left:1.1rem; max-width:68ch; color:var(--ink-dim); line-height:1.65; }
+.cs-problem__answers li{ margin:0.35rem 0; }
+.cs-problem__answers strong{ color:var(--ink); }
+@media (max-width: 760px){ .cs-problem__grid{ grid-template-columns:1fr; } }
