@@ -49,6 +49,8 @@ import iconFlex from '@/assets/teneo-process-icon-c-flex.jpg';
 import iconDarkTile from '@/assets/teneo-process-icon-d-darktile.jpg';
 import iconGlyphDark from '@/assets/teneo-process-icon-a-dark.jpg';
 import iconFinal from '@/assets/teneo-process-icon-v3-final.jpg';
+import systemLibrary from '@/assets/teneo-system-library.jpg';
+import systemFlow from '@/assets/teneo-system-flow-section.jpg';
 
 // App-icon directions, in the order they were explored. Captions are the
 // reasons recorded in brain/Teneo/App Store/Icon/v2/v2.md and v3/v3.md.
@@ -209,6 +211,36 @@ export default function TeneoCaseStudy() {
           I don&rsquo;t take these drugs, so I studied the people who do: what they hate in today&rsquo;s apps, what they
           praise and pay for, and what each kind of app leaves out.
         </p>
+
+        {/* Ranked themes: Research/App Store reviews/Index.md, "Top 10
+            complaint themes" plus AI photo 172, GLP-1 and shot tracking 169,
+            Portions 164 from "All feature notes". 1- and 2-star counts of 4,974. */}
+        <h3 className="cs-subhead">What people complain about most</h3>
+        <p className="cs-findings__note">One- and two-star reviews by theme, out of 4,974 across 33 apps. A review can raise more than one theme.</p>
+        <ol className="cs-findings">
+          {[
+            ['Billing: surprise charges, trials, refunds', 1454, 'Decision 05'],
+            ['Sync, bugs and data loss', 1302, 'Decision 05'],
+            ['Apple Health integration', 577, ''],
+            ['Customer support', 422, ''],
+            ['Food logging and database accuracy', 413, ''],
+            ['Ads', 397, ''],
+            ['Workout logging', 338, ''],
+            ['Barcode scanning', 318, ''],
+            ['Progress and charts', 293, ''],
+            ['Performance and clutter', 285, ''],
+            ['AI photo estimates', 172, 'Decision 04'],
+            ['GLP-1 and shot tracking', 169, 'Decisions 02, 03'],
+            ['Portions and serving units', 164, 'Decision 04'],
+          ].map(([label, n, tag]) => (
+            <li key={label} className={tag ? 'is-answered' : undefined}>
+              <span className="cs-findings__label">{label}</span>
+              <span className="cs-findings__bar" aria-hidden="true"><span style={{ width: `${(n / 1454) * 100}%` }} /></span>
+              <span className="cs-findings__num">{n.toLocaleString('en-US')}</span>
+              <span className="cs-findings__tag">{tag}</span>
+            </li>
+          ))}
+        </ol>
 
         <h3 className="cs-subhead">What competitors miss</h3>
         <div className="cs-landscape">
@@ -603,6 +635,41 @@ export default function TeneoCaseStudy() {
 
       {/* Status: built, submitted, launching soon. Source-notes claim:
           brain/Teneo/App Store/Review 2026-11-18 (citations shipped in build 14). */}
+      {/* The system: Figma file 306y3w44sU8GhSBxqn9ozE. Counts from the file
+          on 2026-11-18 (projects/teneo-case-study/audit.md section 4):
+          70 components and sets, 35 icons, 65 variables, 18 app text styles,
+          29 screens, 636 instances, 0 detached. Drift: code-audit.md section 3
+          (174 hard-coded spacings; 748 raw text calls vs 162 named styles).
+          Images: Case Study slide 11 library sample (173:2921) and Screens page
+          section "05 Medication · Late shot" (182:2578). */}
+      <ScrollReveal as="section" className="cs-section">
+        <h2 className="cs-section__heading">The system</h2>
+        <p className="cs-section__lede">
+          I rebuilt the app in Figma from the code, so the file and the shipped app use the same tokens and the same
+          parts. Every screen is made of library components, and the screens are filed by flow, so anyone can find the
+          late-shot path or the pill branch without asking me.
+        </p>
+        <div className="cs-hero__stats cs-system__stats">
+          <div className="stat"><span className="stat__num">70</span><span className="stat__label">components, each with its real states, plus 35 icons</span></div>
+          <div className="stat"><span className="stat__num">65</span><span className="stat__label">variables that mirror the app&rsquo;s Swift tokens, dark and light</span></div>
+          <div className="stat"><span className="stat__num">29</span><span className="stat__label">screens built only from instances, with 0 detached</span></div>
+        </div>
+        <div className="cs-system__pair">
+          <figure className="cs-shot">
+            <img src={systemFlow} alt="A Figma section titled 'Medication · Late shot' holding three screens in order: the shot card with three answers, the log-shot sheet asking about the usual shot day, and the full-strength week after a skip" loading="lazy" />
+            <figcaption>Screens are filed by flow, in the order a person meets them.</figcaption>
+          </figure>
+          <figure className="cs-shot">
+            <img src={systemLibrary} alt="Teneo library components: the daily check-in card, the shot cycle card, the daily pill card, the protein day summary, a choice row and the tab bar" loading="lazy" />
+            <figcaption>Library components carry their states as variants and properties.</figcaption>
+          </figure>
+        </div>
+        <p className="cs-system__note">
+          The audit also kept the drift visible instead of hiding it. The app still has 174 hard-coded spacing values,
+          and 748 raw text calls against 162 that use named styles. Those are the next cleanup, in code.
+        </p>
+      </ScrollReveal>
+
       <ScrollReveal as="section" className="cs-section cs-outcome">
         <h2 className="cs-section__heading">Outcome</h2>
         <p>
