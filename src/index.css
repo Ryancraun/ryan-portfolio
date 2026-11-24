@@ -2128,6 +2128,51 @@ html{ scrollbar-width:none; -ms-overflow-style:none; }
   font-size:0.95rem; line-height:1.6; color:var(--ink-dim);
 }
 
+/* Research and benchmarks (Teneo): a competitor landscape, the shifts the
+   research forced, and benchmark -> answer -> metric rows. Rows, not cards:
+   hairline separators keep it reading as evidence, not marketing tiles. */
+.cs-subhead{
+  font-family:var(--font-sans); font-size:1.05rem; font-weight:600;
+  color:var(--ink);
+  margin:2.75rem 0 1rem;
+}
+.cs-landscape{ border-top:1px solid var(--line); }
+.cs-landscape__row{
+  display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.6fr);
+  gap:0.5rem 2rem;
+  padding:1.25rem 0;
+  border-bottom:1px solid var(--line);
+}
+.cs-landscape__row p,
+.cs-bench__row p{ margin:0; font-size:0.95rem; line-height:1.6; color:var(--ink-dim); }
+.cs-landscape__row strong{ color:var(--ink); font-weight:600; }
+.cs-landscape__row .cs-landscape__kind{ color:var(--ink); font-weight:600; }
+.cs-landscape__kind span{
+  display:block; font-weight:400; font-size:0.85rem; color:var(--ink-dim); margin-top:0.2rem;
+}
+.cs-landscape__gap{
+  font-size:1rem; line-height:1.7; color:var(--ink);
+  max-width:68ch; margin:1.5rem 0 0;
+}
+.cs-shifts{ margin:0; padding-left:1.25rem; max-width:72ch; }
+.cs-shifts li{ font-size:0.95rem; line-height:1.65; color:var(--ink-dim); margin:0 0 1rem; }
+.cs-shifts li strong{ display:block; color:var(--ink); font-weight:600; margin-bottom:0.2rem; }
+.cs-bench{ border-top:1px solid var(--line); }
+.cs-bench__row{
+  display:grid; grid-template-columns:minmax(0, 0.8fr) repeat(3, minmax(0, 1fr));
+  gap:0.75rem 2rem;
+  padding:1.25rem 0;
+  border-bottom:1px solid var(--line);
+}
+.cs-bench__row .cs-bench__area{ color:var(--ink); font-weight:600; }
+.cs-bench__row .cs-bench__k{
+  font-size:0.78rem; font-weight:600; color:var(--ink-dim);
+  margin-bottom:0.3rem;
+}
+@media (max-width: 760px){
+  .cs-landscape__row, .cs-bench__row{ grid-template-columns:1fr; gap:0.5rem; }
+}
+
 /* decisions */
 .cs-decision{
   padding:3.5rem 0;

@@ -143,7 +143,7 @@ export default function Home() {
             client="Teneo"
             title="Built Around the Shot Week"
             tag="Native iOS / Health"
-            byline="Solo: design & engineering. In App Review"
+            byline="Solo: design & engineering. Launching soon"
             to="/work/teneo"
             ctaLabel="View case study"
             useSpecularCta

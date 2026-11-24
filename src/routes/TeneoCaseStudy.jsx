@@ -65,7 +65,7 @@ const ICON_OPTIONS = [
 // that shows it -> iterations -> outcome. Rules from
 // agent-team/projects/portfolio-teneo/research.md (RED FLAGS): no brand drug
 // names, no muscle-preservation or medical claims, don't imply Ryan takes
-// GLP-1 medication, and Teneo is in App Review, not live.
+// GLP-1 medication, and Teneo is not live yet (say "launching soon").
 //
 // The problem and the evidence are paired on purpose: the problem is about
 // the medication week and protein, so the evidence is about side effects and
@@ -93,37 +93,36 @@ export default function TeneoCaseStudy() {
           <p className="cs-hero__line">
             Teneo is a protein and strength app for people on GLP-1 medication. Its plan changes with the days of
             the shot week, and a one-tap check-in lets you overrule it. I designed and built it solo, and it&rsquo;s
-            in App Review for a November 2026 launch.
+            launching on the App Store soon.
           </p>
           <div className="cs-hero__frame">
             <span>Solo: research, design &amp; engineering</span>
             <span className="cs-hero__dot" aria-hidden="true" />
             <span>Native iOS (SwiftUI)</span>
             <span className="cs-hero__dot" aria-hidden="true" />
-            <span>In App Review</span>
+            <span>Launching soon</span>
           </div>
-          {/* Plain numbers, no count-up.
-              4,974: brain/Teneo/Research/App Store reviews/Index.md (21,452
-              reviews pulled from 33 apps; the 4,974 one- and two-star ones were
-              sorted by keyword rules into 17 feature themes).
-              3 plans: teneo-ios OnboardingSteps.swift MedicationStep ("Are you on
-              a GLP-1 medication?": weekly shot, daily pill, daily injection, not
-              started, not taking any) and Engines.swift (daily forms: "No fixed
-              low days"), so weekly / daily / none.
-              1 tap: brain/Teneo/Strategy/UX competitiveness plan.md 2.3 D ("The
-              check-in stays one tap") and Design/feel-checkin.md. */}
+          {/* Plain numbers, no count-up. Each is a research benchmark the design
+              answers, not a feature count.
+              34%: brain/Teneo/Research/GLP1-Needs-Fit-2026.md section 1, job 1
+              (share of 2,782 reviews of 14 GLP-1 apps, 2025-2026, all ratings).
+              43%: GLP1-Pain-Points.md, Frontiers in Nutrition 2025, n=69 (75%
+              believed they ate more protein; 43% reached 1.2 g/kg).
+              29%: Research/App Store reviews/Index.md (1,454 of 4,974 one- and
+              two-star reviews across 33 apps; 766 unexpected charge, trial or
+              refund). */}
           <div className="cs-hero__stats">
             <div className="stat">
-              <span className="stat__num">4,974</span>
-              <span className="stat__label">one- and two-star reviews of 33 competing apps, sorted into 17 complaint themes</span>
+              <span className="stat__num">34%</span>
+              <span className="stat__label">of GLP-1 app reviews are about one job: log every dose and never miss the next</span>
             </div>
             <div className="stat">
-              <span className="stat__num">3 plans</span>
-              <span className="stat__label">from one onboarding question: weekly shot, daily dose, or none</span>
+              <span className="stat__num">43%</span>
+              <span className="stat__label">of people on these drugs reach the protein minimum, though 75% think they eat more</span>
             </div>
             <div className="stat">
-              <span className="stat__num">1 tap</span>
-              <span className="stat__label">to tell Today how you feel and change the day&rsquo;s plan</span>
+              <span className="stat__num">29%</span>
+              <span className="stat__label">of negative reviews across 33 competing apps are about billing, the top complaint</span>
             </div>
           </div>
         </div>
@@ -152,18 +151,18 @@ export default function TeneoCaseStudy() {
               on protein, and strength apps ignore the medication, so no app plans the week around the dose.
             </dd>
           </div>
-          {/* Evidence: GLP1-Pain-Points.md: Sehgal et al., medRxiv 2026 (67,008
-              users, 43.5% any side effect; nausea 36.9%, fatigue 16.7%);
-              Frontiers in Nutrition 2025, n=69 (75% believed they ate more
-              protein, 43% reached 1.2 g/kg). Quote: App Store reviews/GLP-1 and
-              shot tracking.md (MeAgain, 2 stars, 2026-10-11). */}
+          {/* Evidence: App Store reviews/Index.md (21,452 reviews, 33 apps,
+              4,974 one- and two-star, 17 themes); GLP1-Needs-Fit-2026.md (2,782
+              reviews of 14 GLP-1 apps, all ratings, 2025-2026); GLP1-Pain-Points.md:
+              Sehgal et al., medRxiv 2026 (67,008 users, 43.5% any side effect;
+              nausea 36.9%, fatigue 16.7%) and Frontiers in Nutrition 2025, n=69. */}
           <div>
             <dt>Evidence</dt>
             <dd>
-              In a 2026 preprint on 67,008 Reddit users on these drugs, 43.5% reported side effects, led by nausea and
-              fatigue. In a 69-person food-record study, 75% thought they ate more protein than before, but only 43%
-              reached 1.2 g per kg. A shot-tracker review: &ldquo;I&rsquo;m not sure if I&rsquo;m really meeting protein and
-              fiber.&rdquo;
+              Three sources. 21,452 App Store reviews of 33 competing apps, with the 4,974 one- and two-star ones sorted
+              into 17 complaint themes. 2,782 reviews of 14 GLP-1 apps at every star rating, to see what people praise and
+              pay for, not only what they hate. And published studies: 43.5% of 67,008 people on these drugs reported
+              side effects, led by nausea and fatigue.
             </dd>
           </div>
           {/* research.md RED FLAG 2: Ryan doesn't take GLP-1 medication. Timing
@@ -185,6 +184,135 @@ export default function TeneoCaseStudy() {
             </dd>
           </div>
         </dl>
+      </ScrollReveal>
+
+      {/* Research. Landscape rows:
+          Shot trackers: GLP1-Needs-Fit-2026.md (Shotsy 34,135 and MeAgain 39,206
+          ratings; pill job 10: "Five of the 12 say the app doesn't support the
+          pill"); quote from App Store reviews/GLP-1 and shot tracking.md
+          (MeAgain, 2 stars, 2026-10-11).
+          Calorie and macro: Index.md (Paywall 1,454, hit hardest Cal AI,
+          MyFitnessPal, Noom; Ads 397) and Opportunities.md item 1 (102
+          barcode paywalled).
+          AI photo: Index.md (AI photo estimates 172; Portions 164);
+          Opportunities.md item 8 (Lifesum: "I do not see a way to edit").
+          Strength: Opportunities.md item 5 (Fitbod review quote) and item 14
+          (Watch sync the top complaint for Strong, Hevy, Fitbod, JEFIT).
+          Muscle-first GLP-1: GLP1-Needs-Fit-2026.md short answer and job 12
+          (about 15 launched in 2026, none with more than 8 ratings; 3% mention
+          muscle or workouts) and job 6 (about 17% mention protein, water or fiber).
+          "What the research changed": Needs-Fit short answer and jobs 1, 10, 12;
+          Index.md theme counts (1,454 billing vs 413 food logging). */}
+      <ScrollReveal as="section" className="cs-section">
+        <h2 className="cs-section__heading">Research</h2>
+        <p className="cs-section__lede">
+          I don&rsquo;t take these drugs, so I studied the people who do: what they hate in today&rsquo;s apps, what they
+          praise and pay for, and what each kind of app leaves out.
+        </p>
+
+        <h3 className="cs-subhead">What competitors miss</h3>
+        <div className="cs-landscape">
+          <div className="cs-landscape__row">
+            <p className="cs-landscape__kind">Shot trackers<span>Shotsy, MeAgain: 34,000 and 39,000 ratings</span></p>
+            <p><strong>Strong on</strong> the dose log, reminders and history.</p>
+            <p>
+              <strong>Miss</strong> the food: &ldquo;I&rsquo;m not sure if I&rsquo;m really meeting protein and
+              fiber.&rdquo; And they assume a weekly shot: 5 of 12 reviews from daily-pill users said their app
+              didn&rsquo;t support the pill.
+            </p>
+          </div>
+          <div className="cs-landscape__row">
+            <p className="cs-landscape__kind">Calorie and macro apps<span>MyFitnessPal, Lose It!, Noom and 8 more</span></p>
+            <p><strong>Strong on</strong> the food database and barcode scanning.</p>
+            <p>
+              <strong>Miss</strong> trust: billing is the top complaint across all 33 apps (1,454 reviews), then ads
+              (397) and barcode scanning moved behind a paywall (102).
+            </p>
+          </div>
+          <div className="cs-landscape__row">
+            <p className="cs-landscape__kind">AI photo apps<span>Cal AI, Foodvisor, SnapCalorie</span></p>
+            <p><strong>Strong on</strong> speed: one photo, one number.</p>
+            <p>
+              <strong>Miss</strong> a way to fix the guess: 172 reviews say the estimate is wrong, 164 more fight the
+              portions, and &ldquo;I do not see a way to edit.&rdquo;
+            </p>
+          </div>
+          <div className="cs-landscape__row">
+            <p className="cs-landscape__kind">Strength apps<span>Strong, Hevy, Fitbod, JEFIT and 5 more</span></p>
+            <p><strong>Strong on</strong> logging sets and building routines.</p>
+            <p>
+              <strong>Miss</strong> progress that means strength: they &ldquo;emphasize activity totals while overlooking
+              meaningful strength progression,&rdquo; and Watch sync is their top complaint.
+            </p>
+          </div>
+          <div className="cs-landscape__row">
+            <p className="cs-landscape__kind">Muscle-first GLP-1 apps<span>About 15 launched in 2026</span></p>
+            <p><strong>Strong on</strong> the pitch Teneo started with.</p>
+            <p>
+              <strong>Miss</strong> the audience: none has more than 8 ratings. Muscle came up in 3% of GLP-1 app
+              reviews; protein, water or fiber in about 17%.
+            </p>
+          </div>
+        </div>
+        <p className="cs-landscape__gap">
+          The gap: each kind of app owns one part of the week. The dose, the food and the training live in different
+          apps, and the anger in all of them is about money and lost data. Teneo joins the three around the dose week,
+          and keeps logging free.
+        </p>
+
+        <h3 className="cs-subhead">What the research changed</h3>
+        <ol className="cs-shifts">
+          <li>
+            <strong>I led with muscle. The reviews said lead with the medication.</strong> Logging the dose came up in
+            34% of GLP-1 app reviews, muscle in 3%. People act on the muscle worry by eating protein, not by asking for
+            a training plan. So the plan is built on the dose week, and strength is the payoff, not the pitch.
+          </li>
+          <li>
+            <strong>I built for a weekly shot. Pill users were already leaving apps like that.</strong> Daily pills
+            launched in 2026, and the first reviews from pill users were about apps that didn&rsquo;t fit them.
+            Onboarding now asks how you take it before anything else (decision 02).
+          </li>
+          <li>
+            <strong>Money anger outweighed every missing feature.</strong> Billing drew 1,454 negative reviews, more
+            than three times food logging (413). So a free core and a paywall that names the
+            charge date are product decisions, not marketing (decision 05).
+          </li>
+        </ol>
+      </ScrollReveal>
+
+      {/* Benchmarks. Teneo is pre-launch: no usage data exists, so the
+          "After launch" column is the plan, not results.
+          Dose: Needs-Fit job 1 (34%); GLP-1 and shot tracking.md (Shotsy 40%
+          of its 1-2 star reviews). Protein: Frontiers 2025 (43% at 1.2 g/kg).
+          Low days: Sehgal 2026 (43.5%). Photo: Index.md (172) and Photo
+          estimate accuracy.md (protein 28.3% WAPE, n=38 weighed meals).
+          Billing: Index.md (1,454 of 4,974 = 29%; 766). Onboarding:
+          Opportunities.md item 7 (71 "paywall before trying"). The last two
+          "After launch" items come from the Outcome note (check-in on low days,
+          onboarding drop-off); the rest were proposed 2026-11-24 and need Ryan's OK. */}
+      <ScrollReveal as="section" className="cs-section">
+        <h2 className="cs-section__heading">Benchmarks, and what I&rsquo;ll measure</h2>
+        <p className="cs-section__lede">
+          Teneo isn&rsquo;t live yet, so there are no usage numbers to show. Each design starts from a benchmark in the
+          research, and each has the metric I&rsquo;ll watch after launch.
+        </p>
+        <div className="cs-bench">
+          {[
+            ['Logging the dose', '34% of GLP-1 app reviews are about it. At Shotsy, it’s 40% of one- and two-star reviews.', 'A shot nobody logged never changes the plan. The card asks instead (decision 03).', 'Shots logged by the end of shot day, and late-shot cards answered.'],
+            ['Protein', 'Only 43% of people on these drugs reach 1.2 g per kg, though 75% think they eat more.', 'A lower floor on low days, and the grams left split across your usual meals.', 'Share of days at or above the floor.'],
+            ['Low days', '43.5% report side effects, led by nausea and fatigue. Studies don’t say which day they hit.', 'A one-tap check-in that overrules the calendar (decision 01).', 'Low days with a check-in answer.'],
+            ['Photo estimates', '172 reviews say competitors’ estimates are wrong. Teneo’s own test: protein off by 28% on 38 weighed meals.', 'A guess with its confidence shown, fixed in one tap (decision 04).', 'Estimates edited before saving, and the weighed-meal error, re-tested.'],
+            ['Billing trust', '29% of negative reviews, 766 of them about surprise charges, trials and refunds.', 'The trial reminder is on by default, the charge date is named, and Continue free is always there (decision 05).', 'Refund requests, and trials that keep the reminder on.'],
+            ['Onboarding', '71 reviews complain about a paywall before trying the app.', 'Free to use, no account, and the medication question first (decision 02).', 'Drop-off at each onboarding step.'],
+          ].map(([area, bench, answer, measure]) => (
+            <div className="cs-bench__row" key={area}>
+              <p className="cs-bench__area">{area}</p>
+              <div><p className="cs-bench__k">Benchmark</p><p>{bench}</p></div>
+              <div><p className="cs-bench__k">Teneo&rsquo;s answer</p><p>{answer}</p></div>
+              <div><p className="cs-bench__k">After launch</p><p>{measure}</p></div>
+            </div>
+          ))}
+        </div>
       </ScrollReveal>
 
       <section className="cs-section cs-decisions">
@@ -473,20 +601,17 @@ export default function TeneoCaseStudy() {
         </div>
       </ScrollReveal>
 
-      {/* Dates: first submission 2026-11-01, rejected 2026-11-09 under 5.1.1(iv)
-          and 2.1(a), build 12 resubmitted 2026-11-10 (brain/Teneo/App
-          Store/Rejection 2026-11.md; research.md RED FLAG 1). */}
+      {/* Status: built, submitted, launching soon. Source-notes claim:
+          brain/Teneo/App Store/Review 2026-11-18 (citations shipped in build 14). */}
       <ScrollReveal as="section" className="cs-section cs-outcome">
         <h2 className="cs-section__heading">Outcome</h2>
         <p>
-          I first submitted Teneo to the App Store on November 1. On November 9, Apple&rsquo;s review flagged two
-          things: the screen
-          shown before the Apple Health permission request, and an account sign-up that failed for the reviewer. I
-          fixed both and resubmitted the next day.
+          Teneo is built, submitted to the App Store, and launching soon. Every health number in the app opens a short
+          note on how Teneo sets it and the source behind it, so the plan never asks to be taken on faith.
         </p>
         <p>
-          <strong>Next:</strong> launch, then learn from real use: whether people answer the check-in on low days,
-          and where onboarding loses them.
+          <strong>Next:</strong> launch, then track the metrics above, starting with whether people answer the
+          check-in on low days and where onboarding loses them.
         </p>
         <div className="cs-next__cta">
           <Link className="cs-next__back" to="/" state={{ scrollTo: 'work' }}>
